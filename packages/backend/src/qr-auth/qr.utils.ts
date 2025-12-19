@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 export class QrUtils {
   constructor(private readonly jwtService: JwtService) {}
 
-  generateToken(tableId: string, tableNumber: string): string {
+  generateToken(tableId: string, tableNumber: number): string {
     const payload = { sub: tableId, tableNumber };
     // Token có hạn 1 ngày (hoặc tùy chỉnh)
     return this.jwtService.sign(payload, { expiresIn: '1d' });

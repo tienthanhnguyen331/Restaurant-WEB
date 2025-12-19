@@ -18,7 +18,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
   const isEdit = !!initialTable;
   const [currentTable, setCurrentTable] = useState<Table | null>(initialTable);
   const [formData, setFormData] = useState<CreateTableDto | UpdateTableDto>({
-    tableNumber: initialTable?.tableNumber || '',
+    tableNumber: initialTable?.tableNumber ?? 1,
     capacity: initialTable?.capacity || 4,
     location: initialTable?.location || '',
     description: initialTable?.description || ''
@@ -39,7 +39,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
       });
       setQrToken(initialTable.qrToken || null);
     } else {
-      setFormData({ tableNumber: '', capacity: 4, location: '', description: '' });
+      setFormData({ tableNumber: 1, capacity: 4, location: '', description: '' });
       setQrToken(null);
     }
   }, [initialTable]);
@@ -48,7 +48,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
     const { name, value } = e.target;
     setFormData(prev => ({ 
         ...prev, 
-        [name]: name === 'capacity' ? parseInt(value) || 0 : value 
+        [name]: (name === 'capacity' || name === 'tableNumber') ? (parseInt(value) || 0) : value 
     }));
   };
 
@@ -142,8 +142,8 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
         
         {/* Các Input giữ nguyên */}
         <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700">Số Bàn (Tên):</label>
-            <input name="tableNumber" value={formData.tableNumber} onChange={handleChange} required className="mt-1 p-2 border rounded w-full" disabled={isLoading} />
+          <label className="block text-sm font-medium text-gray-700">Số Bàn:</label>
+          <input type="number" min={1} name="tableNumber" value={formData.tableNumber as number} onChange={handleChange} required className="mt-1 p-2 border rounded w-full" disabled={isLoading} />
         </div>
         <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700">Sức Chứa (1-20):</label>

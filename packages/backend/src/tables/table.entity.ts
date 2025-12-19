@@ -7,8 +7,8 @@ export class TableEntity extends BaseEntity implements Table {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'table_number', length: 50 })
-  tableNumber: string;
+  @Column({ name: 'table_number', type: 'int' })
+  tableNumber: number;
 
   @Column('int')
   capacity: number;

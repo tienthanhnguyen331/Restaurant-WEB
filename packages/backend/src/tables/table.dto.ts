@@ -3,9 +3,9 @@ import { IsString, IsInt, Min, Max, IsNotEmpty, IsIn, IsOptional } from 'class-v
 import { CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto } from '../../../../shared/types/table';
 import { Type } from 'class-transformer';
 export class CreateTableDtoValidator implements CreateTableDto {
-  @IsString()
-  @IsNotEmpty()
-  tableNumber: string;
+  @IsInt()
+  @Min(1)
+  tableNumber: number;
 
   @IsInt()
   @Min(1)
@@ -23,9 +23,9 @@ export class CreateTableDtoValidator implements CreateTableDto {
 
 export class UpdateTableDtoValidator implements UpdateTableDto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  tableNumber?: string;
+  @IsInt()
+  @Min(1)
+  tableNumber?: number;
 
   @IsOptional()
   @IsInt()

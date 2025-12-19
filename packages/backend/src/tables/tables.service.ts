@@ -35,11 +35,11 @@ async findAll(query: TableQueryDto): Promise<PaginatedTables> {
 
     // 3. Áp dụng tìm kiếm (search) - Điều kiện OR
     if (search) {
-        // Sử dụng một OR Group để đảm bảo tìm kiếm OR không xung đột với các điều kiện AND bên trên
-        queryBuilder.andWhere(
-            `(table.tableNumber ILIKE :search OR table.location ILIKE :search)`,
-            { search: `%${search}%` },
-        );
+      // Tìm kiếm theo số bàn (cast sang text) hoặc vị trí
+      queryBuilder.andWhere(
+        `(CAST(table.tableNumber AS TEXT) ILIKE :search OR table.location ILIKE :search)`,
+        { search: `%${search}%` },
+      );
     }
 
     // 4. Phân trang

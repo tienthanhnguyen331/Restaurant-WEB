@@ -4,7 +4,7 @@ export type TableStatus = 'active' | 'inactive';
 
 export interface Table {
   id: string; // UUID
-  tableNumber: string;
+  tableNumber: number;
   capacity: number;
   location: string;
   description?: string; // optional description
@@ -16,7 +16,7 @@ export interface Table {
 
 // Data Transfer Objects (DTOs)
 export interface CreateTableDto {
-  tableNumber: string;
+  tableNumber: number;
   capacity: number;
   location: string;
   description?: string;
