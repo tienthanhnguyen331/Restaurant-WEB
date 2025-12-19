@@ -15,13 +15,15 @@ export const AdminPage: React.FC = () => {
   const [editingTable, setEditingTable] = useState<Table | null>(null);
   
   // Sửa lỗi: Đặt status là undefined để tải tất cả bàn ban đầu (tránh lọc ẩn)
-  const [query, setQuery] = useState<TableQueryDto>({ 
+    const [query, setQuery] = useState<TableQueryDto>({ 
       status: undefined, 
       location: undefined, 
       search: undefined, 
+      sort: 'tableNumber',
+      order: 'ASC',
       page: 1, 
       limit: 10 
-  });
+    });
 
   const fetchTables = useCallback(async () => {
     setIsLoading(true);

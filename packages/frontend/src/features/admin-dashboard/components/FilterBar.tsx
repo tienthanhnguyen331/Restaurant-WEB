@@ -43,6 +43,26 @@ export const FilterBar: React.FC<FilterBarProps> = ({ currentQuery, onQueryChang
                 onChange={handleChange} 
                 className="p-2 border rounded w-1/4"
             />
+            <select 
+                name="sort" 
+                value={currentQuery.sort || ''}
+                onChange={handleChange}
+                className="p-2 border rounded"
+            >
+                <option value="">Sắp xếp theo</option>
+                <option value="tableNumber">Số bàn</option>
+                <option value="capacity">Sức chứa</option>
+                <option value="createdAt">Ngày tạo</option>
+            </select>
+            <select 
+                name="order" 
+                value={currentQuery.order || ''}
+                onChange={handleChange}
+                className="p-2 border rounded"
+            >
+                <option value="ASC">Tăng dần</option>
+                <option value="DESC">Giảm dần</option>
+            </select>
             {/* Có thể thêm Sort/Order ở đây */}
         </div>
     );
