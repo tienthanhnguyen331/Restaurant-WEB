@@ -14,12 +14,13 @@ interface TableFormProps {
   onDelete: (id: string) => Promise<void>;
 }
 
-export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess, onStatusChange, onDelete }) => {
-  const isEdit = !!table;
+export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClose, onSuccess, onStatusChange, onDelete }) => {
+  const isEdit = !!initialTable;
+  const [currentTable, setCurrentTable] = useState<Table | null>(initialTable);
   const [formData, setFormData] = useState<CreateTableDto | UpdateTableDto>({
-    tableNumber: table?.tableNumber || '',
-    capacity: table?.capacity || 4,
-    location: table?.location || '',
+    tableNumber: initialTable?.tableNumber || '',
+    capacity: initialTable?.capacity || 4,
+    location: initialTable?.location || '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
@@ -27,18 +28,19 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
 
   // Cập nhật formData khi prop 'table' thay đổi
   useEffect(() => {
-    if (table) {
-        setFormData({
-            tableNumber: table.tableNumber,
-            capacity: table.capacity,
-            location: table.location,
-        });
-        setQrToken(table.qrToken || null);
+    setCurrentTable(initialTable);
+    if (initialTable) {
+      setFormData({
+        tableNumber: initialTable.tableNumber,
+        capacity: initialTable.capacity,
+        location: initialTable.location,
+      });
+      setQrToken(initialTable.qrToken || null);
     } else {
-        setFormData({ tableNumber: '', capacity: 4, location: '' });
-        setQrToken(null);
+      setFormData({ tableNumber: '', capacity: 4, location: '' });
+      setQrToken(null);
     }
-  }, [table]);
+  }, [initialTable]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -53,14 +55,23 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
     setIsLoading(true);
 
     try {
-      if (isEdit && table) {
-        await tableApi.update(table.id, formData);
-      } else {
-        await tableApi.create(formData as CreateTableDto);
+      if (isEdit && initialTable) {
+        await tableApi.update(initialTable.id, formData);
+        alert('Cập nhật bàn thành công!');
+        onSuccess();
+        onClose();
+        return;
       }
-      alert(`${isEdit ? 'Cập nhật' : 'Thêm'} bàn thành công!`);
-      onSuccess();
-      onClose();
+
+      const createdTable = await tableApi.create(formData as CreateTableDto);
+      alert('Thêm bàn thành công!');
+      setCurrentTable(createdTable);
+      const qrCreated = await handleAction('qr', createdTable, false);
+      if (qrCreated) {
+        onSuccess();
+        onClose();
+      }
+      return;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi lưu bàn.';
       alert(`Lỗi: ${errorMessage}`);
@@ -70,12 +81,17 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
   };
   
   // HÀM XỬ LÝ HÀNH ĐỘNG TRÊN MODAL
-  const handleAction = async (actionType: 'status' | 'qr' | 'delete') => {
-        if (!table || isLoading) return;
+  const handleAction = async (
+    actionType: 'status' | 'qr' | 'delete',
+    targetTable?: Table,
+    showModal = true
+  ) => {
+        const tableForAction = targetTable ?? currentTable;
+        if (!tableForAction || isLoading) return false;
 
-      if (actionType === 'qr' && table.status !== 'active') {
+      if (actionType === 'qr' && tableForAction.status !== 'active') {
         alert('Bàn đang ở trạng thái INACTIVE nên không thể tạo/đổi QR.');
-        return;
+        return false;
       }
 
         let success = false;
@@ -83,16 +99,18 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
             setIsLoading(true);
             
             if (actionType === 'status') {
-                await onStatusChange(table.id, table.status);
+                await onStatusChange(tableForAction.id, tableForAction.status);
                 success = true;
             } else if (actionType === 'qr') {
-                const result = await tableApi.regenerateQrToken(table.id);
+                const result = await tableApi.regenerateQrToken(tableForAction.id);
                 setQrToken(result.token);
-                setShowQrModal(true);
-              onSuccess();
+                setCurrentTable(prev => prev && prev.id === tableForAction.id ? { ...prev, qrToken: result.token } : prev);
+                if (showModal) {
+                  setShowQrModal(true);
+                }
                 success = true;
             } else if (actionType === 'delete') {
-                 await onDelete(table.id);
+                 await onDelete(tableForAction.id);
                  success = true;
             }
 
@@ -106,6 +124,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
                 if (actionType === 'delete') onClose(); // Đóng modal nếu xóa
             }
         }
+        return success;
     };
 
   // Tạo URL đầy đủ cho QR Code
@@ -144,7 +163,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
         </div>
         
         {/* NÚT HÀNH ĐỘNG NÂNG CAO (CHỈ HIỂN THỊ KHI CHỈNH SỬA) */}
-        {isEdit && table && (
+        {isEdit && currentTable && (
             <div className="flex justify-between items-center mb-6 pt-4 border-t mt-4">
                 <h4 className="text-md font-semibold text-gray-700">Hành động:</h4>
                 <div className="flex space-x-2">
@@ -170,16 +189,16 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
                     
                     {/* NÚT THAY ĐỔI TRẠNG THÁI */}
                     <button 
-                        type="button" 
-                        onClick={() => handleAction('status')}
-                        className={`px-3 py-1 text-sm font-medium rounded-lg transition duration-150 ${
-                            table.status === 'active' 
-                                ? 'bg-yellow-100 text-yellow-600 border border-yellow-300 hover:bg-yellow-50'
-                                : 'bg-green-100 text-green-600 border border-green-300 hover:bg-green-50'
-                        }`} 
-                        disabled={isLoading}
+                      type="button" 
+                      onClick={() => handleAction('status')}
+                      className={`px-3 py-1 text-sm font-medium rounded-lg transition duration-150 ${
+                        currentTable.status === 'active' 
+                          ? 'bg-yellow-100 text-yellow-600 border border-yellow-300 hover:bg-yellow-50'
+                          : 'bg-green-100 text-green-600 border border-green-300 hover:bg-green-50'
+                      }`} 
+                      disabled={isLoading}
                     >
-                        {table.status === 'active' ? 'Vô hiệu hóa' : 'Kích hoạt'}
+                      {currentTable.status === 'active' ? 'Vô hiệu hóa' : 'Kích hoạt'}
                     </button>
                 </div>
             </div>
@@ -195,10 +214,10 @@ export const TableForm: React.FC<TableFormProps> = ({ table, onClose, onSuccess,
       </form>
 
       {/* MODAL HIỂN THỊ MÃ QR */}
-      {showQrModal && qrToken && table && (
+      {showQrModal && qrToken && currentTable && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[60]">
           <div className="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
-            <h3 className="text-xl font-bold mb-2 text-gray-800">Mã QR - Bàn {table.tableNumber}</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">Mã QR - Bàn {currentTable.tableNumber}</h3>
             <p className="text-sm text-gray-500 mb-4">Quét mã này để truy cập menu</p>
             
             {/* QR Code */}
