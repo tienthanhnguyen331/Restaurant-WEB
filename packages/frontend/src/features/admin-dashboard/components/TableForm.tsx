@@ -21,6 +21,7 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
     tableNumber: initialTable?.tableNumber || '',
     capacity: initialTable?.capacity || 4,
     location: initialTable?.location || '',
+    description: initialTable?.description || ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
@@ -34,15 +35,16 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
         tableNumber: initialTable.tableNumber,
         capacity: initialTable.capacity,
         location: initialTable.location,
+        description: initialTable.description || ''
       });
       setQrToken(initialTable.qrToken || null);
     } else {
-      setFormData({ tableNumber: '', capacity: 4, location: '' });
+      setFormData({ tableNumber: '', capacity: 4, location: '', description: '' });
       setQrToken(null);
     }
   }, [initialTable]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ 
         ...prev, 
@@ -158,8 +160,12 @@ export const TableForm: React.FC<TableFormProps> = ({ table: initialTable, onClo
             />
         </div>
         <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Vị trí:</label>
-            <input name="location" value={formData.location} onChange={handleChange} required className="mt-1 p-2 border rounded w-full" disabled={isLoading} />
+          <label className="block text-sm font-medium text-gray-700">Vị trí:</label>
+          <input name="location" value={formData.location} onChange={handleChange} required className="mt-1 p-2 border rounded w-full" disabled={isLoading} />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Mô tả (tuỳ chọn):</label>
+          <textarea name="description" value={formData.description || ''} onChange={handleChange} className="mt-1 p-2 border rounded w-full" disabled={isLoading} rows={3} />
         </div>
         
         {/* NÚT HÀNH ĐỘNG NÂNG CAO (CHỈ HIỂN THỊ KHI CHỈNH SỬA) */}

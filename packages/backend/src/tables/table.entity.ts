@@ -16,6 +16,9 @@ export class TableEntity extends BaseEntity implements Table {
   @Column({ length: 100 })
   location: string;
 
+  @Column({ type: 'text', nullable: true })
+  description?: string;
+
   @Column({
     type: 'enum',
     enum: ['active', 'inactive'],

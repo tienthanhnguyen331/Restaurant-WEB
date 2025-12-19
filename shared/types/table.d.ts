@@ -7,6 +7,7 @@ export interface Table {
   tableNumber: string;
   capacity: number;
   location: string;
+  description?: string; // optional description
   status: TableStatus;
   qrToken: string | null; // JWT String (do Người 2 quản lý)
   createdAt: string | Date; // TypeOrm thường trả về Date, JSON trả về string
@@ -18,6 +19,7 @@ export interface CreateTableDto {
   tableNumber: string;
   capacity: number;
   location: string;
+  description?: string;
 }
 
 export interface UpdateTableDto extends Partial<CreateTableDto> {

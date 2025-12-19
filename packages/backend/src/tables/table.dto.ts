@@ -15,6 +15,10 @@ export class CreateTableDtoValidator implements CreateTableDto {
   @IsString()
   @IsNotEmpty()
   location: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class UpdateTableDtoValidator implements UpdateTableDto {
@@ -33,6 +37,10 @@ export class UpdateTableDtoValidator implements UpdateTableDto {
   @IsString()
   @IsNotEmpty()
   location?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class UpdateTableStatusDtoValidator implements UpdateTableStatusDto {
