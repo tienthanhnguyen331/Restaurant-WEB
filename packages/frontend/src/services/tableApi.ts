@@ -51,7 +51,7 @@ export const tableApi = {
 
     // Regenerate all QR codes (requirement 4.3)
     regenerateAllQrTokens: async (): Promise<{ message: string; total: number; results: any[] }> => {
-        const response = await axios.post(`/api/qr/regenerate-all`);
+        const response = await axios.post(`${BASE_URL}/api/qr/regenerate-all`);
         return response.data;
     }
 };
