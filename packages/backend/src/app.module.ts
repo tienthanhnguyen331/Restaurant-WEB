@@ -23,7 +23,8 @@ import { ExportsModule } from './modules/exports/exports.module';
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
         autoLoadEntities: true,
-        synchronize: process.env.NODE_ENV !== 'production',
+        synchronize: true, // Lưu ý: Nên tắt (false) khi chạy production thật sự để tránh mất dữ liệu
+        ssl: config.get<string>('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
 

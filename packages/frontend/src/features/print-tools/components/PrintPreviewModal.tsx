@@ -13,7 +13,7 @@ export const PrintPreviewModal = ({ isOpen, table, onClose }: Props) => {
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-  });
+  } as any);
 
   if (!isOpen) return null;
 
