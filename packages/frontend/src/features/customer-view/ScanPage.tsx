@@ -6,14 +6,6 @@ import { ErrorScreen } from './components/ErrorScreen';
 import { MockMenu } from './components/MockMenu';
 import { tableApi } from '../../services/tableApi';
 
-// Kiểu dữ liệu trả về từ API verify
-interface VerifyResponse {
-  valid: boolean;
-  tableId: string;
-  tableNumber: string;
-  message?: string;
-}
-
 type PageStatus = 'loading' | 'success' | 'error';
 
 export const ScanPage: React.FC = () => {
