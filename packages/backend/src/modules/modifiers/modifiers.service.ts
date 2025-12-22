@@ -12,6 +12,7 @@ import {
   UpdateModifierOptionDto,
   AttachModifierGroupsDto 
 } from './dto/modifier.dto';
+import type { ModifierGroupSelectionType } from '@shared/types/menu';
 
 /**
  * Service xử lý logic cho Modifier Groups và Options
@@ -39,11 +40,12 @@ export class ModifierService {
     restaurantId: string,
     dto: CreateModifierGroupDto,
   ): Promise<ModifierGroupEntity> {
-    // Validate min/max selections logic
-    this.validateMinMaxSelections(dto);
+    const normalized = this.normalizeMinMax(dto);
+    this.validateMinMaxSelections(normalized);
 
     const group = this.modifierGroupRepo.create({
       ...dto,
+      ...normalized,
       restaurantId,
       isRequired: dto.isRequired ?? false,
       displayOrder: dto.displayOrder ?? 0,
@@ -70,13 +72,8 @@ export class ModifierService {
       throw new NotFoundException(`Modifier group với ID ${groupId} không tồn tại`);
     }
 
-    // Validate min/max selections logic nếu có update
-    if (dto.minSelections !== undefined || dto.maxSelections !== undefined) {
-      this.validateMinMaxSelections({
-        ...group,
-        ...dto,
-      });
-    }
+    const normalized = this.normalizeMinMax({ ...group, ...dto });
+    this.validateMinMaxSelections(normalized);
 
     // Validate isRequired logic: nếu set isRequired = true, phải có ít nhất 1 option
     if (dto.isRequired === true && (!group.options || group.options.length === 0)) {
@@ -89,8 +86,34 @@ export class ModifierService {
       });
     }
 
-    Object.assign(group, dto);
+    // Clear min/max when chuyển về single
+    const payload = normalized.selectionType === 'single'
+      ? { ...dto, minSelections: undefined, maxSelections: undefined }
+      : { ...dto, minSelections: normalized.minSelections, maxSelections: normalized.maxSelections };
+
+    Object.assign(group, payload);
     return await this.modifierGroupRepo.save(group);
+  }
+
+  /**
+   * Xóa modifier group (và options) nếu thuộc nhà hàng
+   * Đồng thời gỡ liên kết với các menu item
+   */
+  async deleteModifierGroup(
+    groupId: string,
+    restaurantId: string,
+  ): Promise<void> {
+    const group = await this.modifierGroupRepo.findOne({ where: { id: groupId, restaurantId } });
+
+    if (!group) {
+      throw new NotFoundException(`Modifier group với ID ${groupId} không tồn tại`);
+    }
+
+    // Gỡ link item-group trước để tránh orphan
+    await this.itemModifierRepo.delete({ modifierGroupId: groupId });
+
+    // Xóa group (options sẽ bị xóa do onDelete cascade ở relation option->group)
+    await this.modifierGroupRepo.remove(group);
   }
 
   /**
@@ -268,21 +291,18 @@ export class ModifierService {
    *   - min <= max
    */
   private validateMinMaxSelections(dto: {
-    selectionType: string;
-    minSelections?: number;
-    maxSelections?: number;
+    selectionType: ModifierGroupSelectionType;
+    minSelections?: number | null;
+    maxSelections?: number | null;
   }): void {
     const { selectionType, minSelections, maxSelections } = dto;
 
-    // Single selection không cần validate min/max
     if (selectionType === 'single') {
       return;
     }
 
-    // Multiple selection
     if (selectionType === 'multiple') {
-      // Nếu có cả min và max, validate range
-      if (minSelections !== undefined && maxSelections !== undefined) {
+      if (minSelections !== null && maxSelections !== null && minSelections !== undefined && maxSelections !== undefined) {
         if (minSelections > maxSelections) {
           throw new BadRequestException({
             code: 'VALIDATION_ERROR',
@@ -295,8 +315,7 @@ export class ModifierService {
         }
       }
 
-      // Validate min >= 0
-      if (minSelections !== undefined && minSelections < 0) {
+      if (minSelections !== null && minSelections !== undefined && minSelections < 0) {
         throw new BadRequestException({
           code: 'VALIDATION_ERROR',
           message: 'minSelections phải >= 0',
@@ -306,8 +325,7 @@ export class ModifierService {
         });
       }
 
-      // Validate max >= 1
-      if (maxSelections !== undefined && maxSelections < 1) {
+      if (maxSelections !== null && maxSelections !== undefined && maxSelections < 1) {
         throw new BadRequestException({
           code: 'VALIDATION_ERROR',
           message: 'maxSelections phải >= 1',
@@ -317,5 +335,27 @@ export class ModifierService {
         });
       }
     }
+  }
+
+  /**
+   * Chuẩn hóa min/max cho selectionType
+   * - single: loại bỏ min/max
+   * - multiple: nếu isRequired=true và minSelections chưa set -> minSelections = 1
+   */
+  private normalizeMinMax<T extends {
+    selectionType: ModifierGroupSelectionType;
+    isRequired?: boolean;
+    minSelections?: number | null;
+    maxSelections?: number | null;
+  }>(dto: T): T {
+    if (dto.selectionType === 'single') {
+      return { ...dto, minSelections: undefined, maxSelections: undefined } as T;
+    }
+
+    // multiple
+    const min = dto.minSelections ?? (dto.isRequired ? 1 : undefined);
+    const max = dto.maxSelections ?? undefined;
+
+    return { ...dto, minSelections: min, maxSelections: max } as T;
   }
 }

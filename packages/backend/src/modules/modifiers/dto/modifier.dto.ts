@@ -1,4 +1,19 @@
-import { IsString, IsEnum, IsBoolean, IsOptional, IsInt, Min, Max, IsArray, IsUUID, IsNumber, MinLength, MaxLength, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  IsInt,
+  Min,
+  IsArray,
+  ArrayNotEmpty,
+  IsUUID,
+  IsNumber,
+  MinLength,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import type { 
   CreateModifierGroupDto as ICreateModifierGroupDto,
   UpdateModifierGroupDto as IUpdateModifierGroupDto,
@@ -26,11 +41,13 @@ export class CreateModifierGroupDto implements ICreateModifierGroupDto {
   isRequired?: boolean;
 
   @IsOptional()
+  @ValidateIf(o => o.selectionType !== 'single')
   @IsInt({ message: 'minSelections phải là số nguyên' })
   @Min(0, { message: 'minSelections phải >= 0' })
   minSelections?: number;
 
   @IsOptional()
+  @ValidateIf(o => o.selectionType !== 'single')
   @IsInt({ message: 'maxSelections phải là số nguyên' })
   @Min(1, { message: 'maxSelections phải >= 1' })
   maxSelections?: number;
@@ -97,6 +114,7 @@ export class CreateModifierOptionDto implements ICreateModifierOptionDto {
   name: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber({}, { message: 'priceAdjustment phải là số' })
   @Min(0, { message: 'priceAdjustment phải >= 0' })
   priceAdjustment?: number;
@@ -121,6 +139,7 @@ export class UpdateModifierOptionDto implements IUpdateModifierOptionDto {
   name?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber({}, { message: 'priceAdjustment phải là số' })
   @Min(0, { message: 'priceAdjustment phải >= 0' })
   priceAdjustment?: number;
@@ -135,6 +154,7 @@ export class UpdateModifierOptionDto implements IUpdateModifierOptionDto {
  */
 export class AttachModifierGroupsDto implements IAttachModifierGroupsDto {
   @IsArray({ message: 'modifierGroupIds phải là mảng' })
+  @ArrayNotEmpty({ message: 'modifierGroupIds không được rỗng' })
   @IsUUID('4', { each: true, message: 'Mỗi modifierGroupId phải là UUID hợp lệ' })
   modifierGroupIds: string[];
 }

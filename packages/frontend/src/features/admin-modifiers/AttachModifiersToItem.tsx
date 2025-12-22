@@ -1,0 +1,172 @@
+import { useEffect, useState } from 'react';
+import modifierApi from '../../services/modifierApi';
+import type { ModifierGroupWithOptions } from '../../services/modifierApi';
+
+export default function AttachModifiersToItem() {
+  const [itemId, setItemId] = useState('');
+  const [groups, setGroups] = useState<ModifierGroupWithOptions[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadGroups = async () => {
+    try {
+      setLoading(true);
+      const data = await modifierApi.getModifierGroups();
+      setGroups(data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Không tải được danh sách modifier groups');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGroups();
+  }, []);
+
+  const toggleGroup = (id: string) => {
+    setSelectedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleAttach = async () => {
+    setError(null);
+    setSuccess(null);
+    if (!itemId.trim()) {
+      setError('Vui lòng nhập Item ID');
+      return;
+    }
+    if (selectedGroups.size === 0) {
+      setError('Chọn ít nhất 1 modifier group để gắn vào món');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await modifierApi.attachGroupsToItem(itemId.trim(), {
+        modifierGroupIds: Array.from(selectedGroups),
+      });
+      setSuccess('Đã gắn modifiers vào món thành công');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Không thể gắn modifiers vào món');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDetach = async (groupId: string) => {
+    setError(null);
+    setSuccess(null);
+    if (!itemId.trim()) {
+      setError('Vui lòng nhập Item ID');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await modifierApi.detachGroupFromItem(itemId.trim(), groupId);
+      setSuccess('Đã gỡ modifier group khỏi món');
+      setSelectedGroups(prev => {
+        const next = new Set(prev);
+        next.delete(groupId);
+        return next;
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Không thể gỡ modifier group khỏi món');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Gắn Modifiers vào Món</h1>
+      <p className="text-gray-600 mb-6">Nhập Item ID, chọn modifier groups và lưu. Bỏ chọn để detach bằng nút Gỡ.</p>
+
+      <div className="space-y-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium mb-1">Menu Item ID</label>
+          <input
+            value={itemId}
+            onChange={(e) => setItemId(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            placeholder="Nhập UUID của món"
+          />
+        </div>
+      </div>
+
+      {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4">{error}</div>}
+      {success && <div className="bg-green-50 text-green-700 p-3 rounded mb-4">{success}</div>}
+
+      {loading ? (
+        <div className="text-center py-10">Đang tải modifier groups...</div>
+      ) : (
+        <div className="grid gap-4">
+          {groups.map(group => {
+            const checked = selectedGroups.has(group.id);
+            return (
+              <div key={group.id} className="bg-white shadow rounded p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleGroup(group.id)}
+                        className="h-4 w-4"
+                        id={`group-${group.id}`}
+                      />
+                      <label htmlFor={`group-${group.id}`} className="font-semibold">
+                        {group.name}
+                      </label>
+                      <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                        {group.selectionType === 'single' ? 'Single' : 'Multiple'}
+                      </span>
+                      {group.isRequired && (
+                        <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Required</span>
+                      )}
+                      <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700">
+                        {group.status}
+                      </span>
+                    </div>
+                    {group.selectionType === 'multiple' && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Min: {group.minSelections ?? 0} | Max: {group.maxSelections ?? 'Unlimited'}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-500 mt-2">Options: {group.options.length}</p>
+                  </div>
+                  {checked && (
+                    <button
+                      onClick={() => handleDetach(group.id)}
+                      disabled={isSubmitting}
+                      className="text-sm text-red-600 hover:text-red-800"
+                    >
+                      Gỡ
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="mt-6 flex gap-3">
+        <button
+          onClick={handleAttach}
+          disabled={isSubmitting}
+          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+        >
+          {isSubmitting ? 'Đang lưu...' : 'Lưu gắn modifiers'}
+        </button>
+      </div>
+    </div>
+  );
+}

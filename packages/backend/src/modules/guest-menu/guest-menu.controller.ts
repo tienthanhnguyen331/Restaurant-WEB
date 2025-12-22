@@ -12,7 +12,7 @@ import { GuestMenuQueryDto } from './dto/guest-menu-query.dto';
  * - Sort theo popularity, price, createdAt
  * - Pagination
  */
-@Controller('api/menu')
+@Controller('menu')
 export class GuestMenuController {
   constructor(private readonly guestMenuService: GuestMenuService) {}
 
@@ -90,7 +90,8 @@ export class GuestMenuController {
       // TODO: Lấy restaurantId từ subdomain hoặc query param
       // Ví dụ: restaurant.example.com -> restaurantId = "restaurant"
       // Hoặc: example.com/menu?restaurantId=xxx
-      const restaurantId = query.restaurantId ?? 'mock-restaurant-id';
+      // Tạm thời dùng UUID hợp lệ hoặc lấy từ database
+      const restaurantId = query.restaurantId ?? '00000000-0000-0000-0000-000000000000';
 
       return await this.guestMenuService.getGuestMenu(restaurantId, query);
     } catch (error) {

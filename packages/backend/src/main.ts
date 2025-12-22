@@ -5,6 +5,12 @@ import { ValidationPipe } from '@nestjs/common'; // Cần thiết cho DTO valida
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS for frontend
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+    credentials: true,
+  });
+
   // Thêm tiền tố API (giúp frontend dễ dàng proxy)
   app.setGlobalPrefix('api');
 

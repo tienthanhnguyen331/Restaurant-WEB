@@ -30,7 +30,7 @@ import { ModifierOptionEntity } from './entities/modifier-option.entity';
  * - @UseGuards(AuthGuard) để verify user đã đăng nhập
  * - Lấy restaurantId từ session/token (@CurrentUser() user)
  */
-@Controller('api/admin/menu')
+@Controller('admin/menu')
 export class ModifierController {
   constructor(private readonly modifierService: ModifierService) {}
 
@@ -41,7 +41,7 @@ export class ModifierController {
   @Get('modifier-groups')
   async getAllModifierGroups(): Promise<ModifierGroupEntity[]> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
     
     return await this.modifierService.getAllModifierGroups(restaurantId);
   }
@@ -56,7 +56,7 @@ export class ModifierController {
     @Body() dto: CreateModifierGroupDto,
   ): Promise<ModifierGroupEntity> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       return await this.modifierService.createModifierGroup(restaurantId, dto);
@@ -82,7 +82,7 @@ export class ModifierController {
     @Body() dto: UpdateModifierGroupDto,
   ): Promise<ModifierGroupEntity> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       return await this.modifierService.updateModifierGroup(groupId, restaurantId, dto);
@@ -99,6 +99,31 @@ export class ModifierController {
   }
 
   /**
+   * 3b. DELETE /api/admin/menu/modifier-groups/:id
+   * Xóa modifier group (và options), gỡ liên kết với items
+   */
+  @Delete('modifier-groups/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteModifierGroup(
+    @Param('id') groupId: string,
+  ): Promise<void> {
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder
+
+    try {
+      await this.modifierService.deleteModifierGroup(groupId, restaurantId);
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException({
+        code: 'DELETE_FAILED',
+        message: 'Không thể xóa modifier group',
+        errors: { general: [error.message] },
+      });
+    }
+  }
+
+  /**
    * 4. POST /api/admin/menu/modifier-groups/:id/options
    * Thêm option vào modifier group
    */
@@ -109,7 +134,7 @@ export class ModifierController {
     @Body() dto: CreateModifierOptionDto,
   ): Promise<ModifierOptionEntity> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       return await this.modifierService.addOptionToGroup(groupId, restaurantId, dto);
@@ -135,7 +160,7 @@ export class ModifierController {
     @Body() dto: UpdateModifierOptionDto,
   ): Promise<ModifierOptionEntity> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       return await this.modifierService.updateOption(optionId, restaurantId, dto);
@@ -162,7 +187,7 @@ export class ModifierController {
     @Body() dto: AttachModifierGroupsDto,
   ): Promise<void> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       await this.modifierService.attachModifierGroupsToItem(itemId, restaurantId, dto);
@@ -189,7 +214,7 @@ export class ModifierController {
     @Param('groupId') groupId: string,
   ): Promise<void> {
     // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = 'test-restaurant-id'; // Placeholder cho E2E
+    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
 
     try {
       await this.modifierService.detachModifierGroupFromItem(itemId, groupId, restaurantId);
