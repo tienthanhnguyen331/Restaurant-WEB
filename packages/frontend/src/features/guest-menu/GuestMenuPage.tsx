@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ShoppingCart } from 'lucide-react';
 import MenuFilters from './MenuFilters';
 import MenuItemCard from './MenuItemCard';
+import CartSidebar from './components/CartSidebar';
+import { CartProvider, useCart } from '../../contexts/CartContext';
+import { buildMockGuestMenu, getMockCategoryOptions } from './utils/mockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -53,7 +57,22 @@ export interface MenuFiltersState {
   chefRecommended: boolean;
 }
 
-export default function GuestMenuPage() {
+interface GuestMenuPageProps {
+  tableInfo?: { tableId: string; tableNumber: string } | null;
+  authToken?: string | null;
+}
+
+export default function GuestMenuPage({ tableInfo, authToken }: GuestMenuPageProps = {}) {
+  return (
+    <CartProvider>
+      <GuestMenuContent tableInfo={tableInfo} authToken={authToken} />
+    </CartProvider>
+  );
+}
+
+function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
+  const { itemCount } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
   const [menuData, setMenuData] = useState<GuestMenuResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +84,19 @@ export default function GuestMenuPage() {
     order: 'ASC',
     chefRecommended: false,
   });
+  const useMock = String(import.meta.env.VITE_USE_MOCK_MENU || '').toLowerCase() === 'true';
 
   const loadMenu = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Allow using mock data via env flag (string compare, case-insensitive)
+      if (useMock) {
+        const mock = buildMockGuestMenu(filters, page, 20);
+        setMenuData(mock);
+        return;
+      }
 
       const params = new URLSearchParams();
       if (filters.q) params.append('q', filters.q);
@@ -77,13 +104,21 @@ export default function GuestMenuPage() {
       if (filters.sort) params.append('sort', filters.sort);
       if (filters.order) params.append('order', filters.order);
       if (filters.chefRecommended) params.append('chefRecommended', 'true');
+      if (authToken) params.append('token', authToken);
       params.append('page', page.toString());
       params.append('limit', '20');
 
       const response = await axios.get(`${API_BASE_URL}/api/menu?${params.toString()}`);
       setMenuData(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load menu');
+      // Fallback to mock data on error if env permits
+      if (useMock) {
+        const mock = buildMockGuestMenu(filters, page, 20);
+        setMenuData(mock);
+        setError(null);
+      } else {
+        setError(err.response?.data?.message || 'Failed to load menu');
+      }
     } finally {
       setLoading(false);
     }
@@ -127,15 +162,16 @@ export default function GuestMenuPage() {
   }
 
   if (!menuData || menuData.data.categories.length === 0) {
+    const mockCategories = useMock ? getMockCategoryOptions() : [];
     return (
       <div className="min-h-screen p-6">
         <MenuFilters
           filters={filters}
           onFilterChange={handleFilterChange}
-          categories={[]}
+          categories={mockCategories}
         />
         <div className="text-center py-12 text-gray-500">
-          No menu items available at the moment.
+          {useMock ? 'Không có món phù hợp với bộ lọc hiện tại.' : 'No menu items available at the moment.'}
         </div>
       </div>
     );
@@ -146,8 +182,22 @@ export default function GuestMenuPage() {
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
-          <p className="text-gray-600 mt-1">Browse our delicious offerings</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
+              <p className="text-gray-600 mt-1">Browse our delicious offerings</p>
+              {useMock && (
+                <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                  Mock Mode Active
+                </span>
+              )}
+            </div>
+            {tableInfo?.tableNumber && (
+              <div className="bg-amber-100 px-4 py-2 rounded-full text-amber-800 font-semibold">
+                Bàn {tableInfo.tableNumber}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -206,6 +256,29 @@ export default function GuestMenuPage() {
           </div>
         )}
       </div>
+
+      {/* Floating Cart Button */}
+      {itemCount > 0 && (
+        <button
+          onClick={() => setCartOpen(true)}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 z-30 flex items-center gap-2"
+        >
+          <ShoppingCart className="w-6 h-6" />
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+            {itemCount}
+          </span>
+        </button>
+      )}
+
+      {/* Cart Sidebar */}
+      <CartSidebar 
+        isOpen={cartOpen} 
+        onClose={() => setCartOpen(false)}
+        onCheckout={() => {
+          // TODO: Implement checkout flow
+          alert('Checkout feature coming soon!');
+        }}
+      />
     </div>
   );
 }

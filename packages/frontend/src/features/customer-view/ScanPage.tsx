@@ -3,10 +3,28 @@ import { useSearchParams } from 'react-router-dom';
 
 import { MenuLoader } from './components/MenuLoader';
 import { ErrorScreen } from './components/ErrorScreen';
-import { MockMenu } from './components/MockMenu';
 import { tableApi } from '../../services/tableApi';
+import GuestMenuPage from '../guest-menu/GuestMenuPage';
 
 type PageStatus = 'loading' | 'success' | 'error';
+
+// Helper: Decode JWT token để lấy payload (không verify signature)
+function decodeJwtPayload(token: string): any {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Failed to decode JWT:', error);
+    return null;
+  }
+}
 
 export const ScanPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -27,6 +45,28 @@ export const ScanPage: React.FC = () => {
 
     setStatus('loading');
 
+    // Kiểm tra mock mode
+    const useMock = String(import.meta.env.VITE_USE_MOCK_MENU || '').toLowerCase() === 'true';
+    
+    if (useMock) {
+      // Mock mode: decode token để lấy thông tin bàn thực tế
+      const decoded = decodeJwtPayload(token);
+      
+      if (decoded && decoded.sub && decoded.tableNumber) {
+        setTimeout(() => {
+          setTableInfo({
+            tableId: decoded.sub,
+            tableNumber: String(decoded.tableNumber),
+          });
+          setStatus('success');
+        }, 500);
+      } else {
+        setStatus('error');
+        setErrorMessage('Token không hợp lệ. Không thể đọc thông tin bàn từ mã QR.');
+      }
+      return;
+    }
+
     try {
       // Gọi API verify của Backend thông qua tableApi
       const result = await tableApi.verifyQrToken(token);
@@ -42,9 +82,31 @@ export const ScanPage: React.FC = () => {
         setErrorMessage(result.message || 'Mã QR không hợp lệ.');
       }
     } catch (error: any) {
+      console.error('QR verification error:', error);
+      
+      // Xử lý lỗi 401 Unauthorized và các lỗi khác
+      let message = 'Mã QR không hợp lệ hoặc đã hết hạn.';
+      
+      if (error.response) {
+        // Server trả về response với status code
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (status === 401) {
+          // Backend NestJS trả về format: { statusCode, message, error }
+          message = data?.message || data?.error || 'Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét lại mã QR mới từ bàn.';
+        } else {
+          message = data?.message || data?.error || `Lỗi ${status}: Không thể xác thực mã QR.`;
+        }
+      } else if (error.request) {
+        // Request được gửi nhưng không nhận được response (backend down)
+        message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend hoặc bật Mock Mode.';
+      } else {
+        // Lỗi khác (setup request)
+        message = error.message || 'Đã xảy ra lỗi không xác định.';
+      }
+      
       setStatus('error');
-      // Lấy message từ response error nếu có
-      const message = error.response?.data?.message || 'Mã QR không hợp lệ hoặc đã hết hạn.';
       setErrorMessage(message);
     }
   };
@@ -71,9 +133,9 @@ export const ScanPage: React.FC = () => {
   // status === 'success'
   if (tableInfo) {
     return (
-      <MockMenu 
-        tableNumber={tableInfo.tableNumber} 
-        tableId={tableInfo.tableId} 
+      <GuestMenuPage 
+        tableInfo={tableInfo}
+        authToken={token}
       />
     );
   }

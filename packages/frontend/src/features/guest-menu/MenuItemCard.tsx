@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import type { GuestMenuItem } from './GuestMenuPage';
 import ModifierSelector from './ModifierSelector';
+import { useCart } from '../../contexts/CartContext';
 
 interface MenuItemCardProps {
   item: GuestMenuItem;
 }
 
 export default function MenuItemCard({ item }: MenuItemCardProps) {
+  const { addItem } = useCart();
   const [showModifiers, setShowModifiers] = useState(false);
   const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string[]>>({});
 
@@ -40,13 +42,30 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
       return;
     }
 
-    // TODO: Implement add to cart logic
-    console.log('Add to cart:', {
-      itemId: item.id,
-      modifiers: selectedModifiers,
-      totalPrice: calculateTotalPrice(),
+    // Add to cart using context
+    addItem({
+      menuItemId: item.id,
+      menuItemName: item.name,
+      basePrice: item.price,
+      quantity: 1,
+      selectedModifiers,
+      modifierGroups: item.modifierGroups.map(g => ({
+        id: g.id,
+        name: g.name,
+        options: g.options.map(o => ({
+          id: o.id,
+          name: o.name,
+          priceAdjustment: o.priceAdjustment,
+        })),
+      })),
     });
-    alert('Added to cart! (Cart feature not implemented yet)');
+
+    // Reset state and show success
+    setSelectedModifiers({});
+    setShowModifiers(false);
+    
+    // Optional: Show success toast instead of alert
+    alert(`${item.name} added to cart!`);
   };
 
   const isSoldOut = item.status === 'sold_out';
