@@ -7,6 +7,7 @@ import { QrAuthModule } from './qr-auth/qr-auth.module';
 import { ExportsModule } from './modules/exports/exports.module';
 import { GuestMenuModule } from './modules/guest-menu/guest-menu.module';
 import { ModifierModule } from './modules/modifiers/modifiers.module';
+import { MenuItemsModule } from './modules/menu-items/menu-items.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ModifierModule } from './modules/modifiers/modifiers.module';
     ExportsModule,
     GuestMenuModule,
     ModifierModule,
+    MenuItemsModule,
   ],
 })
 export class AppModule {}
