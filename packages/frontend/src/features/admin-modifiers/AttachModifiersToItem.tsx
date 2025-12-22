@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import modifierApi from '../../services/modifierApi';
+import menuItemApi from '../../services/menuItemApi';
 import type { ModifierGroupWithOptions } from '../../services/modifierApi';
+import type { MenuItem } from '../../services/menuItemApi';
 
 export default function AttachModifiersToItem() {
   const [itemId, setItemId] = useState('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [groups, setGroups] = useState<ModifierGroupWithOptions[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,8 +28,22 @@ export default function AttachModifiersToItem() {
     }
   };
 
+  const loadMenuItems = async () => {
+    try {
+      setLoadingItems(true);
+      const data = await menuItemApi.getMenuItems();
+      setMenuItems(data);
+    } catch (err: any) {
+      console.error('Failed to load menu items:', err);
+      setMenuItems([]);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
   useEffect(() => {
     loadGroups();
+    loadMenuItems();
   }, []);
 
   const toggleGroup = (id: string) => {
@@ -36,11 +55,19 @@ export default function AttachModifiersToItem() {
     });
   };
 
+  // Filter menu items based on search query
+  const filteredItems = menuItems.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Get selected item info
+  const selectedItem = menuItems.find(item => item.id === itemId);
+
   const handleAttach = async () => {
     setError(null);
     setSuccess(null);
-    if (!itemId.trim()) {
-      setError('Vui lòng nhập Item ID');
+    if (!itemId) {
+      setError('Vui lòng chọn một món từ danh sách');
       return;
     }
     if (selectedGroups.size === 0) {
@@ -50,10 +77,10 @@ export default function AttachModifiersToItem() {
 
     try {
       setIsSubmitting(true);
-      await modifierApi.attachGroupsToItem(itemId.trim(), {
+      await modifierApi.attachGroupsToItem(itemId, {
         modifierGroupIds: Array.from(selectedGroups),
       });
-      setSuccess('Đã gắn modifiers vào món thành công');
+      setSuccess(`Đã gắn ${selectedGroups.size} modifier group(s) vào món "${selectedItem?.name}" thành công`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Không thể gắn modifiers vào món');
     } finally {
@@ -64,13 +91,13 @@ export default function AttachModifiersToItem() {
   const handleDetach = async (groupId: string) => {
     setError(null);
     setSuccess(null);
-    if (!itemId.trim()) {
-      setError('Vui lòng nhập Item ID');
+    if (!itemId) {
+      setError('Vui lòng chọn một món từ danh sách');
       return;
     }
     try {
       setIsSubmitting(true);
-      await modifierApi.detachGroupFromItem(itemId.trim(), groupId);
+      await modifierApi.detachGroupFromItem(itemId, groupId);
       setSuccess('Đã gỡ modifier group khỏi món');
       setSelectedGroups(prev => {
         const next = new Set(prev);
@@ -87,17 +114,70 @@ export default function AttachModifiersToItem() {
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Gắn Modifiers vào Món</h1>
-      <p className="text-gray-600 mb-6">Nhập Item ID, chọn modifier groups và lưu. Bỏ chọn để detach bằng nút Gỡ.</p>
+      <p className="text-gray-600 mb-6">Chọn món từ danh sách, chọn modifier groups và lưu.</p>
 
       <div className="space-y-4 mb-6">
+        {/* Menu Item Selector */}
         <div>
-          <label className="block text-sm font-medium mb-1">Menu Item ID</label>
-          <input
-            value={itemId}
-            onChange={(e) => setItemId(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            placeholder="Nhập UUID của món"
-          />
+          <label className="block text-sm font-medium mb-1">
+            Chọn Món <span className="text-red-500">*</span>
+          </label>
+          
+          {loadingItems ? (
+            <div className="text-sm text-gray-500">Đang tải danh sách món...</div>
+          ) : (
+            <>
+              {/* Search box */}
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border rounded px-3 py-2 mb-2"
+                placeholder="🔍 Tìm món theo tên..."
+              />
+              
+              {/* Dropdown */}
+              <select
+                value={itemId}
+                onChange={(e) => {
+                  setItemId(e.target.value);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                className="w-full border rounded px-3 py-2 bg-white"
+                disabled={loadingItems}
+              >
+                <option value="">-- Chọn món --</option>
+                {filteredItems.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} - {item.price.toLocaleString('vi-VN')}đ
+                    {item.categoryName ? ` (${item.categoryName})` : ''}
+                    {item.status !== 'available' ? ` [${item.status}]` : ''}
+                  </option>
+                ))}
+              </select>
+
+              {/* Selected item preview */}
+              {selectedItem && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <div className="text-sm font-medium text-blue-900">{selectedItem.name}</div>
+                  <div className="text-xs text-blue-700 mt-1">
+                    Giá: {selectedItem.price.toLocaleString('vi-VN')}đ
+                    {selectedItem.description && ` • ${selectedItem.description}`}
+                  </div>
+                  <div className="text-xs text-blue-600 mt-1">
+                    ID: {selectedItem.id}
+                  </div>
+                </div>
+              )}
+              
+              {searchQuery && filteredItems.length === 0 && (
+                <div className="mt-2 text-sm text-gray-500">
+                  Không tìm thấy món nào phù hợp với "{searchQuery}"
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -113,7 +193,7 @@ export default function AttachModifiersToItem() {
             return (
               <div key={group.id} className="bg-white shadow rounded p-4">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -122,7 +202,7 @@ export default function AttachModifiersToItem() {
                         className="h-4 w-4"
                         id={`group-${group.id}`}
                       />
-                      <label htmlFor={`group-${group.id}`} className="font-semibold">
+                      <label htmlFor={`group-${group.id}`} className="font-semibold cursor-pointer">
                         {group.name}
                       </label>
                       <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
@@ -145,8 +225,8 @@ export default function AttachModifiersToItem() {
                   {checked && (
                     <button
                       onClick={() => handleDetach(group.id)}
-                      disabled={isSubmitting}
-                      className="text-sm text-red-600 hover:text-red-800"
+                      disabled={isSubmitting || !itemId}
+                      className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Gỡ
                     </button>
@@ -158,13 +238,13 @@ export default function AttachModifiersToItem() {
         </div>
       )}
 
-      <div className="mt-6 flex gap-3">
+      <div className="mt-6">
         <button
           onClick={handleAttach}
-          disabled={isSubmitting}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+          disabled={isSubmitting || selectedGroups.size === 0 || !itemId}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Đang lưu...' : 'Lưu gắn modifiers'}
+          {isSubmitting ? 'Đang lưu...' : `Lưu gắn modifiers (${selectedGroups.size})`}
         </button>
       </div>
     </div>
