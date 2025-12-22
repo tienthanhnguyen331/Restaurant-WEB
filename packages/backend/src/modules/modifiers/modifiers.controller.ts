@@ -10,8 +10,11 @@ import {
   HttpStatus,
   BadRequestException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { ModifierService } from './modifiers.service';
+import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
+import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { 
   CreateModifierGroupDto, 
   UpdateModifierGroupDto, 
@@ -25,12 +28,10 @@ import { ModifierOptionEntity } from './entities/modifier-option.entity';
 /**
  * Controller xử lý các API endpoints cho Modifier Management
  * Tất cả endpoints yêu cầu authentication (admin)
- * 
- * TODO: Thêm Guards cho authentication và authorization
- * - @UseGuards(AuthGuard) để verify user đã đăng nhập
- * - Lấy restaurantId từ session/token (@CurrentUser() user)
+ * Sử dụng AdminAuthGuard để verify và lấy restaurantId từ token
  */
 @Controller('admin/menu')
+@UseGuards(AdminAuthGuard)
 export class ModifierController {
   constructor(private readonly modifierService: ModifierService) {}
 
@@ -39,10 +40,9 @@ export class ModifierController {
    * Lấy danh sách tất cả modifier groups
    */
   @Get('modifier-groups')
-  async getAllModifierGroups(): Promise<ModifierGroupEntity[]> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-    
+  async getAllModifierGroups(
+    @CurrentUser('restaurantId') restaurantId: string,
+  ): Promise<ModifierGroupEntity[]> {
     return await this.modifierService.getAllModifierGroups(restaurantId);
   }
 
@@ -53,11 +53,9 @@ export class ModifierController {
   @Post('modifier-groups')
   @HttpCode(HttpStatus.CREATED)
   async createModifierGroup(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Body() dto: CreateModifierGroupDto,
   ): Promise<ModifierGroupEntity> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       return await this.modifierService.createModifierGroup(restaurantId, dto);
     } catch (error) {
@@ -78,12 +76,10 @@ export class ModifierController {
    */
   @Put('modifier-groups/:id')
   async updateModifierGroup(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('id') groupId: string,
     @Body() dto: UpdateModifierGroupDto,
   ): Promise<ModifierGroupEntity> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       return await this.modifierService.updateModifierGroup(groupId, restaurantId, dto);
     } catch (error) {
@@ -105,10 +101,9 @@ export class ModifierController {
   @Delete('modifier-groups/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteModifierGroup(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('id') groupId: string,
   ): Promise<void> {
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder
-
     try {
       await this.modifierService.deleteModifierGroup(groupId, restaurantId);
     } catch (error) {
@@ -130,12 +125,10 @@ export class ModifierController {
   @Post('modifier-groups/:id/options')
   @HttpCode(HttpStatus.CREATED)
   async addOptionToGroup(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('id') groupId: string,
     @Body() dto: CreateModifierOptionDto,
   ): Promise<ModifierOptionEntity> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       return await this.modifierService.addOptionToGroup(groupId, restaurantId, dto);
     } catch (error) {
@@ -156,12 +149,10 @@ export class ModifierController {
    */
   @Put('modifier-options/:id')
   async updateOption(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('id') optionId: string,
     @Body() dto: UpdateModifierOptionDto,
   ): Promise<ModifierOptionEntity> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       return await this.modifierService.updateOption(optionId, restaurantId, dto);
     } catch (error) {
@@ -183,12 +174,10 @@ export class ModifierController {
   @Post('items/:itemId/modifier-groups')
   @HttpCode(HttpStatus.NO_CONTENT)
   async attachModifierGroupsToItem(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('itemId') itemId: string,
     @Body() dto: AttachModifierGroupsDto,
   ): Promise<void> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       await this.modifierService.attachModifierGroupsToItem(itemId, restaurantId, dto);
     } catch (error) {
@@ -210,12 +199,10 @@ export class ModifierController {
   @Delete('items/:itemId/modifier-groups/:groupId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachModifierGroupFromItem(
+    @CurrentUser('restaurantId') restaurantId: string,
     @Param('itemId') itemId: string,
     @Param('groupId') groupId: string,
   ): Promise<void> {
-    // TODO: Lấy restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder cho E2E
-
     try {
       await this.modifierService.detachModifierGroupFromItem(itemId, groupId, restaurantId);
     } catch (error) {
