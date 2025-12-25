@@ -205,8 +205,8 @@ export class GuestMenuService {
    */
   private transformMenuItem(item: MenuItemEntity): any {
     // Tìm primary photo
-    const primaryPhoto = item.photos?.find(p => p.isPrimary);
-    const primaryPhotoUrl = primaryPhoto?.url || null;
+    //const primaryPhoto = item.photos?.find(p => p.isPrimary);
+    //const primaryPhotoUrl = primaryPhoto?.url || null;
 
     // Format modifier groups (chỉ lấy active groups và options)
     const modifierGroups = (item.modifierGroups || [])
@@ -243,7 +243,7 @@ export class GuestMenuService {
       prepTimeMinutes: item.prepTimeMinutes,
       status: item.status,
       isChefRecommended: item.isChefRecommended || false,
-      primaryPhotoUrl,
+      //primaryPhotoUrl,
       modifierGroups,
     };
   }

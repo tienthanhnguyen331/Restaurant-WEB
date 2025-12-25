@@ -6,17 +6,19 @@ import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToI
 import GuestMenuPage from './features/guest-menu/GuestMenuPage';
 import AdminLayout from './components/AdminLayout';
 
+// IMPORT CÁC COMPONENT MỚI CỦA BẠN TẠI ĐÂY
+import { CategoryPage } from './features/admin-menu/CategoryPage';
+import { PhotoPage } from './features/admin-menu/PhotoPage';
+
 function App() {
   return (
     <Routes>
-      {/* Admin Routes with Sidebar */}
+      {/* 1. Dashboard (Quản lý bàn) */}
       <Route path="/admin" element={
         <AdminLayout>
           <div className="p-8">
             <header className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Dashboard
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
               <p className="text-gray-600 mt-1">Manage your restaurant tables</p>
             </header>
             <AdminPage />
@@ -24,13 +26,46 @@ function App() {
         </AdminLayout>
       } />
       
+      {/* 2. QUẢN LÝ DANH MỤC (Đã cập nhật từ placeholder sang Component thật) */}
+      <Route path="/admin/categories" element={
+        <AdminLayout>
+          <div className="p-8">
+            <header className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">Categories Management</h1>
+              <p className="text-gray-600 mt-1">Manage menu categories and their display order</p>
+            </header>
+            <CategoryPage />
+          </div>
+        </AdminLayout>
+      } />
+
+      {/* ROUTE QUẢN LÝ ẢNH: Cho phép thêm hình ảnh vào một món ăn cụ thể */}
+      {/* Sửa lại route Photo để có thể vào trực tiếp /admin/photos */}
+      <Route path="/admin/photos" element={
+        <AdminLayout>
+          <div className="p-8">
+            <header className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">Photo Management</h1>
+              <p className="text-gray-600 mt-1">Tải lên và quản lý thư viện hình ảnh</p>
+            </header>
+            <PhotoPage /> 
+          </div>
+        </AdminLayout>
+      } />
+
+      {/* Route hỗ trợ có ID món ăn cụ thể */}
+      <Route path="/admin/photos/:itemId" element={
+        <AdminLayout>
+          <PhotoPage />
+        </AdminLayout>
+      } />
+
+      {/* 4. Quản lý Modifiers (Giữ nguyên) */}
       <Route path="/admin/modifiers" element={
         <AdminLayout>
           <div className="p-8">
             <header className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Modifier Management
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Modifier Management</h1>
               <p className="text-gray-600 mt-1">Create and manage modifier groups & options</p>
             </header>
             <ModifierManager />
@@ -42,9 +77,7 @@ function App() {
         <AdminLayout>
           <div className="p-8">
             <header className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Gắn Modifiers vào Món
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Gắn Modifiers vào Món</h1>
               <p className="text-gray-600 mt-1">Chọn modifier groups và gắn vào món theo Item ID</p>
             </header>
             <AttachModifiersToItem />
@@ -52,62 +85,22 @@ function App() {
         </AdminLayout>
       } />
       
-      {/* Placeholder routes for future features */}
-      <Route path="/admin/categories" element={
-        <AdminLayout>
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Categories Management
-            </h1>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <p className="text-yellow-800">
-                🚧 Coming soon - Categories CRUD (Person 1)
-              </p>
-            </div>
-          </div>
-        </AdminLayout>
-      } />
-      
+      {/* 5. Menu Items Management (Tạm thời giữ placeholder cho Person 2) */}
       <Route path="/admin/items" element={
         <AdminLayout>
           <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Menu Items Management
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Menu Items Management</h1>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <p className="text-yellow-800">
-                🚧 Coming soon - Menu Items CRUD (Person 2)
-              </p>
+              <p className="text-yellow-800">🚧 Coming soon - Menu Items CRUD (Person 2)</p>
             </div>
           </div>
         </AdminLayout>
       } />
       
-      <Route path="/admin/photos" element={
-        <AdminLayout>
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Photo Management
-            </h1>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <p className="text-yellow-800">
-                🚧 Coming soon - Photos Upload & Management (Person 1)
-              </p>
-            </div>
-          </div>
-        </AdminLayout>
-      } />
-      
-      {/* Tuyến đường cho Khách hàng quét QR (Người 2) - Không có header admin */}
+      {/* 6. Customer & Guest Routes (Giữ nguyên) */}
       <Route path="/menu" element={<ScanPage />} />
-      
-      {/* Guest Menu (Public) */}
       <Route path="/guest-menu" element={<GuestMenuPage />} />
-
-      {/* Chuyển hướng mặc định về trang Admin Dashboard */}
       <Route path="/" element={<Navigate to="/admin" replace />} />
-      
-      {/* Tuyến đường 404 cơ bản */}
       <Route path="*" element={<h2 className="text-red-500 p-8">404 - Not Found</h2>} />
     </Routes>
   );

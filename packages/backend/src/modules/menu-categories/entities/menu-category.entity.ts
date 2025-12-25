@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BaseEntity,DeleteDateColumn } from 'typeorm';
 import type { MenuCategory as IMenuCategory, CategoryStatus } from '../../../../../../shared/types/menu';
 import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
 
@@ -11,7 +11,7 @@ export class MenuCategoryEntity extends BaseEntity implements IMenuCategory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'restaurant_id', type: 'uuid' })
+  @Column({ name: 'restaurant_id', type: 'uuid',nullable: true })
   restaurantId: string;
 
   @Column({ length: 50 })
@@ -45,4 +45,7 @@ export class MenuCategoryEntity extends BaseEntity implements IMenuCategory {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+  // THÊM DÒNG NÀY ĐỂ HẾT LỖI
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date | null;
 }

@@ -8,7 +8,8 @@ import { ExportsModule } from './modules/exports/exports.module';
 import { GuestMenuModule } from './modules/guest-menu/guest-menu.module';
 import { ModifierModule } from './modules/modifiers/modifiers.module';
 import { MenuItemsModule } from './modules/menu-items/menu-items.module';
-
+import { MenuCategoriesModule } from './modules/menu-categories/menu-categories.module';
+import { MenuItemPhotosModule } from './modules/menu-item-photos/menu-item-photos.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,6 +43,8 @@ import { MenuItemsModule } from './modules/menu-items/menu-items.module';
     GuestMenuModule,
     ModifierModule,
     MenuItemsModule,
+    MenuCategoriesModule, 
+    MenuItemPhotosModule, 
   ],
 })
 export class AppModule {}

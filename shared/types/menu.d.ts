@@ -150,3 +150,18 @@ export interface PaginatedMenuItems {
   page: number;
   limit: number;
 }
+export interface CategoryQueryDto {
+  search?: string;
+  status?: CategoryStatus;
+  sort?: string;
+  order?: 'ASC' | 'DESC';
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedMenuCategories {
+  data: MenuCategory[];
+  total: number;
+  page: number;
+  limit: number;
+}

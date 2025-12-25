@@ -56,8 +56,8 @@ export class MenuItemEntity extends BaseEntity implements IMenuItem {
   @JoinColumn({ name: 'category_id' })
   category?: MenuCategoryEntity;
 
-  @OneToMany(() => MenuItemPhotoEntity, photo => photo.menuItem, { cascade: true })
-  photos?: MenuItemPhotoEntity[];
+  // @OneToMany(() => MenuItemPhotoEntity, photo => photo.menuItem, { cascade: true })
+  // photos?: MenuItemPhotoEntity[];
 
   @ManyToMany(() => ModifierGroupEntity, group => group.menuItems)
   @JoinTable({
