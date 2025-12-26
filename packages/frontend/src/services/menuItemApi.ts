@@ -1,66 +1,77 @@
 import axios from 'axios';
-import { mockMenuItems } from '../features/customer-view/components/MockMenu';
+import type {
+  CreateMenuItemDto,
+  MenuItem,
+  MenuItemQueryDto,
+  MenuItemStatus,
+  PaginatedMenuItems,
+  UpdateMenuItemDto,
+} from '@shared/types/menu.d';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = '/api/admin/menu/items';
 
-export interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  categoryId: string;
+export type MenuItemDropdown = Pick<
+  MenuItem,
+  'id' | 'name' | 'price' | 'categoryId' | 'description' | 'status' | 'isChefRecommended'
+> & {
   categoryName?: string;
-  description?: string;
-  status: string;
-  isChefRecommended: boolean;
-}
-
-/**
- * Convert mock data to MenuItem format
- */
-function buildMockMenuItems(): MenuItem[] {
-  const items: MenuItem[] = [];
-  
-  mockMenuItems.forEach(category => {
-    category.items.forEach((item, idx) => {
-      items.push({
-        id: `${category.id}-${idx + 1}`,
-        name: item.name,
-        price: item.price,
-        categoryId: category.id,
-        categoryName: category.category,
-        description: item.description,
-        status: 'available',
-        isChefRecommended: false,
-      });
-    });
-  });
-  
-  return items;
-}
-
-/**
- * Get all menu items (simplified for admin dropdown)
- * Supports both API and mock data via VITE_USE_MOCK_MENU env flag
- */
-export async function getMenuItems(): Promise<MenuItem[]> {
-  const useMock = String(import.meta.env.VITE_USE_MOCK_MENU || '').toLowerCase() === 'true';
-  
-  // Use mock data if flag is enabled
-  if (useMock) {
-    return buildMockMenuItems();
-  }
-  
-  // Otherwise call real API
-  try {
-    const response = await axios.get(`${API_BASE_URL}/api/admin/menu/items`);
-    return response.data;
-  } catch (error) {
-    console.error('Failed to fetch menu items from API:', error);
-    // Fallback to mock data on error
-    return buildMockMenuItems();
-  }
-}
-
-export default {
-  getMenuItems,
 };
+
+function toDropdownItem(item: MenuItem): MenuItemDropdown {
+  return {
+    id: item.id,
+    name: item.name,
+    price: Number(item.price),
+    categoryId: item.categoryId,
+    description: item.description,
+    status: item.status,
+    isChefRecommended: item.isChefRecommended ?? false,
+  };
+}
+
+export const menuItemApi = {
+  async list(params: MenuItemQueryDto): Promise<PaginatedMenuItems> {
+    const res = await axios.get(API_BASE, { params });
+    return res.data;
+  },
+
+  async create(data: CreateMenuItemDto): Promise<MenuItem> {
+    const res = await axios.post(API_BASE, data);
+    return res.data;
+  },
+
+  async getById(id: string): Promise<MenuItem> {
+    const res = await axios.get(`${API_BASE}/${id}`);
+    return res.data;
+  },
+
+  async update(id: string, data: UpdateMenuItemDto): Promise<MenuItem> {
+    const res = await axios.put(`${API_BASE}/${id}`, data);
+    return res.data;
+  },
+
+  async updateStatus(id: string, status: MenuItemStatus): Promise<MenuItem> {
+    const res = await axios.patch(`${API_BASE}/${id}/status`, { status });
+    return res.data;
+  },
+
+  async remove(id: string): Promise<void> {
+    await axios.delete(`${API_BASE}/${id}`);
+  },
+
+  /**
+   * Backward-compatible helper used by AttachModifiersToItem.
+   * Returns an array (not paginated).
+   */
+  async getMenuItems(): Promise<MenuItemDropdown[]> {
+    try {
+      const page = await menuItemApi.list({ page: 1, limit: 100, sort: 'createdAt', order: 'DESC' });
+      return page.data.map(toDropdownItem);
+    } catch (error) {
+      console.error('Failed to fetch menu items:', error);
+      return [];
+    }
+  },
+};
+
+export default menuItemApi;

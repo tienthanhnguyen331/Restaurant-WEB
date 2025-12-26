@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { MenuItemPhoto as IMenuItemPhoto } from '../../../../../../shared/types/menu';
-//import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
+import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
 
 /**
  * Entity cho Menu Item Photo (tạm thời cho Người 3, sẽ được hoàn thiện hơn)
@@ -24,9 +24,9 @@ export class MenuItemPhotoEntity extends BaseEntity implements IMenuItemPhoto {
   restaurantId: string;
 
   // Relation với MenuItem
-  // @ManyToOne(() => MenuItemEntity, item => item.photos, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'menu_item_id' })
-  // menuItem?: MenuItemEntity;
+  @ManyToOne(() => MenuItemEntity, item => item.photos, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'menu_item_id' })
+  menuItem?: MenuItemEntity;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

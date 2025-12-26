@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import modifierApi from '../../services/modifierApi';
 import menuItemApi from '../../services/menuItemApi';
 import type { ModifierGroupWithOptions } from '../../services/modifierApi';
-import type { MenuItem } from '../../services/menuItemApi';
+import type { MenuItemDropdown } from '../../services/menuItemApi';
 
 export default function AttachModifiersToItem() {
   const [itemId, setItemId] = useState('');
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItemDropdown[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [groups, setGroups] = useState<ModifierGroupWithOptions[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());

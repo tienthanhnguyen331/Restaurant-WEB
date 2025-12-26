@@ -9,6 +9,7 @@ import AdminLayout from './components/AdminLayout';
 // IMPORT CÁC COMPONENT MỚI CỦA BẠN TẠI ĐÂY
 import { CategoryPage } from './features/admin-menu/CategoryPage';
 import { PhotoPage } from './features/admin-menu/PhotoPage';
+import { MenuItemsPage } from './features/admin-menu/MenuItemsPage';
 
 function App() {
   return (
@@ -89,10 +90,11 @@ function App() {
       <Route path="/admin/items" element={
         <AdminLayout>
           <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Menu Items Management</h1>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <p className="text-yellow-800">🚧 Coming soon - Menu Items CRUD (Person 2)</p>
-            </div>
+            <header className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">Menu Items Management</h1>
+              <p className="text-gray-600 mt-1">Manage menu items (CRUD, filters, pagination)</p>
+            </header>
+            <MenuItemsPage />
           </div>
         </AdminLayout>
       } />

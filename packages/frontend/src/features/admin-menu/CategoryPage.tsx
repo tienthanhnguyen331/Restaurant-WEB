@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { type MenuCategory, type CategoryQueryDto } from '@shared/types/menu.d'; 
+import { type MenuCategory } from '@shared/types/menu.d'; 
 import { categoryApi } from '../../services/categoryApi';
 
 import { CategoryFilter } from './components/CategoryFilter';
@@ -8,7 +8,6 @@ import { CategoryForm } from './components/CategoryForm';
 
 export const CategoryPage: React.FC = () => {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
@@ -25,7 +24,6 @@ export const CategoryPage: React.FC = () => {
     try {
       const result = await categoryApi.getAll(query);
       setCategories(result.data);
-      setTotalItems(result.total);
     } catch (error) {
       console.error("Lỗi khi tải danh mục:", error);
     } finally {

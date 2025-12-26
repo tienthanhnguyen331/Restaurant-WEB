@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { type MenuCategory, type CreateMenuCategoryDto,type UpdateMenuCategoryDto } from '@shared/types/menu.d';
+import { type CreateMenuCategoryDto,type UpdateMenuCategoryDto } from '@shared/types/menu.d';
 
 const API_BASE = '/api/admin/menu/categories';
 

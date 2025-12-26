@@ -1,56 +1,104 @@
-import { Controller, Get } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { MenuItemEntity } from './entities/menu-item.entity';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CreateMenuItemDto, UpdateMenuItemDto, UpdateMenuItemStatusDto } from './dto/menu-item.dto';
+import { MenuItemQueryDto } from './dto/menu-item-query.dto';
+import { MenuItemsService } from './menu-items.service';
 
 /**
  * Controller cho Menu Items (Admin)
- * TODO: Thêm authentication guard khi ready
  */
 @Controller('admin/menu/items')
+@UseGuards(AdminAuthGuard)
 export class MenuItemsController {
-  constructor(
-    @InjectRepository(MenuItemEntity)
-    private readonly menuItemRepo: Repository<MenuItemEntity>,
-  ) {}
+  constructor(private readonly menuItemsService: MenuItemsService) {}
 
   /**
    * GET /api/admin/menu/items
-   * Lấy danh sách menu items (simplified cho dropdown)
+   * List items (filter/sort/page)
    */
   @Get()
-  async getAllItems() {
-    // TODO: Add restaurantId từ authenticated user
-    const restaurantId = '00000000-0000-0000-0000-000000000000'; // Placeholder
+  async list(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Query() query: MenuItemQueryDto,
+  ) {
+    return await this.menuItemsService.list(restaurantId, query);
+  }
 
-    const items = await this.menuItemRepo
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.category', 'category')
-      .where('item.restaurant_id = :restaurantId', { restaurantId })
-      .andWhere('item.is_deleted = :isDeleted', { isDeleted: false })
-      .orderBy('item.name', 'ASC')
-      .select([
-        'item.id',
-        'item.name',
-        'item.price',
-        'item.description',
-        'item.status',
-        'item.isChefRecommended',
-        'item.categoryId',
-        'category.name',
-      ])
-      .getMany();
+  /**
+   * POST /api/admin/menu/items
+   * Create new item
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Body() dto: CreateMenuItemDto,
+  ) {
+    return await this.menuItemsService.create(restaurantId, dto);
+  }
 
-    // Format response
-    return items.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      categoryId: item.categoryId,
-      categoryName: item.category?.name,
-      description: item.description,
-      status: item.status,
-      isChefRecommended: item.isChefRecommended,
-    }));
+  /**
+   * GET /api/admin/menu/items/:id
+   * Get item details
+   */
+  @Get(':id')
+  async findOne(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Param('id') id: string,
+  ) {
+    return await this.menuItemsService.findOne(restaurantId, id);
+  }
+
+  /**
+   * PUT /api/admin/menu/items/:id
+   * Update item
+   */
+  @Put(':id')
+  async update(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateMenuItemDto,
+  ) {
+    return await this.menuItemsService.update(restaurantId, id, dto);
+  }
+
+  /**
+   * PATCH /api/admin/menu/items/:id/status
+   * Update status only
+   */
+  @Patch(':id/status')
+  async updateStatus(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateMenuItemStatusDto,
+  ) {
+    return await this.menuItemsService.updateStatus(restaurantId, id, dto.status);
+  }
+
+  /**
+   * DELETE /api/admin/menu/items/:id
+   * Soft delete item
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @CurrentUser('restaurantId') restaurantId: string,
+    @Param('id') id: string,
+  ) {
+    await this.menuItemsService.remove(restaurantId, id);
   }
 }
