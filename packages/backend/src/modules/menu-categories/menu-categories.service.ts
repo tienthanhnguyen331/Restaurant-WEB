@@ -46,7 +46,29 @@ async create(dto: CreateMenuCategoryDto) {
       .skip((page - 1) * limit)
       .take(limit);
 
+    // Lấy danh sách category
     const [data, total] = await qb.getManyAndCount();
+
+    // Lấy số lượng món ăn cho từng category (1 query duy nhất)
+    const categoryIds = data.map(c => c.id);
+    let itemCounts: Record<string, number> = {};
+    if (categoryIds.length > 0) {
+      const rawCounts = await this.categoryRepo.manager.query(
+        `SELECT category_id, COUNT(*) as count
+         FROM menu_items
+         WHERE category_id = ANY($1) AND is_deleted = false
+         GROUP BY category_id`,
+        [categoryIds]
+      );
+      rawCounts.forEach((row: any) => {
+        itemCounts[row.category_id] = parseInt(row.count, 10);
+      });
+    }
+    // Gán itemCount cho từng category
+    data.forEach(cat => {
+      cat.itemCount = itemCounts[cat.id] || 0;
+    });
+
     return { data, total, page, limit };
   }
 

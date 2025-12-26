@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UploadedFiles, UseInterceptors, Get } from '@nestjs/common';
+import { Controller, Post, Param, UploadedFiles, UseInterceptors, Get, Delete } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -46,5 +46,11 @@ export class MenuItemPhotosController {
     );
     
     return { itemId, uploadedCount: files.length, photos };
+  }
+  // Xóa ảnh theo id
+  @Delete(':photoId')
+  async removePhoto(@Param('photoId') photoId: string) {
+    await this.photosService.remove(photoId);
+    return { success: true };
   }
 }
