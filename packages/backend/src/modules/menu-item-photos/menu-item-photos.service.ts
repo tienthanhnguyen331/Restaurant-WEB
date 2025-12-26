@@ -20,7 +20,10 @@ export class MenuItemPhotosService {
 
   // 2. Hàm lưu thông tin ảnh vào Database
   async create(data: { menuItemId: string; url: string; isPrimary: boolean }) {
-    const photo = this.photoRepo.create(data);
+    // Kiểm tra xem menu item đã có ảnh nào chưa
+    const count = await this.photoRepo.count({ where: { menuItemId: data.menuItemId } });
+    const isPrimary = count === 0 ? true : data.isPrimary;
+    const photo = this.photoRepo.create({ ...data, isPrimary });
     return this.photoRepo.save(photo);
   }
 

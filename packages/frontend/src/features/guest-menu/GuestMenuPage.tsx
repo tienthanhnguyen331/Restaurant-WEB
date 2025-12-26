@@ -5,8 +5,6 @@ import MenuFilters from './MenuFilters';
 import MenuItemCard from './MenuItemCard';
 import CartSidebar from './components/CartSidebar';
 import { CartProvider, useCart } from '../../contexts/CartContext';
-import { buildMockGuestMenu, getMockCategoryOptions } from './utils/mockData';
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface GuestMenuItem {
@@ -84,19 +82,14 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     order: 'ASC',
     chefRecommended: false,
   });
-  const useMock = String(import.meta.env.VITE_USE_MOCK_MENU || '').toLowerCase() === 'true';
+
 
   const loadMenu = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Allow using mock data via env flag (string compare, case-insensitive)
-      if (useMock) {
-        const mock = buildMockGuestMenu(filters, page, 20);
-        setMenuData(mock);
-        return;
-      }
+
 
       const params = new URLSearchParams();
       if (filters.q) params.append('q', filters.q);
@@ -107,18 +100,13 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
       if (authToken) params.append('token', authToken);
       params.append('page', page.toString());
       params.append('limit', '20');
+      // Luôn truyền restaurantId mặc định
+      params.append('restaurantId', '00000000-0000-0000-0000-000000000000');
 
       const response = await axios.get(`${API_BASE_URL}/api/menu?${params.toString()}`);
       setMenuData(response.data);
     } catch (err: any) {
-      // Fallback to mock data on error if env permits
-      if (useMock) {
-        const mock = buildMockGuestMenu(filters, page, 20);
-        setMenuData(mock);
-        setError(null);
-      } else {
-        setError(err.response?.data?.message || 'Failed to load menu');
-      }
+      setError(err.response?.data?.message || 'Failed to load menu');
     } finally {
       setLoading(false);
     }
@@ -162,16 +150,15 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   }
 
   if (!menuData || menuData.data.categories.length === 0) {
-    const mockCategories = useMock ? getMockCategoryOptions() : [];
     return (
       <div className="min-h-screen p-6">
         <MenuFilters
           filters={filters}
           onFilterChange={handleFilterChange}
-          categories={mockCategories}
+          categories={[]}
         />
         <div className="text-center py-12 text-gray-500">
-          {useMock ? 'Không có món phù hợp với bộ lọc hiện tại.' : 'No menu items available at the moment.'}
+          No menu items available at the moment.
         </div>
       </div>
     );
@@ -186,11 +173,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
               <p className="text-gray-600 mt-1">Browse our delicious offerings</p>
-              {useMock && (
-                <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  Mock Mode Active
-                </span>
-              )}
+
             </div>
             {tableInfo?.tableNumber && (
               <div className="bg-amber-100 px-4 py-2 rounded-full text-amber-800 font-semibold">

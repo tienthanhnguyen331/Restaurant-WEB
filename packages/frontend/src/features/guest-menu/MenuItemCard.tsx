@@ -71,15 +71,25 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
   const isSoldOut = item.status === 'sold_out';
   const isUnavailable = item.status === 'unavailable';
 
+  // Helper to resolve image URL (handles relative and absolute)
+  const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url;
+    // Use VITE_BACKEND_URL if set, fallback to localhost
+    const backend = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    return `${backend}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-48 bg-gray-200">
         {item.primaryPhotoUrl ? (
           <img
-            src={item.primaryPhotoUrl}
+            src={getImageUrl(item.primaryPhotoUrl)}
             alt={item.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-lg"
+            style={{ maxHeight: '12rem', maxWidth: '80%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">
