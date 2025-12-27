@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
-import type { ModifierOption as IModifierOption, ModifierStatus } from '../../../../../../shared/types/menu';
-import * as Groups from './modifier-group.entity';
+import type { ModifierOption as IModifierOption, ModifierStatus } from '../../../../shared/types/menu';
+import type { ModifierGroupEntity } from './modifier-group.entity';
 
 /**
  * Entity cho Modifier Option
@@ -33,9 +33,9 @@ export class ModifierOptionEntity extends BaseEntity implements IModifierOption 
   status: ModifierStatus;
 
   // Relation với ModifierGroup (nhiều options thuộc 1 group)
-  @ManyToOne(() => Groups.ModifierGroupEntity, group => group.options, { onDelete: 'CASCADE' })
+  @ManyToOne('ModifierGroupEntity', (group: ModifierGroupEntity) => group.options, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'group_id' })
-  group?: Groups.ModifierGroupEntity;
+  group?: ModifierGroupEntity;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

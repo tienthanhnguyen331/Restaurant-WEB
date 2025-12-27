@@ -1,6 +1,6 @@
 import { IsString, IsInt, Min, Max, IsNotEmpty, IsIn, IsOptional } from 'class-validator';
 // Import từ shared types
-import { CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto } from '../../../../shared/types/table';
+import { CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto } from '../shared/types/table';
 import { Type } from 'class-transformer';
 export class CreateTableDtoValidator implements CreateTableDto {
   @IsInt()

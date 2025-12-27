@@ -7,7 +7,7 @@ import {
   UpdateTableStatusDtoValidator,
   TableQueryDtoValidator,
 } from './table.dto';
-import { Table, PaginatedTables } from '../../../../shared/types/table';
+import { Table, PaginatedTables } from '../shared/types/table';
 
 @Controller('tables') // /api/tables
 export class TableController {

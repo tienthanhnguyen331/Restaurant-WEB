@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, BaseEntity } from 'typeorm';
-import { type Table,type TableStatus } from '../../../../shared/types/table' // Import từ shared
+import { type Table,type TableStatus } from '../shared/types/table' // Import từ shared
 
 @Entity('tables')
 @Unique(['tableNumber', 'deletedAt']) 

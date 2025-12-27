@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull, Like } from 'typeorm';
 import { TableEntity } from './table.entity';
 // Import từ shared types
-import { CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto, Table, PaginatedTables } from '../../../../shared/types/table'; 
+import { CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto, Table, PaginatedTables } from '../shared/types/table'; 
 import { QrService } from '../qr-auth/qr.service';
 
 @Injectable()
@@ -49,10 +49,14 @@ async findAll(query: TableQueryDto): Promise<PaginatedTables> {
         .take(limit);
 
     // 5. Thực thi truy vấn và đếm tổng số
-    const [data, total] = await queryBuilder.getManyAndCount();
-    
-    return { data, total, page, limit }; 
-}
+    try {
+      const [data, total] = await queryBuilder.getManyAndCount();
+      return { data, total, page, limit };
+    } catch (error) {
+      console.error('Error in findAll tables:', error);
+      throw error;
+    }
+  }
 
   async findOne(id: string): Promise<TableEntity> {
     const table = await this.tablesRepository.findOne({ where: { id, deletedAt: IsNull() } });

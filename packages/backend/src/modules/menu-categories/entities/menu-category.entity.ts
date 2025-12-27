@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BaseEntity,DeleteDateColumn } from 'typeorm';
-import type { MenuCategory as IMenuCategory, CategoryStatus } from '../../../../../../shared/types/menu';
+import type { MenuCategory as IMenuCategory, CategoryStatus } from '../../../../shared/types/menu';
 import type { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
 
 /**

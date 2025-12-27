@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
-import { MenuItemPhoto as IMenuItemPhoto } from '../../../../../../shared/types/menu';
+import { MenuItemPhoto as IMenuItemPhoto } from '../../../../shared/types/menu';
 import type { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
 
 /**
