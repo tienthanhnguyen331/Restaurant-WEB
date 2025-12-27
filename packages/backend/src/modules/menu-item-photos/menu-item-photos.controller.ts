@@ -2,6 +2,7 @@ import { Controller, Post, Param, UploadedFiles, UseInterceptors, Get, Delete } 
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 // 1. Nhớ import Service vào
 import { MenuItemPhotosService } from './menu-item-photos.service'; 
 
@@ -19,7 +20,17 @@ export class MenuItemPhotosController {
   @Post()
   @UseInterceptors(FilesInterceptor('files', 10, {
     storage: diskStorage({
-      destination: './uploads/menu-items',
+      destination: (req, file, cb) => {
+        // Trên Vercel (Serverless), không được ghi vào root, chỉ được ghi vào /tmp
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+        const uploadPath = isProduction ? '/tmp' : './uploads/menu-items';
+
+        if (!isProduction && !existsSync(uploadPath)) {
+          mkdirSync(uploadPath, { recursive: true });
+        }
+        
+        cb(null, uploadPath);
+      },
       filename: (req, file, cb) => {
         const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
         cb(null, `${randomName}${extname(file.originalname)}`);
