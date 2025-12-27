@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { MenuFiltersState, GuestMenuCategory } from './GuestMenuPage';
 
 interface MenuFiltersProps {
@@ -7,6 +8,22 @@ interface MenuFiltersProps {
 }
 
 export default function MenuFilters({ filters, onFilterChange, categories }: MenuFiltersProps) {
+  const [localSearch, setLocalSearch] = useState(filters.q);
+
+  useEffect(() => {
+    setLocalSearch(filters.q);
+  }, [filters.q]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== filters.q) {
+        onFilterChange({ q: localSearch });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, filters.q, onFilterChange]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -17,8 +34,8 @@ export default function MenuFilters({ filters, onFilterChange, categories }: Men
           </label>
           <input
             type="text"
-            value={filters.q}
-            onChange={(e) => onFilterChange({ q: e.target.value })}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search menu items..."
             className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />

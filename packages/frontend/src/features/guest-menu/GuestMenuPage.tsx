@@ -121,7 +121,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     setPage(1); // Reset to page 1 when filters change
   };
 
-  if (loading) {
+  if (loading && !menuData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -171,7 +171,10 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                Our Menu
+                {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>}
+              </h1>
               <p className="text-gray-600 mt-1">Browse our delicious offerings</p>
 
             </div>

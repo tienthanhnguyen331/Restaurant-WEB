@@ -17,16 +17,25 @@ export class MenuItemPhotosController {
     return this.photosService.findAllByItem(itemId);
   }
 
+  @Get('test-upload')
+  testUploadConfig() {
+    return {
+      status: 'ok',
+      cloudinaryConfigured: !!process.env.CLOUDINARY_CLOUD_NAME,
+      env: process.env.NODE_ENV
+    };
+  }
+
   @Post()
   @UseInterceptors(FilesInterceptor('files', 10, {
     storage: memoryStorage(), // Use memory storage to get file buffer
     fileFilter: (req, file, cb) => {
       if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-        return cb(new Error('Chỉ chấp nhận file ảnh!'), false);
+        return cb(new Error('ONLY_IMAGES_ALLOWED'), false);
       }
       cb(null, true);
     },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+    limits: { fileSize: 4 * 1024 * 1024 } // Reduce to 4MB to be safe on Vercel
   }))
   async uploadPhotos(@Param('itemId') itemId: string, @UploadedFiles() files: Express.Multer.File[]) {
     console.log(`Received upload request for item ${itemId}. Files count: ${files?.length}`);
@@ -55,6 +64,16 @@ export class MenuItemPhotosController {
       return { itemId, uploadedCount: files.length, photos };
     } catch (error) {
       console.error('Upload failed:', error);
+      
+      // Check for specific Cloudinary error
+      if (error.message && error.message.includes('MISSING_CLOUDINARY_CREDENTIALS')) {
+         throw new HttpException({
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          error: 'Configuration Error',
+          message: 'Server is missing Cloudinary credentials. Please configure them in Vercel.',
+        }, HttpStatus.SERVICE_UNAVAILABLE);
+      }
+
       // Return specific error message to frontend
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
