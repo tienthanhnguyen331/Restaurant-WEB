@@ -10,6 +10,15 @@ import { ModifierModule } from './modules/modifiers/modifiers.module';
 import { MenuItemsModule } from './modules/menu-items/menu-items.module';
 import { MenuCategoriesModule } from './modules/menu-categories/menu-categories.module';
 import { MenuItemPhotosModule } from './modules/menu-item-photos/menu-item-photos.module';
+
+import { Table } from './tables/table.entity';
+import { MenuCategory } from './modules/menu-categories/entities/menu-category.entity';
+import { MenuItem } from './modules/menu-items/entities/menu-item.entity';
+import { MenuItemPhoto } from './modules/menu-item-photos/entities/menu-item-photo.entity';
+import { ModifierGroup } from './modules/modifiers/entities/modifier-group.entity';
+import { ModifierOption } from './modules/modifiers/entities/modifier-option.entity';
+import { MenuItemModifierGroup } from './modules/modifiers/entities/menu-item-modifier-group.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,7 +35,15 @@ import { MenuItemPhotosModule } from './modules/menu-item-photos/menu-item-photo
         username: config.get<string>('DATABASE_USERNAME'),
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
-        autoLoadEntities: true,
+        entities: [
+          Table,
+          MenuCategory,
+          MenuItem,
+          MenuItemPhoto,
+          ModifierGroup,
+          ModifierOption,
+          MenuItemModifierGroup,
+        ],
         synchronize: true, // Lưu ý: Nên tắt (false) khi chạy production thật sự để tránh mất dữ liệu
         ssl: config.get<string>('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),

@@ -45,10 +45,12 @@ export default async function handler(req: any, res: any) {
     return server(req, res);
   } catch (error) {
     console.error('Serverless Handler Error:', error);
+    // Trả về lỗi chi tiết ra trình duyệt để debug (chỉ dùng khi debug)
     res.status(500).json({
       statusCode: 500,
       message: 'Internal Server Error',
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
   }
 }
