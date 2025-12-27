@@ -3,7 +3,7 @@ import axios from 'axios';
 import type { Table, CreateTableDto, UpdateTableDto, UpdateTableStatusDto, TableQueryDto, PaginatedTables } from '@shared/types/table';
 
 // Lấy URL từ biến môi trường (Vercel) hoặc mặc định là localhost
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 const API_BASE_URL = `${BASE_URL}/api/tables`; 
 
 export const tableApi = {

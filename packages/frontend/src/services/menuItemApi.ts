@@ -8,7 +8,8 @@ import type {
   UpdateMenuItemDto,
 } from '@shared/types/menu.d';
 
-const API_BASE = '/api/admin/menu/items';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+const API_BASE = `${BASE_URL}/api/admin/menu/items`;
 
 export type MenuItemDropdown = Pick<
   MenuItem,

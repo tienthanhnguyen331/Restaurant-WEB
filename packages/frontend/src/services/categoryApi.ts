@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { type CreateMenuCategoryDto,type UpdateMenuCategoryDto } from '@shared/types/menu.d';
 
-const API_BASE = '/api/admin/menu/categories';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+const API_BASE = `${BASE_URL}/api/admin/menu/categories`;
 
 export const categoryApi = {
   getAll: (params: any) => axios.get(API_BASE, { params }).then(res => res.data),
