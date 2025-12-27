@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull, Like } from 'typeorm';
 import { TableEntity } from './table.entity';
@@ -54,7 +54,7 @@ async findAll(query: TableQueryDto): Promise<PaginatedTables> {
       return { data, total, page, limit };
     } catch (error) {
       console.error('Error in findAll tables:', error);
-      throw error;
+      throw new InternalServerErrorException(`Failed to get tables: ${error.message}`);
     }
   }
 

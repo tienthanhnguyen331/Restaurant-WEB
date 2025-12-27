@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
-import type { ModifierOption as IModifierOption, ModifierStatus } from '../../../../shared/types/menu';
+import type { ModifierOption as IModifierOption, ModifierStatus } from '../../../shared/types/menu';
 import type { ModifierGroupEntity } from './modifier-group.entity';
 
 /**

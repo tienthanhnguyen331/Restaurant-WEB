@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable, OneToMany, BaseEntity } from 'typeorm';
-import type { MenuItem as IMenuItem, MenuItemStatus } from '../../../../shared/types/menu';
+import type { MenuItem as IMenuItem, MenuItemStatus } from '../../../shared/types/menu';
 import type { MenuCategoryEntity } from '../../menu-categories/entities/menu-category.entity';
 import type { ModifierGroupEntity } from '../../modifiers/entities/modifier-group.entity';
 import type { MenuItemModifierGroupEntity } from '../../modifiers/entities/menu-item-modifier-group.entity';
