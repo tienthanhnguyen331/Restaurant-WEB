@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
-import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
-import { ModifierGroupEntity } from './modifier-group.entity';
+import type { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
+import type { ModifierGroupEntity } from './modifier-group.entity';
 
 /**
  * Entity cho bảng trung gian Menu Item - Modifier Group
@@ -18,11 +18,11 @@ export class MenuItemModifierGroupEntity extends BaseEntity {
   modifierGroupId: string;
 
   // Relations
-  @ManyToOne(() => MenuItemEntity, item => item.itemModifierGroups, { onDelete: 'CASCADE' })
+  @ManyToOne('MenuItemEntity', (item: MenuItemEntity) => item.itemModifierGroups, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'menu_item_id' })
   menuItem?: MenuItemEntity;
 
-  @ManyToOne(() => ModifierGroupEntity, group => group.menuItems, { onDelete: 'CASCADE' })
+  @ManyToOne('ModifierGroupEntity', (group: ModifierGroupEntity) => group.menuItems, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'modifier_group_id' })
   modifierGroup?: ModifierGroupEntity;
 }

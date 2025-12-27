@@ -67,7 +67,7 @@ export class MenuItemEntity extends BaseEntity implements IMenuItem {
   })
   modifierGroups?: ModifierGroupEntity[];
 
-  @OneToMany(() => MenuItemModifierGroupEntity, link => link.menuItem)
+  @OneToMany('MenuItemModifierGroupEntity', (link: MenuItemModifierGroupEntity) => link.menuItem)
   itemModifierGroups?: MenuItemModifierGroupEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
