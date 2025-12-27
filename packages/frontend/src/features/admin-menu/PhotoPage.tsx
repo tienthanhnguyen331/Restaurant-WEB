@@ -118,7 +118,7 @@ export const PhotoPage: React.FC = () => {
         {photos.map(p => (
           <div key={p.id} className="relative aspect-square border rounded-lg overflow-hidden group">
             <img
-              src={p.url.startsWith('http') ? p.url : `http://localhost:3000${p.url.startsWith('/') ? p.url : '/' + p.url}`}
+              src={p.url.startsWith('http') ? p.url : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}${p.url.startsWith('/') ? p.url : '/' + p.url}`}
               className="w-full h-full object-cover"
               alt={selectedItem?.name}
             />
