@@ -29,11 +29,19 @@ export class MenuItemPhotosController {
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB
   }))
   async uploadPhotos(@Param('itemId') itemId: string, @UploadedFiles() files: Express.Multer.File[]) {
+    console.log(`Received upload request for item ${itemId}. Files count: ${files?.length}`);
+    
+    if (!files || files.length === 0) {
+      throw new Error('No files uploaded');
+    }
+
     try {
       const photos = await Promise.all(
         files.map(async (file) => {
+          console.log(`Uploading file: ${file.originalname} (${file.size} bytes)`);
           // Upload to Cloudinary
           const result = await this.cloudinaryService.uploadFile(file);
+          console.log(`Upload success: ${result.secure_url}`);
           
           // Save to DB with Cloudinary URL
           return this.photosService.create({

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
-import * as streamifier from 'streamifier';
+import { Readable } from 'stream';
 
 @Injectable()
 export class CloudinaryService {
@@ -11,6 +11,8 @@ export class CloudinaryService {
 
     if (!cloudName || !apiKey || !apiSecret) {
       console.warn('⚠️ Cloudinary credentials are missing! Image upload will fail.');
+    } else {
+      console.log(`✅ Cloudinary configured with Cloud Name: ${cloudName}`);
     }
 
     cloudinary.config({
@@ -22,17 +24,29 @@ export class CloudinaryService {
 
   uploadFile(file: Express.Multer.File): Promise<any> {
     return new Promise((resolve, reject) => {
+      if (!file || !file.buffer) {
+        return reject(new Error('File buffer is missing'));
+      }
+
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'restaurant-menu-items',
         },
         (error, result) => {
-          if (error) return reject(error);
+          if (error) {
+            console.error('Cloudinary Upload Error:', error);
+            return reject(error);
+          }
           resolve(result);
         },
       );
 
-      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+      // Convert buffer to stream manually to avoid 'streamifier' dependency issues
+      const stream = new Readable();
+      stream.push(file.buffer);
+      stream.push(null);
+      
+      stream.pipe(uploadStream);
     });
   }
 }
