@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { type CreateMenuCategoryDto,type UpdateMenuCategoryDto } from '@shared/types/menu.d';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://restaurant-web-five-wine.vercel.app';
 const API_BASE = `${BASE_URL}/api/admin/menu/categories`;
 
 export const categoryApi = {
