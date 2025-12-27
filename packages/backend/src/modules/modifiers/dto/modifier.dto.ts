@@ -22,7 +22,7 @@ import type {
   AttachModifierGroupsDto as IAttachModifierGroupsDto,
   ModifierGroupSelectionType,
   ModifierStatus
-} from '@shared/types/menu';
+} from '../../../shared/types/menu';
 
 /**
  * DTO cho việc tạo Modifier Group

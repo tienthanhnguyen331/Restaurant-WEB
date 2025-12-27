@@ -17,7 +17,7 @@ import type {
   CreateMenuItemDto as ICreateMenuItemDto,
   MenuItemStatus,
   UpdateMenuItemDto as IUpdateMenuItemDto,
-} from '@shared/types/menu';
+} from '../../../shared/types/menu';
 
 export class CreateMenuItemDto implements ICreateMenuItemDto {
   @IsUUID('4', { message: 'categoryId phải là UUID hợp lệ' })

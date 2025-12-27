@@ -5,7 +5,9 @@
       "src": "src/serverless.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["assets/**"]
+        "includeFiles": ["assets/**"],
+        "maxDuration": 60,
+        "memory": 1024
       }
     }
   ],

@@ -12,7 +12,7 @@ import {
   UpdateModifierOptionDto,
   AttachModifierGroupsDto 
 } from './dto/modifier.dto';
-import type { ModifierGroupSelectionType } from '@shared/types/menu';
+import type { ModifierGroupSelectionType } from '../../shared/types/menu';
 
 /**
  * Service xử lý logic cho Modifier Groups và Options

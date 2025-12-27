@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsEnum, IsBoolean, IsInt, Min, Max, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { GuestMenuQuery as IGuestMenuQuery } from '@shared/types/menu';
+import { GuestMenuQuery as IGuestMenuQuery } from '../../../shared/types/menu';
 
 /**
  * DTO cho Guest Menu Query Parameters

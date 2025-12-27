@@ -1,4 +1,4 @@
-import type { CategoryStatus, MenuItemStatus } from '@shared/types/menu';
+import type { CategoryStatus, MenuItemStatus } from '../../shared/types/menu';
 
 export interface NormalizedMenuItemQuery {
   q?: string;

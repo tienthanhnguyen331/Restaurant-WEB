@@ -44,8 +44,13 @@ import { MenuItemModifierGroup } from './modules/modifiers/entities/menu-item-mo
           ModifierOption,
           MenuItemModifierGroup,
         ],
-        synchronize: true, // Lưu ý: Nên tắt (false) khi chạy production thật sự để tránh mất dữ liệu
-        ssl: config.get<string>('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+        synchronize: false, // Disable synchronize in production/serverless
+        ssl: true, // Force SSL for Neon/Cloud DB
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
       }),
     }),
 

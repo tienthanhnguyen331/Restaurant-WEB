@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min, Max, IsBoolean } from 'class-validator';
-import type { MenuItemQueryDto as IMenuItemQueryDto } from '@shared/types/menu';
+import type { MenuItemQueryDto as IMenuItemQueryDto } from '../../../shared/types/menu';
 
 export class MenuItemQueryDto implements IMenuItemQueryDto {
   @IsOptional()

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import type { PaginatedMenuItems } from '@shared/types/menu';
+import type { PaginatedMenuItems } from '../../shared/types/menu';
 
 import { MenuCategoryEntity } from '../menu-categories/entities/menu-category.entity';
 import { ModifierGroupEntity } from '../modifiers/entities/modifier-group.entity';
