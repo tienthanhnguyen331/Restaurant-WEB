@@ -1,23 +1,43 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 
 let cachedServer: any;
 
 async function bootstrap() {
   if (!cachedServer) {
     try {
-      const app = await NestFactory.create(AppModule, {
+      const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         logger: ['error', 'warn', 'log', 'debug', 'verbose'], // Enable full logging
       });
 
       // Enable CORS for Vercel Frontend
       app.enableCors({
-        origin: process.env.FRONTEND_URL || '*', 
+        origin: [
+          process.env.FRONTEND_URL,
+          'https://restaurant-web-2t3m.vercel.app',
+          'https://restaurant-web-five-wine.vercel.app',
+          'http://localhost:5173',
+          'http://localhost:3000'
+        ].filter(Boolean) as string[],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
       });
+
+      // Serve static files (Vercel /tmp for uploads)
+      // Note: Files in /tmp are ephemeral and will be deleted! Use S3/Cloudinary for production.
+      if (process.env.VERCEL) {
+        app.useStaticAssets('/tmp', {
+          prefix: '/uploads/menu-items/',
+        });
+      } else {
+        app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+          prefix: '/uploads/',
+        });
+      }
 
       app.setGlobalPrefix('api');
 
