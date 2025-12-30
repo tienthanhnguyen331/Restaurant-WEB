@@ -168,7 +168,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
                   // Chuẩn bị dữ liệu order
                   const orderId = Date.now().toString(); // Tạm thời sinh orderId, thực tế lấy từ backend
                   const userId = undefined; // Nếu có user đăng nhập thì truyền userId
-                  navigate('/payment', {
+                  navigate('/select-payment-method', {
                     state: {
                       items,
                       total: totalPrice,
@@ -178,9 +178,9 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
                   });
                   if (onCheckout) onCheckout();
                 }}
-                className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="flex-1 bg-yellow-400 text-white px-4 py-3 rounded-lg hover:bg-yellow-500 transition-colors font-medium"
               >
-                Checkout
+                Thanh toán
               </button>
             </div>
           </div>

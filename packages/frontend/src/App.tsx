@@ -6,6 +6,7 @@ import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToI
 import GuestMenuPage from './features/guest-menu/GuestMenuPage';
 import AdminLayout from './components/AdminLayout';
 import PaymentPage from './features/payment/PaymentPage';
+import SelectPaymentMethodPage from './features/payment/SelectPaymentMethodPage';
 
 // IMPORT CÁC COMPONENT MỚI CỦA BẠN TẠI ĐÂY
 import { CategoryPage } from './features/admin-menu/CategoryPage';
@@ -103,6 +104,7 @@ function App() {
       {/* 6. Customer & Guest Routes (Giữ nguyên) */}
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
+      <Route path="/select-payment-method" element={<SelectPaymentMethodPage />} />
       <Route path="/payment" element={<PaymentPage />} />
       <Route path="/" element={<Navigate to="/admin" replace />} />
       <Route path="*" element={<h2 className="text-red-500 p-8">404 - Not Found</h2>} />
