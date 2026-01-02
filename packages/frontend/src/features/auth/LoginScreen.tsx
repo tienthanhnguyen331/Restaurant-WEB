@@ -35,12 +35,12 @@ export const LoginScreen = () => {
           Đăng nhập
         </button>
         
-        <div className="mt-4 border-t pt-4">
+        {/* <div className="mt-4 border-t pt-4">
           <button type="button" onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
             className="w-full border py-2 rounded flex items-center justify-center gap-2">
             <img src="/google-icon.svg" width={20} /> Tiếp tục với Google
           </button>
-        </div>
+        </div> */}
       </form>
     </div>
   );

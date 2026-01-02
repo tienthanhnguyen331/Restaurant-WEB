@@ -8,7 +8,9 @@ JWT_EXPIRES_IN=1d
 GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxx
 GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
-Frontend (packages/frontend/.env)Đoạn mãVITE_API_URL=http://localhost:3000
+Frontend (packages/frontend/.env)
+Đoạn mã
+VITE_API_URL=http://localhost:3000
 4. API EndpointsMethodEndpointAccessDescriptionPOST/auth/registerPublic
 Đăng ký tài khoảnPOST/auth/loginPublic
 Đăng nhập nhận JWTGET/auth/googlePublic
