@@ -19,10 +19,15 @@ import { ModifierGroupEntity } from './modules/modifiers/entities/modifier-group
 import { ModifierOptionEntity } from './modules/modifiers/entities/modifier-option.entity';
 import { MenuItemModifierGroupEntity } from './modules/modifiers/entities/menu-item-modifier-group.entity';
 
+import { OrderModule } from './modules/order/order.module';
+import  { OrderEntity } from './modules/order/entities/order.entity';
+import { OrderItemEntity } from './modules/order/entities/order-item.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+
     }),
 
     TypeOrmModule.forRootAsync({
@@ -43,6 +48,9 @@ import { MenuItemModifierGroupEntity } from './modules/modifiers/entities/menu-i
           ModifierGroupEntity,
           ModifierOptionEntity,
           MenuItemModifierGroupEntity,
+          OrderEntity,
+          OrderItemEntity,
+
         ],
         // Tự động tạo bảng nếu chưa có (chỉ nên dùng khi mới deploy hoặc dev)
         // Set biến môi trường DB_SYNC=true trên Vercel để kích hoạt
@@ -64,6 +72,7 @@ import { MenuItemModifierGroupEntity } from './modules/modifiers/entities/menu-i
     MenuItemsModule,
     MenuCategoriesModule, 
     MenuItemPhotosModule, 
+    OrderModule,
   ],
 })
 export class AppModule {}
