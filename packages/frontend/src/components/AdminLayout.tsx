@@ -1,11 +1,7 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout() {
   const location = useLocation();
 
   const navItems = [
@@ -41,7 +37,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: '📸',
     },
     {
-      path: '/orders',
+      path: '/admin/orders',
       label: 'Orders History',
       icon: '🧾',
     },
@@ -98,7 +94,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <main className="ml-64 flex-1">
-        {children}
+        <Outlet />
       </main>
     </div>
   );

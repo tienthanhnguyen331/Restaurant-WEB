@@ -48,12 +48,7 @@ function App() {
       <Route path="/payment" element={<PaymentPage />} />
 
       {/* ===== ADMIN ROUTES (PROTECTED) ===== */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <AdminLayout>
-              <Routes>
+      <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
         {/* Dashboard */}
         <Route
           index
@@ -128,11 +123,7 @@ function App() {
             </div>
           }
         />
-              </Routes>
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
+      </Route>
 
       {/* ===== DEFAULT ===== */}
       <Route path="/" element={<Navigate to="/login" replace />} />

@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {login} from './hooks/useAuth'
 import * as z from 'zod';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const schema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -9,6 +10,10 @@ const schema = z.object({
 });
 
 export const LoginScreen = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/admin';
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema)
   });
@@ -16,7 +21,7 @@ export const LoginScreen = () => {
   const onSubmit = async (data : any) => {
     try {
       await login(data);
-      window.location.href = '/admin';
+      navigate(from, { replace: true });
     } catch (err) {
       alert('Đăng nhập thất bại!');
     }
