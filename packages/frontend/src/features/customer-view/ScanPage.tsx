@@ -11,7 +11,24 @@ type PageStatus = 'loading' | 'success' | 'error';
 // Helper: Decode JWT token để lấy payload (không verify signature)
 function decodeJwtPayload(token: string): any {
   try {
-    const base64Url = token.split('.')[1];
+    // Kiểm tra token có đúng format không (phải có 3 phần: header.payload.signature)
+    if (!token || typeof token !== 'string') {
+      console.error('Token is invalid or empty');
+      return null;
+    }
+
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.error('Token format is invalid. Expected 3 parts, got:', parts.length);
+      return null;
+    }
+
+    const base64Url = parts[1]; // payload part
+    if (!base64Url) {
+      console.error('Token payload is missing');
+      return null;
+    }
+
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
       atob(base64)
