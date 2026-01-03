@@ -87,7 +87,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
             src={getImageUrl(item.primaryPhotoUrl)}
             alt={item.name}
             className="w-full h-full object-cover rounded-lg"
-            style={{ maxHeight: '12rem', maxWidth: '80%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
+            style={{ maxHeight: '12rem', maxWidth: '100%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">
@@ -123,24 +123,9 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
           </p>
         )}
 
-        {/* Price and Prep Time */}
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-xl font-bold text-blue-600">
-            ${showModifiers ? calculateTotalPrice().toFixed(2) : item.price.toFixed(2)}
-          </span>
-          {item.prepTimeMinutes && (
-            <span className="text-sm text-gray-500">
-              🕐 {item.prepTimeMinutes} min
-            </span>
-          )}
-        </div>
+        
 
-        {/* Modifier Groups Info */}
-        {item.modifierGroups.length > 0 && !showModifiers && (
-          <p className="text-xs text-gray-500 mb-3">
-            Customization available ({item.modifierGroups.length} option{item.modifierGroups.length > 1 ? 's' : ''})
-          </p>
-        )}
+        
 
         {/* Modifier Selector (when expanded) */}
         {showModifiers && (
@@ -172,7 +157,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
-            {isSoldOut ? 'Sold Out' : isUnavailable ? 'Unavailable' : 'Add to Cart'}
+            {isSoldOut ? 'Sold Out' : isUnavailable ? 'Unavailable' : 'Chọn'}
           </button>
         </div>
       </div>

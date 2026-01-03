@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Home, User } from 'lucide-react';
 import MenuFilters from './MenuFilters';
 import MenuItemCard from './MenuItemCard';
 import CartSidebar from './components/CartSidebar';
@@ -69,6 +69,7 @@ export default function GuestMenuPage({ tableInfo, authToken }: GuestMenuPagePro
 function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   const { itemCount } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'menu' | 'cart' | 'profile'>('menu');
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenuFiltersState>({
     q: '',
@@ -150,7 +151,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -195,7 +196,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
             {category.items.length === 0 ? (
               <p className="text-gray-500 italic">No items in this category.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {category.items.map((item) => (
                   <MenuItemCard key={item.id} item={item} />
                 ))}
@@ -228,10 +229,10 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
         )}
       </div>
 
-      {/* Floating Cart Button - luôn hiển thị */}
+      {/* Floating Cart Button - Chỉ hiển thị trên desktop */}
       <button
         onClick={() => setCartOpen((open) => !open)}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 z-30 flex items-center gap-2"
+        className="hidden md:flex fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 z-30 items-center gap-2"
         aria-label="Giỏ hàng"
       >
         <ShoppingCart className="w-6 h-6" />
@@ -240,10 +241,66 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
         </span>
       </button>
 
+      {/* Bottom Navigation - Chỉ hiển thị trên mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[60] shadow-lg">
+        <div className="flex items-center justify-around h-16">
+          {/* Trang chủ */}
+          <button
+            onClick={() => {
+              setActiveTab('menu');
+              setCartOpen(false);
+            }}
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              activeTab === 'menu' ? 'text-blue-600' : 'text-gray-500'
+            }`}
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-xs mt-1">Trang chủ</span>
+          </button>
+
+          {/* Giỏ hàng */}
+          <button
+            onClick={() => {
+              setActiveTab('cart');
+              setCartOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors relative ${
+              activeTab === 'cart' ? 'text-blue-600' : 'text-gray-500'
+            }`}
+          >
+            <ShoppingCart className="w-6 h-6" />
+            {itemCount > 0 && (
+              <span className="absolute top-1 right-1/4 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+            <span className="text-xs mt-1">Giỏ hàng</span>
+          </button>
+
+          {/* Cá nhân */}
+          <button
+            onClick={() => {
+              setActiveTab('profile');
+              setCartOpen(false);
+              // TODO: Navigate to profile page
+            }}
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              activeTab === 'profile' ? 'text-blue-600' : 'text-gray-500'
+            }`}
+          >
+            <User className="w-6 h-6" />
+            <span className="text-xs mt-1">Cá nhân</span>
+          </button>
+        </div>
+      </nav>
+
       {/* Cart Sidebar */}
       <CartSidebar 
         isOpen={cartOpen} 
-        onClose={() => setCartOpen(false)}
+        onClose={() => {
+          setCartOpen(false);
+          setActiveTab('menu');
+        }}
       />
     </div>
   );

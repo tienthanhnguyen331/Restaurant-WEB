@@ -1,5 +1,5 @@
 
-import { X, ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '../../../contexts/CartContext';
 import type { CartItem } from '../../../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -45,26 +45,18 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:block hidden"
         onClick={onClose}
       />
 
-      {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+      {/* Sidebar - trên mobile bottom navigation vẫn hiển thị */}
+      <div className="fixed right-0 top-0 bottom-16 md:bottom-0 md:h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-900">
-              Your Cart ({itemCount})
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-6 h-6 text-gray-600" />
-          </button>
+        <div className="flex items-center gap-2 p-4 border-b">
+          <ShoppingCart className="w-6 h-6 text-blue-600" />
+          <h2 className="text-xl font-bold text-gray-900">
+            Your Cart ({itemCount})
+          </h2>
         </div>
 
         {/* Cart Items */}
@@ -148,7 +140,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t p-4 space-y-3 bg-gray-50">
+          <div className="border-t p-4 space-y-3 bg-gray-50 pb-4 md:pb-4">
             {/* Total */}
             <div className="flex justify-between items-center text-lg font-bold">
               <span className="text-gray-900">Total</span>
@@ -178,7 +170,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
                   });
                   if (onCheckout) onCheckout();
                 }}
-                className="flex-1 bg-yellow-400 text-white px-4 py-3 rounded-lg hover:bg-yellow-500 transition-colors font-medium"
+                className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-500 transition-colors font-medium"
               >
                 Thanh toán
               </button>
