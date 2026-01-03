@@ -3,6 +3,7 @@ import React from 'react';
 
 // Admin
 import { AdminPage } from './features/admin-dashboard/AdminPage';
+import { ProfilePage } from './features/admin-dashboard/ProfilePage';
 import AdminLayout from './components/AdminLayout';
 import { CategoryPage } from './features/admin-menu/CategoryPage';
 import { PhotoPage } from './features/admin-menu/PhotoPage';
@@ -13,6 +14,7 @@ import { OrderHistoryPage } from './features/order/OrderHistoryPage';
 
 // Auth
 import { LoginScreen } from './features/auth/LoginScreen';
+import { RegisterScreen } from './features/auth/RegisterScreen';
 
 // Customer / Guest
 import { ScanPage } from './features/customer-view/ScanPage';
@@ -42,6 +44,7 @@ function App() {
     <Routes>
       {/* ===== PUBLIC ROUTES ===== */}
       <Route path="/login" element={<LoginScreen />} />
+      <Route path="/register" element={<RegisterScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
       <Route path="/select-payment-method" element={<SelectPaymentMethodPage />} />
@@ -121,6 +124,14 @@ function App() {
             <div className="p-8">
               <OrderHistoryPage />
             </div>
+          }
+        />
+
+        {/* Profile */}
+        <Route
+          path="profile"
+          element={
+            <ProfilePage />
           }
         />
       </Route>

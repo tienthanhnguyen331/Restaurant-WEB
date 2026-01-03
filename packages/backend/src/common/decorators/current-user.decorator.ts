@@ -1,18 +1,20 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 export interface AuthenticatedUser {
-  userId: string;
-  restaurantId: string;
+  id: string;
+  email: string;
+  name: string;
   role: string;
+  restaurantId?: string; // Từ fix trước
 }
 
 /**
  * Decorator để lấy thông tin user đã authenticated từ request
- * Sử dụng sau khi request đã pass qua AdminAuthGuard
+ * Sử dụng sau khi request đã pass qua JwtAuthGuard
  * 
  * @example
- * async createItem(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateItemDto) {
- *   // user.restaurantId available here
+ * async getProfile(@CurrentUser() user: AuthenticatedUser) {
+ *   // user.sub is user id
  * }
  */
 export const CurrentUser = createParamDecorator(

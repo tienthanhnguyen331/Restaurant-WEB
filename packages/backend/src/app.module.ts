@@ -45,7 +45,6 @@ import { OrderItemEntity } from './modules/order/entities/order-item.entity';
         database: config.get<string>('DATABASE_NAME'),
         entities: [
           User,
-          AuthModule,
           TableEntity,
           MenuCategoryEntity,
           MenuItemEntity,

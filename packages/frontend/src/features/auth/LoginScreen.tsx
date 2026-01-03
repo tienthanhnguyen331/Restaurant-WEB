@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {login} from './hooks/useAuth'
 import * as z from 'zod';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const schema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -40,12 +40,9 @@ export const LoginScreen = () => {
           Đăng nhập
         </button>
         
-        {/* <div className="mt-4 border-t pt-4">
-          <button type="button" onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
-            className="w-full border py-2 rounded flex items-center justify-center gap-2">
-            <img src="/google-icon.svg" width={20} /> Tiếp tục với Google
-          </button>
-        </div> */}
+        <div className="mt-4 text-center">
+          <Link to="/register" className="text-blue-500 hover:text-blue-700">Đăng ký</Link>
+        </div>
       </form>
     </div>
   );

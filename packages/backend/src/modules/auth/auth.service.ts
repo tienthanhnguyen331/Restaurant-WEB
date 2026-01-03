@@ -1,52 +1,52 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    // 1. Test thử băm trực tiếp tại chỗ
-  const testHash = await bcrypt.hash('password123', 10);
-  console.log('Test Hash mới tạo:', testHash);
-  
-  // 2. So sánh pass nhập vào với chính cái hash vừa tạo
-  const testMatch = await bcrypt.compare('password123', testHash);
-  console.log('Test so sánh nội bộ:', testMatch);
-  const user = await this.userService.findOneByEmail(email);
+  async register(data: { name: string; email: string; password: string }) {
+    const existingUser = await this.userService.findOneByEmail(data.email);
+    if (existingUser) throw new ConflictException('Email đã tồn tại');
 
-  // LOG để kiểm tra giá trị thực tế truyền vào
-  console.log('Pass nhập vào:', pass); 
-  console.log('Hash từ DB:', user?.password);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await this.userService.create({ ...data, password: hashedPassword });
 
-  if (user && user.password) {
-    // Thứ tự: pass (plain text) trước, user.password (hash) sau
-    const isMatch = await bcrypt.compare(pass, user.password);
-    console.log('Kết quả so sánh:', isMatch);
-
-    if (isMatch) {
-      const { password, ...result } = user;
-      return result;
-    }
-  }
-  return null;
-}
-
-  async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
-      user,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
     };
   }
 
-  async googleLogin(req) {
-    if (!req.user) throw new UnauthorizedException();
-    return this.login(req.user);
+  async login(data: { email: string; password: string }) {
+    // Tìm user và đảm bảo lấy cả trường password nếu entity đang để select: false
+  const user = await this.userService.findOneByEmail(data.email);
+
+  // Kiểm tra user tồn tại và mật khẩu không bị undefined
+  if (!user || !user.password) {
+    throw new UnauthorizedException('Sai email hoặc mật khẩu');
+  }
+
+  // So sánh mật khẩu
+  const isMatch = await bcrypt.compare(data.password, user.password);
+  
+  if (!isMatch) {
+    throw new UnauthorizedException('Sai email hoặc mật khẩu');
+  }
+
+  // Xóa password khỏi object trước khi tạo token/trả về client
+  const { password, ...result } = user;
+
+    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    };
   }
 }

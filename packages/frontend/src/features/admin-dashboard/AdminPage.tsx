@@ -8,6 +8,7 @@ import { FilterBar } from './components/FilterBar';
 import { TableGrid } from './components/TableGrid';
 import { TableForm } from './components/TableForm';
 import { BulkDownloadActions } from '../print-tools/components/BulkDownloadActions';
+import { Link } from 'react-router-dom';
 
 export const AdminPage: React.FC = () => {
   const [tables, setTables] = useState<Table[]>([]);
@@ -173,8 +174,22 @@ export const AdminPage: React.FC = () => {
       )}
 
       {/* ========================================================== */}
-      {/* NÚT ĐĂNG XUẤT - GÓC TRÁI DƯỚI CÙNG */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* USER INFO & LOGOUT - GÓC TRÁI DƯỚI CÙNG */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
+        <Link
+          to="/admin/profile"
+          className="group flex items-center gap-3 px-4 py-3 bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-lg"
+          title="Xem thông tin cá nhân"
+        >
+          <div className="p-1 bg-blue-50 rounded-full group-hover:bg-blue-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <span className="font-semibold pr-2">Profile</span>
+        </Link>
+
         <button 
           onClick={handleLogout}
           className="group flex items-center gap-3 px-4 py-3 bg-white border border-red-200 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-lg"
