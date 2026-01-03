@@ -89,7 +89,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     if (authToken) params.append('token', authToken);
     params.append('page', page.toString());
     params.append('limit', '20');
-    params.append('restaurantId', '00000000-0000-0000-0000-000000000000');
+    //params.append('restaurantId', '00000000-0000-0000-0000-000000000000');
     const response = await axios.get(`${API_BASE_URL}/api/menu?${params.toString()}`);
     return response.data;
   };

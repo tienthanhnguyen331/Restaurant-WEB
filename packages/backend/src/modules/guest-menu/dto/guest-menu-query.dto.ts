@@ -15,6 +15,11 @@ export class GuestMenuQueryDto implements IGuestMenuQuery {
   @IsString()
   q?: string;
 
+  // Token từ QR code (optional, để tracking hoặc validate session nếu cần)
+  @IsOptional()
+  @IsString()
+  token?: string;
+
   // Filter theo category
   @IsOptional()
   @IsUUID('4', { message: 'categoryId phải là UUID hợp lệ' })
