@@ -13,8 +13,8 @@ export class QrUtils {
       tableNumber,
       restaurantId: process.env.RESTAURANT_ID || 'default' // Default for single-tenant
     };
-    // Token có hạn 1 ngày (hoặc tùy chỉnh)
-    return this.jwtService.sign(payload, { expiresIn: '1d' });
+    // Token có hạn 100 năm (coi như vĩnh viễn)
+    return this.jwtService.sign(payload, { expiresIn: '36500d' });
   }
 
   verifyToken(token: string): any {
