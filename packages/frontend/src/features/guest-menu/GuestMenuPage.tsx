@@ -86,7 +86,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     if (filters.sort) params.append('sort', filters.sort);
     if (filters.order) params.append('order', filters.order);
     if (filters.chefRecommended) params.append('chefRecommended', 'true');
-    if (authToken) params.append('token', authToken);
+   // if (authToken) params.append('token', authToken);
     params.append('page', page.toString());
     params.append('limit', '20');
     //params.append('restaurantId', '00000000-0000-0000-0000-000000000000');
