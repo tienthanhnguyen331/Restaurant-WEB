@@ -1,7 +1,9 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import PaymentStatus from './components/PaymentStatus';
+import PaymentSuccessModal from './components/PaymentSuccessModal';
 import { usePayment } from './hooks/usePayment';
+import { PaymentMethod } from './SelectPaymentMethodPage';
 
 
 
@@ -19,18 +21,77 @@ type CartItem = {
 export default function PaymentPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { pay, status, error, payment, loading } = usePayment();
+  const { payWithMomo, status, error, payment, loading, MENU_RETURN_KEY, setReturnUrl } = usePayment();
 
   const {
     items = [],
     orderId,
+    paymentMethod,
   }: {
     items?: CartItem[];
     orderId?: string;
+    paymentMethod?: PaymentMethod;
   } = location.state || {};
 
+  const selectedMethod: PaymentMethod = paymentMethod || PaymentMethod.MOMO;
+
   const [tab, setTab] = useState<'order' | 'status' | 'add'>('order');
+  const successParam = searchParams.get('success');
+  const [showSuccessModal, setShowSuccessModal] = useState(!!successParam);
+  const returnUrlRef = useRef<string>('/menu');
+
+  const getReturnUrl = () => {
+    try {
+      const saved = localStorage.getItem(MENU_RETURN_KEY) || '';
+      if (saved.includes('/payment')) return '/menu';
+      return saved || '/menu';
+    } catch (e) {
+      return '/menu';
+    }
+  };
+
+  // Store return URL as soon as page loads (only if not /payment)
+  useEffect(() => {
+    setReturnUrl();
+    returnUrlRef.current = getReturnUrl();
+  }, [setReturnUrl]);
+
+  useEffect(() => {
+    if (successParam) {
+      setShowSuccessModal(true);
+    }
+  }, [successParam]);
+
+  useEffect(() => {
+    if (!successParam) return;
+
+    const timer = setTimeout(() => {
+      // Try close current tab (works if opened by script); then navigate back to saved menu URL
+      const lastUrl = getReturnUrl();
+      returnUrlRef.current = lastUrl;
+
+      if (window.close) {
+        window.close();
+      }
+
+      navigate(lastUrl, { replace: true });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [successParam, navigate, MENU_RETURN_KEY]);
+
+  useEffect(() => {
+    if (successParam) {
+      const timer = setTimeout(() => {
+        // Clean URL params after we show modal
+        window.history.replaceState({}, '', '/payment');
+        setSearchParams({});
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [successParam, setSearchParams]);
 
   // Tổng tiền
   const subTotal = items.reduce(
@@ -45,6 +106,14 @@ export default function PaymentPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center">
+      {showSuccessModal && (
+        <PaymentSuccessModal
+          onClose={() => {
+            setShowSuccessModal(false);
+            navigate(returnUrlRef.current, { replace: true });
+          }}
+        />
+      )}
       <div className="w-full max-w-[420px] bg-white shadow-lg flex flex-col min-h-screen md:rounded-xl md:my-8 relative">
 
         {/* HEADER */}
@@ -175,23 +244,21 @@ export default function PaymentPage() {
         {/* FOOTER */}
         <div className="fixed bottom-0 left-0 w-full flex justify-center bg-white border-t">
           <div className="w-full max-w-[420px] flex gap-3 p-4">
-            <button className="flex-1 bg-yellow-400 text-white font-bold py-3 rounded-full">
-              Xác nhận
-            </button>
             <button
-              className="flex-1 bg-yellow-500 text-white font-bold py-3 rounded-full"
+              className="flex-1 bg-yellow-500 text-white font-bold py-3 rounded-full hover:bg-yellow-600 disabled:opacity-50"
               onClick={() => {
                 if (!orderId) return;
-                pay({
-                  orderId,
-                  amount: grandTotal,
-                  method: 'stripe',
-                });
-                setTab('status');
+                if (selectedMethod === PaymentMethod.MOMO) {
+                  payWithMomo(orderId, grandTotal);
+                } else if (selectedMethod === PaymentMethod.CASH || selectedMethod === PaymentMethod.BANK) {
+                  // Cash/Bank: not implemented; keep UI simple
+                  setTab('status');
+                }
               }}
               disabled={loading}
+              title="Thanh toán"
             >
-              Thanh toán
+              {`Thanh toán ${grandTotal.toLocaleString()}`}
             </button>
           </div>
         </div>

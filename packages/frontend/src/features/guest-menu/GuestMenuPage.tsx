@@ -8,6 +8,7 @@ import CartSidebar from './components/CartSidebar';
 import { useCart } from '../../contexts/CartContext';
 import { ProfilePage } from '../admin-dashboard/ProfilePage';
 import { LoginScreen } from '../auth/LoginScreen';
+import { useEffect } from 'react';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://restaurant-web-five-wine.vercel.app';
 
 export interface GuestMenuItem {
@@ -81,6 +82,17 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     order: 'ASC',
     chefRecommended: false,
   });
+
+  // Show success popup if flag exists
+  useEffect(() => {
+    const msg = localStorage.getItem('payment:successMessage');
+    if (!msg) return;
+    localStorage.removeItem('payment:successMessage');
+    const timer = setTimeout(() => {
+      window.alert(msg);
+    }, 500); // show quickly after load
+    return () => clearTimeout(timer);
+  }, []);
 
   // React Query fetch function
   const fetchMenu = async () => {

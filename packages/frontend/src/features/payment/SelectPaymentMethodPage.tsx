@@ -33,7 +33,7 @@ export default function SelectPaymentMethodPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { items, total, orderId, userId } = location.state || {};
-  const [selected, setSelected] = useState<PaymentMethod>(PaymentMethod.CASH);
+  const [selected, setSelected] = useState<PaymentMethod>(PaymentMethod.MOMO);
 
   const handlePay = () => {
     navigate('/payment', {
