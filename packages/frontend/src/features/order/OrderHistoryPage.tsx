@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { orderApi } from './services/order-api';
+import { OrderDetailModal } from './components/OrderDetailModal';
 import type { Order } from './types';
 
 export const OrderHistoryPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -39,7 +41,11 @@ export const OrderHistoryPage = () => {
           <p>Chưa có đơn hàng nào.</p>
         ) : (
           orders.map(order => (
-            <div key={order.id} className="border p-4 rounded shadow">
+            <div 
+              key={order.id} 
+              className="border p-4 rounded shadow hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setSelectedOrder(order)}
+            >
             <div className="flex justify-between">
               <span className="font-bold">Đơn #{order.id.slice(0, 8)}</span>
               <span className={`px-2 py-1 rounded text-sm ${
@@ -54,6 +60,13 @@ export const OrderHistoryPage = () => {
           </div>
         )))}
       </div>
+      
+      {selectedOrder && (
+        <OrderDetailModal 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)} 
+        />
+      )}
     </div>
   );
 };

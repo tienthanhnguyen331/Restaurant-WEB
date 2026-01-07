@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderEntity } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-item.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
-
+import { UpdateOrderDto } from './dto/update-order.dto';
 @Injectable()
 export class OrderService {
   constructor(
@@ -40,12 +40,20 @@ export class OrderService {
     return this.orderRepo.find({ relations: ['items'] });
   }
 
-  findOne(id: string) {
-    return this.orderRepo.findOne({ where: { id }, relations: ['items'] });
+  async findOne(id: string) {
+    const order = await this.orderRepo.findOne({ where: { id }, relations: ['items'] });
+    if (!order) 
+      throw new NotFoundException(`Order ${id} not found`);
+    return order;
   }
   
   async updateStatus(id: string, status: string) {
       await this.orderRepo.update(id, { status });
+      return this.findOne(id);
+  }
+
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+      await this.orderRepo.update(id, updateOrderDto);
       return this.findOne(id);
   }
 }
