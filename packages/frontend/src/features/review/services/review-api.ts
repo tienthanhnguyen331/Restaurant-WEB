@@ -8,4 +8,13 @@ export const reviewApi = {
     const res = await fetch(url);
     return res.json();
   },
+
+  create: async (data: any) => {
+    const res = await fetch(`${API_URL}/api/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return res.json();
+  },
 };

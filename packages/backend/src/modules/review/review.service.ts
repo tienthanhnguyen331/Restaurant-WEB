@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReviewEntity } from './entities/review.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
 
 
 @Injectable()
@@ -29,5 +30,10 @@ export class ReviewService{
         }
         return review;
     }
-   
+
+   async create(createReviewDto: CreateReviewDto)
+   {
+        const review = this.reviewRepo.create(createReviewDto);
+        return this.reviewRepo.save(review);
+   }
 }

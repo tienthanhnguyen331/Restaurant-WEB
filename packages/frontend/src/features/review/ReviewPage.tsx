@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { reviewApi } from './services/review-api';
 import { ReviewList } from './components/ReviewList';
 import type { Review } from './types';
+import { ReviewForm } from './components/ReviewForm';
 
 export const ReviewPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -27,6 +28,26 @@ export const ReviewPage: React.FC = () => {
       
       {/* Ở Commit 1: Chỉ hiển thị danh sách, chưa có Form nhập */}
       <ReviewList reviews={reviews} />
+
+    {/* Dữ liệu giả để test tính năng đánh giá */}
+      <ReviewForm 
+  menuItemId={menuItemId} 
+  onSubmit={(data) => {
+    reviewApi.create({ 
+      ...data, 
+      menu_item_id: '41a67a2b-af69-4a71-a418-b2e3a026fedb', 
+      user_id: '4ae74b8f-8402-41f7-8cd6-0a6145885601' 
+    })
+    .then((newReview) => {
+       alert('Gửi thành công!'); // Báo để biết là chạy được
+       setReviews((prev) => [newReview, ...prev]);
+    })
+    .catch(err => {
+       console.error(err);
+       alert('Lỗi rồi: Xem console để biết chi tiết');
+    });
+  }} 
+/>
     </div>
   );
 };
