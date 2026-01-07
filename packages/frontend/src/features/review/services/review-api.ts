@@ -17,4 +17,8 @@ export const reviewApi = {
     });
     return res.json();
   },
+  getAverageRating: async (menuItemId: string) => {
+    const res = await fetch(`${API_URL}/api/reviews/menu-item/${menuItemId}/average-rating`);
+    return res.json();
+  },
 };

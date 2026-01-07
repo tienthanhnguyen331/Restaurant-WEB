@@ -21,4 +21,11 @@ export class ReviewController {
   {
     return this.reviewService.create(createReviewDto);
   }
+
+  @Get('menu-item/:menuItemId/average-rating')
+  async getAaverageRating(@Param('menuItemId') menuItemId: string)
+  {
+    const avg = await this.reviewService.getAverageRating(menuItemId);
+    return { menu_item_id: menuItemId, average_rating: avg };
+  }
 }

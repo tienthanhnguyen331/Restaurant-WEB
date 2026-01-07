@@ -1,53 +1,89 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { reviewApi } from './services/review-api';
+import { ReviewForm } from './components/ReviewForm';
 import { ReviewList } from './components/ReviewList';
 import type { Review } from './types';
-import { ReviewForm } from './components/ReviewForm';
 
 export const ReviewPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const menuItemId = searchParams.get('menu_item_id') || '';
-  const [reviews, setReviews] = useState<Review[]>([]);
 
-  // Gọi API lấy danh sách khi trang vừa load
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const data = await reviewApi.getAll(menuItemId);
+      setReviews(data);
+
+      if (menuItemId) {
+        const avgData = await reviewApi.getAverageRating(menuItemId);
+        setAverageRating(avgData.average_rating);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    reviewApi.getAll(menuItemId).then((data) => {
-        // Kiểm tra an toàn để tránh lỗi nếu API trả về null
-        if (Array.isArray(data)) {
-            setReviews(data);
-        } else {
-            setReviews([]);
-        }
-    }).catch(err => console.error(err));
+    fetchReviews();
   }, [menuItemId]);
+
+  const handleSubmitReview = async (data: { rating: number; comment: string }) => {
+    try {
+      const userId = '00000000-0000-0000-0000-000000000001'; // Mock user
+      await reviewApi.create({
+        user_id: userId,
+        menu_item_id: menuItemId,
+        rating: data.rating,
+        comment: data.comment,
+      });
+      alert('Đánh giá của bạn đã được gửi!');
+      setShowForm(false);
+      fetchReviews();
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+    }
+  };
+
+  if (loading) return <div className="p-4">Đang tải...</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Đánh giá món ăn</h1>
-      
-      {/* Ở Commit 1: Chỉ hiển thị danh sách, chưa có Form nhập */}
-      <ReviewList reviews={reviews} />
 
-    {/* Dữ liệu giả để test tính năng đánh giá */}
-      <ReviewForm 
-  menuItemId={menuItemId} 
-  onSubmit={(data) => {
-    reviewApi.create({ 
-      ...data, 
-      menu_item_id: '41a67a2b-af69-4a71-a418-b2e3a026fedb', 
-      user_id: '4ae74b8f-8402-41f7-8cd6-0a6145885601' 
-    })
-    .then((newReview) => {
-       alert('Gửi thành công!'); // Báo để biết là chạy được
-       setReviews((prev) => [newReview, ...prev]);
-    })
-    .catch(err => {
-       console.error(err);
-       alert('Lỗi rồi: Xem console để biết chi tiết');
-    });
-  }} 
-/>
+      <div className="bg-blue-50 p-4 rounded mb-6">
+        <div className="text-sm text-gray-600">Đánh giá trung bình</div>
+        <div className="text-3xl font-bold text-blue-600">
+          {averageRating.toFixed(1)} / 5.0
+        </div>
+        <div className="text-sm text-gray-500">{reviews.length} đánh giá</div>
+      </div>
+
+      {!showForm ? (
+        <button
+          onClick={() => setShowForm(true)}
+          className="w-full bg-blue-600 text-white px-4 py-3 rounded mb-6 hover:bg-blue-700"
+        >
+          Viết đánh giá
+        </button>
+      ) : (
+        <div className="mb-6 border p-4 rounded">
+          <ReviewForm
+            menuItemId={menuItemId}
+            onSubmit={handleSubmitReview}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
+      )}
+
+      <ReviewList reviews={reviews} />
     </div>
   );
 };

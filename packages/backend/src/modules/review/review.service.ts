@@ -36,4 +36,15 @@ export class ReviewService{
         const review = this.reviewRepo.create(createReviewDto);
         return this.reviewRepo.save(review);
    }
+
+    async getAverageRating(menuItemId: string): Promise<number> 
+    {
+        const result = await this.reviewRepo
+            .createQueryBuilder('review')
+            .select('AVG(review.rating)', 'avg')
+            .where('review.menu_item_id = :menuItemId', { menuItemId })
+            .getRawOne();
+
+        return result?.avg ? parseFloat(result.avg) : 0;
+    }
 }
