@@ -33,10 +33,14 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps = {}) => {
       // Kiểm tra role của user
       if (user.role === 'USER') {
         alert(`Chào mừng ${user.name}! Bạn đã đăng nhập thành công với tài khoản khách hàng.`);
-        // Gọi callback nếu có
-        onLoginSuccess?.();
+        // Gọi callback nếu có (dành cho modal context) hoặc redirect về menu
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        } else {
+             navigate('/guest-menu');
+        }
       } else if (user.role === 'ADMIN') {
-        // Admin được redirect đến trang admin
+        // Admin được redirect đến trang admin (hoặc trang trước đó)
         navigate(from, { replace: true });
       }
     } catch (err: any) {

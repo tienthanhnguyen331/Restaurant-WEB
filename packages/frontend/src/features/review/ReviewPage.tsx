@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { reviewApi } from './services/review-api';
+import { getCurrentUser } from '../auth/hooks/useAuth';
 import { ReviewForm } from './components/ReviewForm';
 import { ReviewList } from './components/ReviewList';
 import type { Review } from './types';
@@ -36,10 +37,27 @@ export const ReviewPage: React.FC = () => {
   }, [menuItemId]);
 
   const handleSubmitReview = async (data: { rating: number; comment: string }) => {
+    if (!menuItemId) {
+      alert('Không tìm thấy thông tin món ăn để đánh giá.');
+      return;
+    }
+    
     try {
-      const userId = '00000000-0000-0000-0000-000000000001'; // Mock user
+      const currentUser = getCurrentUser();
+      if (!currentUser || !currentUser.id) {
+        alert('Bạn cần đăng nhập để gửi đánh giá.');
+        // Optional: Redirect to login
+        return; 
+      }
+      
+      console.log('Submitting review:', { 
+        user_id: currentUser.id, 
+        menu_item_id: menuItemId, 
+        ...data 
+      });
+
       await reviewApi.create({
-        user_id: userId,
+        user_id: currentUser.id,
         menu_item_id: menuItemId,
         rating: data.rating,
         comment: data.comment,
@@ -47,8 +65,10 @@ export const ReviewPage: React.FC = () => {
       alert('Đánh giá của bạn đã được gửi!');
       setShowForm(false);
       fetchReviews();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit review:', error);
+      const msg = error.response?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá';
+      alert(`Gửi thất bại: ${Array.isArray(msg) ? msg.join(', ') : msg}`);
     }
   };
 

@@ -4,7 +4,10 @@ import {
     Column, 
     CreateDateColumn, 
     UpdateDateColumn,
+    ManyToOne,
+    JoinColumn
 } from 'typeorm';
+import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
 
 @Entity('reviews')
 export class ReviewEntity {
@@ -16,6 +19,10 @@ export class ReviewEntity {
 
     @Column()
     menu_item_id: string;
+
+    @ManyToOne(() => MenuItemEntity)
+    @JoinColumn({ name: 'menu_item_id' })
+    menu_item: MenuItemEntity;
 
     @Column({ type: 'int'})
     rating: number;

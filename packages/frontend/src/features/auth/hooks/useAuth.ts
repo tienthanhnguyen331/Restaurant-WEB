@@ -25,15 +25,20 @@ export const login = async (credentials: LoginCredentials) => {
   
   if (data.access_token) {
     localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('user', JSON.stringify(data.user)); // Save user info
   }
   
   return data.user;
 };
 export const logout = () => {
   localStorage.removeItem('access_token');
-  // Nếu bạn có lưu thông tin user, hãy xóa luôn
-  // localStorage.removeItem('user'); 
+  localStorage.removeItem('user');
   
   // Điều hướng về trang login và reload để xóa sạch state cũ
   window.location.href = '/login';
 };
+export const getCurrentUser = () => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) return JSON.parse(userStr);
+    return null;
+}
