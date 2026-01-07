@@ -14,7 +14,10 @@ export class ReviewService{
     
     async findAll(menuItemId?: string)
     {
-        const query = this.reviewRepo.createQueryBuilder('review').orderBy('review.created_at', 'DESC');
+        const query = this.reviewRepo.createQueryBuilder('review')
+            .leftJoinAndSelect('review.menu_item', 'menu_item')
+            .orderBy('review.created_at', 'DESC');
+        
         if(menuItemId)
         {
             query.where('review.menu_item_id = :menuItemId', { menuItemId });

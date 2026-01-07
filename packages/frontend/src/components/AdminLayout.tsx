@@ -41,6 +41,11 @@ export default function AdminLayout() {
       label: 'Orders History',
       icon: '🧾',
     },
+    {
+      path: '/admin/reviews',
+      label: 'Reviews',
+      icon: '⭐',
+    },
   ];
 
   const isActive = (path: string, exact?: boolean) => {

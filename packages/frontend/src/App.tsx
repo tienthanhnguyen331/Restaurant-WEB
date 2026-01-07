@@ -11,6 +11,7 @@ import { MenuItemsPage } from './features/admin-menu/MenuItemsPage';
 import ModifierManager from './features/admin-modifiers/ModifierManager';
 import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToItem';
 import { OrderHistoryPage } from './features/order/OrderHistoryPage';
+import { AdminReviewsPage } from './features/review/AdminReviewsPage';
 
 // Auth
 import { LoginScreen } from './features/auth/LoginScreen';
@@ -126,6 +127,16 @@ function App() {
           element={
             <div className="p-8">
               <OrderHistoryPage />
+            </div>
+          }
+        />
+
+        {/* Reviews */}
+        <Route
+          path="reviews"
+          element={
+            <div className="p-8">
+              <AdminReviewsPage />
             </div>
           }
         />

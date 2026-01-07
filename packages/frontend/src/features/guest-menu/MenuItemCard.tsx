@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import type { GuestMenuItem } from './GuestMenuPage';
 import ModifierSelector from './ModifierSelector';
 import { useCart } from '../../contexts/CartContext';
@@ -123,9 +125,12 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
           </p>
         )}
 
-        
-
-        
+        <div className="flex items-center gap-1 mb-3">
+            <Link to={`/reviews?menu_item_id=${item.id}`} className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                <span>Xem đánh giá</span>
+            </Link>
+        </div>
 
         {/* Modifier Selector (when expanded) */}
         {showModifiers && (
