@@ -28,6 +28,9 @@ import { OrderItemEntity } from './modules/order/entities/order-item.entity';
 import { PaymentModule } from './modules/payment/payment.module';
 import { Payment } from './modules/payment/entities/payment.entity';
 
+import { ReviewModule } from './modules/review/review.module';
+import { ReviewEntity } from './modules/review/entities/review.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -57,6 +60,7 @@ import { Payment } from './modules/payment/entities/payment.entity';
           OrderEntity,
           OrderItemEntity,
           Payment,
+          ReviewEntity,
         ],
         // Tự động tạo bảng nếu chưa có (chỉ nên dùng khi mới deploy hoặc dev)
         // Set biến môi trường DB_SYNC=true trên Vercel để kích hoạt
@@ -82,6 +86,7 @@ import { Payment } from './modules/payment/entities/payment.entity';
     UserModule,
     OrderModule,
     PaymentModule,
+    ReviewModule,
   ],
 })
 export class AppModule {}

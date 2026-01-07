@@ -57,3 +57,7 @@ coverage/
 # Package lock (tùy chọn - có thể giữ lại)
 # package-lock.json
 # yarn.lock
+
+# Documentation Helpers
+Dev1.md
+Dev1_old.md

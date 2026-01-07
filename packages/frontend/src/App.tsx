@@ -22,6 +22,8 @@ import GuestMenuPage from './features/guest-menu/GuestMenuPage';
 import PaymentPage from './features/payment/PaymentPage';
 import SelectPaymentMethodPage from './features/payment/SelectPaymentMethodPage';
 
+//import tạm để test
+import { ReviewPage } from './features/review/ReviewPage';
 /* =======================
    PROTECTED ROUTE
 ======================= */
@@ -43,6 +45,7 @@ function App() {
   return (
     <Routes>
       {/* ===== PUBLIC ROUTES ===== */}
+      <Route path="/reviews" element={<ReviewPage />} />
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/menu" element={<ScanPage />} />
