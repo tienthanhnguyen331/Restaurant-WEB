@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, Home, User } from 'lucide-react';
 import MenuFilters from './MenuFilters';
 import MenuItemCard from './MenuItemCard';
-import CartSidebar from './components/CartSidebar';
 import { useCart } from '../../contexts/CartContext';
 import { ProfilePage } from '../admin-dashboard/ProfilePage';
 import { LoginScreen } from '../auth/LoginScreen';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://restaurant-web-five-wine.vercel.app';
 
 export interface GuestMenuItem {
@@ -71,7 +71,7 @@ export default function GuestMenuPage({ tableInfo, authToken }: GuestMenuPagePro
 
 function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   const { itemCount } = useCart();
-  const [cartOpen, setCartOpen] = useState(false);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'menu' | 'cart' | 'profile'>('menu');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [page, setPage] = useState(1);
@@ -283,16 +283,23 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
       </div>
       )}
 
-      {/* Floating Cart Button - Chỉ hiển thị trên desktop */}
+      {/* Floating Cart Button - Desktop only */}
       <button
-        onClick={() => setCartOpen((open) => !open)}
+        onClick={() => {
+          const orderId = Date.now().toString();
+          navigate('/payment', {
+            state: { orderId },
+          });
+        }}
         className="hidden md:flex fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 z-30 items-center gap-2"
         aria-label="Giỏ hàng"
       >
         <ShoppingCart className="w-6 h-6" />
-        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-          {itemCount}
-        </span>
+        {itemCount > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+            {itemCount}
+          </span>
+        )}
       </button>
 
       {/* Bottom Navigation - Chỉ hiển thị trên mobile */}
@@ -302,7 +309,6 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           <button
             onClick={() => {
               setActiveTab('menu');
-              setCartOpen(false);
             }}
             className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
               activeTab === 'menu' ? 'text-blue-600' : 'text-gray-500'
@@ -315,8 +321,13 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           {/* Giỏ hàng */}
           <button
             onClick={() => {
-              setActiveTab('cart');
-              setCartOpen(true);
+              // Navigate to payment page with orderId
+              const orderId = Date.now().toString(); // Generate temporary orderId
+              navigate('/payment', {
+                state: {
+                  orderId,
+                },
+              });
             }}
             className={`flex flex-col items-center justify-center flex-1 h-full transition-colors relative ${
               activeTab === 'cart' ? 'text-blue-600' : 'text-gray-500'
@@ -335,8 +346,6 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           <button
             onClick={() => {
               setActiveTab('profile');
-              setCartOpen(false);
-              // TODO: Navigate to profile page
             }}
             className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
               activeTab === 'profile' ? 'text-blue-600' : 'text-gray-500'
@@ -365,15 +374,6 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           <span className="font-semibold pr-2">Đăng xuất</span>
         </button>
       )}
-
-      {/* Cart Sidebar */}
-      <CartSidebar 
-        isOpen={cartOpen} 
-        onClose={() => {
-          setCartOpen(false);
-          setActiveTab('menu');
-        }}
-      />
     </div>
   );
 }

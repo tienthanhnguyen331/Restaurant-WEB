@@ -21,7 +21,6 @@ import { RegisterScreen } from './features/auth/RegisterScreen';
 import { ScanPage } from './features/customer-view/ScanPage';
 import GuestMenuPage from './features/guest-menu/GuestMenuPage';
 import PaymentPage from './features/payment/PaymentPage';
-import SelectPaymentMethodPage from './features/payment/SelectPaymentMethodPage';
 
 //import tạm để test
 import { ReviewPage } from './features/review/ReviewPage';
@@ -51,7 +50,6 @@ function App() {
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
-      <Route path="/select-payment-method" element={<SelectPaymentMethodPage />} />
       <Route path="/payment" element={<PaymentPage />} />
 
       {/* ===== ADMIN ROUTES (PROTECTED) ===== */}
