@@ -1,0 +1,10 @@
+{
+  "[sql]": {
+    "editor.wordBasedSuggestions": "off"
+  },
+  "oracledevtools.enableDatabaseConnectionFeatures": false,
+  "oracledevtools.enableProjectExplorer": false,
+  "files.associations": {
+    "*.sql": "postgres"
+  }
+}

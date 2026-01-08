@@ -19,14 +19,18 @@ export const ReviewPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await reviewApi.getAll(menuItemId);
-      setReviews(data);
+      console.log('Reviews data:', data);
+      setReviews(Array.isArray(data) ? data : []);
 
       if (menuItemId) {
         const avgData = await reviewApi.getAverageRating(menuItemId);
-        setAverageRating(avgData.average_rating);
+        console.log('Average rating data:', avgData);
+        setAverageRating(avgData?.average_rating || 0);
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
+      setReviews([]);
+      setAverageRating(0);
     } finally {
       setLoading(false);
     }

@@ -106,8 +106,22 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     params.append('page', page.toString());
     params.append('limit', '20');
     //params.append('restaurantId', '00000000-0000-0000-0000-000000000000');
-    const response = await axios.get(`${API_BASE_URL}/api/menu?${params.toString()}`);
-    return response.data;
+    
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/menu?${params.toString()}`);
+      console.log('Menu API Response:', response.data);
+      
+      // Validate response structure
+      if (!response.data || !response.data.data || !response.data.data.categories) {
+        throw new Error('Invalid response format from menu API');
+      }
+      
+      return response.data;
+    } catch (err: any) {
+      console.error('Menu fetch error:', err);
+      console.error('Error response:', err.response?.data);
+      throw err;
+    }
   };
 
   const { data: menuData, isLoading, error, refetch } = useQuery({
@@ -160,7 +174,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     );
   }
 
-  if (!menuData || menuData.data.categories.length === 0) {
+  if (!menuData || !menuData.data || !menuData.data.categories || menuData.data.categories.length === 0) {
     return (
       <div className="min-h-screen p-6">
         <MenuFilters

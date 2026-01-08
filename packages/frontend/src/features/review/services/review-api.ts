@@ -6,6 +6,9 @@ export const reviewApi = {
       ? `${API_URL}/api/reviews?menu_item_id=${menuItemId}`
       : `${API_URL}/api/reviews`;
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch reviews: ${res.statusText}`);
+    }
     return res.json();
   },
 
@@ -15,10 +18,18 @@ export const reviewApi = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw error;
+    }
     return res.json();
   },
   getAverageRating: async (menuItemId: string) => {
     const res = await fetch(`${API_URL}/api/reviews/menu-item/${menuItemId}/average-rating`);
-    return res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to fetch average rating: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data;
   },
 };
