@@ -1,13 +1,27 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import type { Order } from '../types';
+import { orderApi } from '../services/order-api';
 
 interface OrderDetailModalProps {
   order: Order;
   onClose: () => void;
 }
 
+const ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'] as const;
+
 export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) => {
+  const handleStatusChange = async (newStatus: string) => {
+      try {
+          // Normalizes status to uppercase just in case backend expects it
+          await orderApi.updateStatus(order.id, newStatus);
+          onClose(); 
+      } catch (error) {
+          console.error("Failed to update status", error);
+          alert("Lỗi cập nhật trạng thái");
+      }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -19,7 +33,24 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
         <div className="p-6 space-y-4">
           <div className="bg-gray-50 p-4 rounded grid grid-cols-2 gap-2 text-sm">
              <div><span className="font-semibold">Bàn:</span> {order.table_id}</div>
-             <div><span className="font-semibold">Trạng thái:</span> {order.status}</div>
+             <div><span className="font-semibold">Trạng thái:</span> <span className="uppercase font-bold text-blue-600">{order.status}</span></div>
+          </div>
+
+          {/* Status Actions */}
+          <div className="flex flex-wrap gap-2">
+            {ORDER_STATUSES.map((status) => (
+                <button
+                    key={status}
+                    onClick={() => handleStatusChange(status)}
+                    disabled={order.status === status}
+                    className={`px-3 py-1 rounded text-sm font-medium capitalize 
+                        ${order.status === status 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
+                >
+                    {status}
+                </button>
+            ))}
           </div>
 
           <div>

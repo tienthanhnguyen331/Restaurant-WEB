@@ -12,6 +12,11 @@ import ModifierManager from './features/admin-modifiers/ModifierManager';
 import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToItem';
 import { OrderHistoryPage } from './features/order/OrderHistoryPage';
 import { AdminReviewsPage } from './features/review/AdminReviewsPage';
+import { ReportPage } from './features/report/ReportPage';
+
+// Waiter & Kitchen
+import { WaiterRoutes } from './features/waiter/waiter.routes';
+import { KitchenRoutes } from './features/kitchen/kitchen.routes';
 
 // Auth
 import { LoginScreen } from './features/auth/LoginScreen';
@@ -24,6 +29,7 @@ import PaymentPage from './features/payment/PaymentPage';
 
 //import tạm để test
 import { ReviewPage } from './features/review/ReviewPage';
+import { GuestOrderStatus } from './features/guest-menu/components/GuestOrderStatus'; // Import component mới
 /* =======================
    PROTECTED ROUTE
 ======================= */
@@ -50,7 +56,14 @@ function App() {
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
+      <Route path="/guest/order-status" element={<GuestOrderStatus />} /> {/* Route test mới */}
       <Route path="/payment" element={<PaymentPage />} />
+
+      {/* ===== WAITER ROUTES (PROTECTED) ===== */}
+      <Route path="/waiter/*" element={<ProtectedRoute><WaiterRoutes /></ProtectedRoute>} />
+
+      {/* ===== KITCHEN ROUTES (PROTECTED) ===== */}
+      <Route path="/kitchen/*" element={<ProtectedRoute><KitchenRoutes /></ProtectedRoute>} />
 
       {/* ===== ADMIN ROUTES (PROTECTED) ===== */}
       <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
@@ -135,6 +148,16 @@ function App() {
           element={
             <div className="p-8">
               <AdminReviewsPage />
+            </div>
+          }
+        />
+
+        {/* Reports */}
+        <Route
+          path="reports"
+          element={
+            <div className="p-8">
+              <ReportPage />
             </div>
           }
         />

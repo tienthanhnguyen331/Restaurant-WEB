@@ -1,7 +1,8 @@
 import { IsEnum, IsOptional } from 'class-validator';
+import { OrderStatus } from '../entities/order.entity';
 
 export class UpdateOrderDto {
   @IsOptional()
-  @IsEnum(['pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'])
-  status?: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
 }

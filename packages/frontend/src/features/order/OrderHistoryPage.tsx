@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { orderApi } from './services/order-api';
 import { OrderDetailModal } from './components/OrderDetailModal';
+import { useOrderSocket } from './hooks/useOrderSocket';
 import type { Order } from './types';
 
 export const OrderHistoryPage = () => {
@@ -8,6 +9,25 @@ export const OrderHistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { socket } = useOrderSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    socket.on('new_order', (newOrder: Order) => {
+      setOrders(prev => [newOrder, ...prev]);
+    });
+
+    socket.on('order_status_update', ({ orderId, status }: { orderId: string, status: Order['status'] }) => {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+      setSelectedOrder(prev => prev && prev.id === orderId ? { ...prev, status } : prev);
+    });
+
+    return () => {
+      socket.off('new_order');
+      socket.off('order_status_update');
+    }
+  }, [socket]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -48,8 +68,15 @@ export const OrderHistoryPage = () => {
             >
             <div className="flex justify-between">
               <span className="font-bold">Đơn #{order.id.slice(0, 8)}</span>
-              <span className={`px-2 py-1 rounded text-sm ${
-                order.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+              <span className={`px-2 py-1 rounded text-sm font-bold uppercase ${
+                order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                order.status === 'PENDING' ? 'bg-gray-100 text-gray-800' :
+                order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-800' :
+                order.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                order.status === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' :
+                order.status === 'READY' ? 'bg-indigo-100 text-indigo-800' :
+                order.status === 'SERVED' ? 'bg-purple-100 text-purple-800' :
+                'bg-gray-100 text-gray-800'
               }`}>
                 {order.status}
               </span>

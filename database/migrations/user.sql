@@ -1,5 +1,22 @@
--- Create Enum for Role
-CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
+-- Create Enum for Role (skip if already exists)
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('USER', 'ADMIN', 'WAITER', 'KITCHEN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Add WAITER and KITCHEN roles if they don't exist
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'WAITER' AND enumtypid = 'user_role'::regtype) THEN
+        ALTER TYPE user_role ADD VALUE 'WAITER';
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'KITCHEN' AND enumtypid = 'user_role'::regtype) THEN
+        ALTER TYPE user_role ADD VALUE 'KITCHEN';
+    END IF;
+END $$;
 
 -- Create User Table
 CREATE TABLE "users" (

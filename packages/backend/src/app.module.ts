@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TablesModule } from './tables/tables.module';
 import { QrAuthModule } from './qr-auth/qr-auth.module';
 import { ExportsModule } from './modules/exports/exports.module';
@@ -30,6 +31,10 @@ import { Payment } from './modules/payment/entities/payment.entity';
 
 import { ReviewModule } from './modules/review/review.module';
 import { ReviewEntity } from './modules/review/entities/review.entity';
+import { ReportModule } from './modules/report/report.module';
+
+import { WaiterModule } from './modules/waiter/waiter.module';
+import { KitchenModule } from './modules/kitchen/kitchen.module';
 
 @Module({
   imports: [
@@ -74,6 +79,8 @@ import { ReviewEntity } from './modules/review/entities/review.entity';
       signOptions: { expiresIn: '1d' },
     }),
 
+    ScheduleModule.forRoot(),
+
     TablesModule,
     QrAuthModule,
     ExportsModule,
@@ -87,6 +94,9 @@ import { ReviewEntity } from './modules/review/entities/review.entity';
     OrderModule,
     PaymentModule,
     ReviewModule,
+    ReportModule,
+    WaiterModule,
+    KitchenModule,
   ],
 })
 export class AppModule {}
