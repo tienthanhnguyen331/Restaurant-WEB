@@ -183,12 +183,12 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
       { step: 6, label: 'Completed' }
   ];
 
-  // Filter Active Orders for 'tracking' Tab (ignore completed/rejected/cancelled history)
-  // And take ONLY THE LATEST one for the Tracking view
+  // Filter for 'tracking' Tab:
+  // - Show ONLY the latest order (orders[0]) regardless of status.
+  // - This ensures users see "Completed" status until a new order pushes it down.
+  // - Filter out CANCELLED/REJECTED if desired, but user asked specifically to keep COMPLETED visible.
   const displayOrders = viewMode === 'tracking' 
-    ? orders
-        .filter(o => !['COMPLETED', 'REJECTED', 'CANCELLED'].includes(o.status.toUpperCase()))
-        .slice(0, 1)
+    ? orders.slice(0, 1)
     : orders;
 
   return (

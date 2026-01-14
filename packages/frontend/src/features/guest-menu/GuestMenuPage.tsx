@@ -258,7 +258,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {category.items.map((item) => (
-                  <MenuItemCard key={item.id} item={item} />
+                  <MenuItemCard key={item.id} item={item} tableInfo={tableInfo} />
                 ))}
               </div>
             )}

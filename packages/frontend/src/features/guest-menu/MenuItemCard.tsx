@@ -7,9 +7,10 @@ import { useCart } from '../../contexts/CartContext';
 
 interface MenuItemCardProps {
   item: GuestMenuItem;
+  tableInfo?: { tableId: string; tableNumber: string } | null;
 }
 
-export default function MenuItemCard({ item }: MenuItemCardProps) {
+export default function MenuItemCard({ item, tableInfo }: MenuItemCardProps) {
   const { addItem } = useCart();
   const [showModifiers, setShowModifiers] = useState(false);
   const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string[]>>({});
@@ -60,6 +61,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
           priceAdjustment: o.priceAdjustment,
         })),
       })),
+      tableId: tableInfo?.tableNumber ? parseInt(tableInfo.tableNumber, 10) : undefined,
     });
 
     // Reset state and show success

@@ -43,8 +43,17 @@ export default function PaymentPage() {
 
   const orderIdRef = useRef<string>(orderId || createOrderId());
 
-  // Use items from CartContext instead of location.state
-  const items = cartItems;
+  // Resolve table id (ensure number)
+  let resolvedTableId = 1;
+  if (typeof table_id === 'string') {
+    const parsed = parseInt(table_id, 10);
+    if (!isNaN(parsed) && parsed > 0) resolvedTableId = parsed;
+  } else if (typeof table_id === 'number' && table_id > 0) {
+    resolvedTableId = table_id;
+  }
+
+  // Use items from CartContext but filter to current table
+  const items = cartItems.filter((it) => typeof it.tableId === 'number' ? it.tableId === resolvedTableId : false);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>(PaymentMethod.MOMO);
   const [tab, setTab] = useState<'order' | 'status' | 'history'>('order');

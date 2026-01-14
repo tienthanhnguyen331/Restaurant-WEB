@@ -7,10 +7,18 @@ import { orderApi } from '../../order/services/order-api';
 import { OrderDetailModal } from '../../order/components/OrderDetailModal';
 
 export const WaiterDashboard = () => {
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
+
+  const showToast = (message: string, ms = 3000) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: '' }), ms);
+  };
+
   const handleCompleteOrder = async (orderId: string) => {
     try {
       await waiterApi.completeOrder(orderId);
       setOrders(prev => prev.filter(order => order.id !== orderId));
+      showToast('Đơn hàng đã được hoàn thành!');
     } catch (error) {
       console.error('Lỗi khi hoàn tất đơn:', error);
       handleAuthError(error);
@@ -125,6 +133,12 @@ export const WaiterDashboard = () => {
 
   return (
     <div className="p-8">
+      {/* Toast */}
+      {toast.show && (
+        <div className="fixed top-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+          {toast.message}
+        </div>
+      )}
       <h1 className="text-3xl font-bold mb-6">Waiter Dashboard</h1>
       <div className="mb-4 flex gap-4">
         <button

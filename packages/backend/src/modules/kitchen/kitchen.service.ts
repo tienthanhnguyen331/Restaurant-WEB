@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderEntity, OrderStatus } from '../order/entities/order.entity';
 import { WaiterGateway } from '../waiter/waiter.gateway';
+import { OrderGateway } from '../order/order.gateway';
 
 @Injectable()
 export class KitchenService {
@@ -11,6 +12,8 @@ export class KitchenService {
     private orderRepository: Repository<OrderEntity>,
     @Inject(forwardRef(() => WaiterGateway))
     private waiterGateway: WaiterGateway,
+    @Inject(forwardRef(() => OrderGateway))
+    private orderGateway: OrderGateway,
   ) {}
 
   async getOrders() {
@@ -55,8 +58,9 @@ export class KitchenService {
     await this.orderRepository.update(orderId, {
       status: OrderStatus.READY,
     });
-    // Phát event real-time cho waiter dashboard
+    // Phát event real-time cho waiter dashboard VÀ Client/Guest
     this.waiterGateway.notifyOrderStatusUpdate(orderId, OrderStatus.READY);
+    this.orderGateway.notifyOrderStatusUpdate(orderId, OrderStatus.READY);
     return { message: 'Order set to ready' };
   }
 }

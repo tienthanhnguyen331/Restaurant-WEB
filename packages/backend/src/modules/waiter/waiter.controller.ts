@@ -35,4 +35,9 @@ export class WaiterController {
   async serveOrder(@Param('id') orderId: string) {
     return this.waiterService.serveOrder(orderId);
   }
+
+  @Post('orders/:id/complete')
+  async completeOrder(@Param('id') orderId: string) {
+    return this.waiterService.completeOrder(orderId);
+  }
 }

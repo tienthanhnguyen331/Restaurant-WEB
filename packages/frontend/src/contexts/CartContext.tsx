@@ -20,6 +20,8 @@ export interface CartItem {
       priceAdjustment: number;
     }>;
   }>;
+  // Optional: associate cart item with a table (used for guest flows)
+  tableId?: number;
 }
 
 export type { CartItem as CartItemType };

@@ -9,10 +9,15 @@ interface OrderCardProps {
   onComplete?: (orderId: string) => void;
 }
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe, onComplete }: OrderCardProps) => {
   const [localStatus, setLocalStatus] = useState(order.status);
+
+  // Keep localStatus in sync if parent updates order.status (socket updates / re-fetch)
+  useEffect(() => {
+    setLocalStatus(order.status);
+  }, [order.status]);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
