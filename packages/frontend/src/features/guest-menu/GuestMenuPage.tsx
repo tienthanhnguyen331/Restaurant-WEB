@@ -289,13 +289,16 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
         )}
       </div>
       )}
-
+      
       {/* Floating Cart Button - Desktop only */}
       <button
         onClick={() => {
           const orderId = createOrderId();
+          // Truyền đúng table_id từ tableInfo.tableNumber
+          const table_id = tableInfo?.tableNumber ? parseInt(tableInfo.tableNumber, 10) : 1;
+          console.log('Truyền sang PaymentPage table_id:', table_id);
           navigate('/payment', {
-            state: { orderId },
+            state: { orderId, table_id },
           });
         }}
         className="hidden md:flex fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 z-30 items-center gap-2"
@@ -328,11 +331,14 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           {/* Giỏ hàng */}
           <button
             onClick={() => {
-              // Navigate to payment page with orderId
+              // Navigate to payment page với đúng table_id
               const orderId = createOrderId();
+              const table_id = tableInfo?.tableNumber ? parseInt(tableInfo.tableNumber, 10) : 1;
+              console.log('Truyền sang PaymentPage table_id:', table_id);
               navigate('/payment', {
                 state: {
                   orderId,
+                  table_id,
                 },
               });
             }}

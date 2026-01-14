@@ -32,10 +32,13 @@ export default function PaymentPage() {
 
   const { pay, payWithMomo, status, error, payment, loading, MENU_RETURN_KEY, setReturnUrl } = usePayment();
 
+
   const {
     orderId,
+    table_id,
   }: {
     orderId?: string;
+    table_id?: number | string;
   } = location.state || {};
 
   const orderIdRef = useRef<string>(orderId || createOrderId());
@@ -159,7 +162,7 @@ export default function PaymentPage() {
             </svg>
           </button>
           <div className="font-bold text-lg flex-1">
-            Giỏ hàng Tầng trệt - TR9
+            Giỏ hàng
           </div>
         </div>
 
@@ -376,9 +379,20 @@ export default function PaymentPage() {
                   }
                   
                   // Common Payload
+                  // Đảm bảo table_id là số nguyên hợp lệ
+                  let resolvedTableId = 1;
+                  if (typeof table_id === 'string') {
+                    const parsed = parseInt(table_id, 10);
+                    if (!isNaN(parsed) && parsed > 0) {
+                      resolvedTableId = parsed;
+                    }
+                  } else if (typeof table_id === 'number' && table_id > 0) {
+                    resolvedTableId = table_id;
+                  }
+
                   const orderPayload = {
                     id: resolvedOrderId,
-                    table_id: 1, // Default guest table ID
+                    table_id: resolvedTableId,
                     items: items.map((item) => ({
                       menu_item_id: item.menuItemId,
                       quantity: item.quantity,
