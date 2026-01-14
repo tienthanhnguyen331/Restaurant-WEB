@@ -9,8 +9,12 @@ const api = axios.create({
 });
 
 // Add auth token to requests
+// Helper lấy token KITCHEN
+function getKitchenToken() {
+  return localStorage.getItem('access_token_KITCHEN');
+}
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = getKitchenToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

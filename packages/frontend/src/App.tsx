@@ -33,11 +33,14 @@ import { GuestOrderStatus } from './features/guest-menu/components/GuestOrderSta
 /* =======================
    PROTECTED ROUTE
 ======================= */
+import { getAccessTokenByRole } from './features/auth/hooks/useAuth';
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessTokenByRole();
   const location = useLocation();
 
   if (!token) {
+    // Xóa tất cả token các role khi không xác định được role hiện tại (bảo vệ route)
+    ['USER','ADMIN','KITCHEN','WAITER'].forEach(r => localStorage.removeItem(`access_token_${r}`));
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

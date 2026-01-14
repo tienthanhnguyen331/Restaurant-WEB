@@ -30,4 +30,9 @@ export class WaiterController {
   async sendToKitchen(@Param('id') orderId: string) {
     return this.waiterService.sendToKitchen(orderId);
   }
+
+  @Post('orders/:id/serve')
+  async serveOrder(@Param('id') orderId: string) {
+    return this.waiterService.serveOrder(orderId);
+  }
 }

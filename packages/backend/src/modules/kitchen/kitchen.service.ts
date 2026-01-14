@@ -1,13 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderEntity, OrderStatus } from '../order/entities/order.entity';
+import { WaiterGateway } from '../waiter/waiter.gateway';
 
 @Injectable()
 export class KitchenService {
   constructor(
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
+    @Inject(forwardRef(() => WaiterGateway))
+    private waiterGateway: WaiterGateway,
   ) {}
 
   async getOrders() {
@@ -52,7 +55,8 @@ export class KitchenService {
     await this.orderRepository.update(orderId, {
       status: OrderStatus.READY,
     });
-
+    // Phát event real-time cho waiter dashboard
+    this.waiterGateway.notifyOrderStatusUpdate(orderId, OrderStatus.READY);
     return { message: 'Order set to ready' };
   }
 }

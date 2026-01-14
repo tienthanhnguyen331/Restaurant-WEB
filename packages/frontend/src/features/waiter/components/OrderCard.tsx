@@ -5,9 +5,14 @@ interface OrderCardProps {
   onAccept: (orderId: string) => void;
   onReject: (orderId: string) => void;
   onSendToKitchen: (orderId: string) => void;
+  onServe?: (orderId: string) => void;
+  onComplete?: (orderId: string) => void;
 }
 
-export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen }: OrderCardProps) => {
+import { useState } from "react";
+
+export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe, onComplete }: OrderCardProps) => {
+  const [localStatus, setLocalStatus] = useState(order.status);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
@@ -27,8 +32,8 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen }: OrderC
             {new Date(order.created_at).toLocaleTimeString()}
           </p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-          {order.status}
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(localStatus)}`}>
+          {localStatus}
         </span>
       </div>
 
@@ -38,7 +43,7 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen }: OrderC
       </div>
 
       <div className="flex gap-2">
-        {order.status === 'PENDING' && (
+        {localStatus === 'PENDING' && (
           <>
             <button
               onClick={() => onAccept(order.id)}
@@ -54,12 +59,29 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen }: OrderC
             </button>
           </>
         )}
-        {order.status === 'ACCEPTED' && (
+        {localStatus === 'ACCEPTED' && (
           <button
             onClick={() => onSendToKitchen(order.id)}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
           >
             Send to Kitchen
+          </button>
+        )}
+        {/* PREPARING: không hiện nút serve */}
+        {localStatus === 'READY' && (
+          <button
+            onClick={() => onServe && onServe(order.id)}
+            className="w-full bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
+          >
+            Serve
+          </button>
+        )}
+        {localStatus === 'SERVED' && (
+          <button
+            onClick={() => onComplete && onComplete(order.id)}
+            className="w-full bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-900"
+          >
+            Complete
           </button>
         )}
       </div>

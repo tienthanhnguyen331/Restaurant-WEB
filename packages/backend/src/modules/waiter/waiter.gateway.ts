@@ -1,3 +1,4 @@
+
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { WaiterService } from './waiter.service';
@@ -8,6 +9,11 @@ export class WaiterGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   constructor(private readonly waiterService: WaiterService) {}
+
+  // Notify waiters when order status changes (for real-time update)
+  notifyOrderStatusUpdate(orderId: string, status: string) {
+    this.server.emit('order_status_update', { orderId, status });
+  }
 
   handleConnection(client: Socket) {
     console.log(`Waiter client connected: ${client.id}`);

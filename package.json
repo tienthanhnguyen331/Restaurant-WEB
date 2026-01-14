@@ -4,6 +4,7 @@
     "archiver": "^7.0.1",
     "cloudinary": "^2.8.0",
     "file-saver": "^2.0.5",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.562.0",
     "pdfkit": "^0.17.2",
     "qrcode": "^1.5.4",

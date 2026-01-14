@@ -27,7 +27,7 @@ export const KitchenDashboard = () => {
   const handleAuthError = (error: any) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-      localStorage.removeItem('access_token');
+      localStorage.removeItem('access_token_KITCHEN');
       window.location.href = '/login';
     }
   };

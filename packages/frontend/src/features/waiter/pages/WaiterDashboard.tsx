@@ -7,6 +7,24 @@ import { orderApi } from '../../order/services/order-api';
 import { OrderDetailModal } from '../../order/components/OrderDetailModal';
 
 export const WaiterDashboard = () => {
+  const handleCompleteOrder = async (orderId: string) => {
+    try {
+      await waiterApi.completeOrder(orderId);
+      setOrders(prev => prev.filter(order => order.id !== orderId));
+    } catch (error) {
+      console.error('Lỗi khi hoàn tất đơn:', error);
+      handleAuthError(error);
+    }
+  };
+  const handleServeOrder = async (orderId: string) => {
+    try {
+      await waiterApi.serveOrder(orderId);
+      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'SERVED' } : order));
+    } catch (error) {
+      console.error('Lỗi khi phục vụ đơn:', error);
+      handleAuthError(error);
+    }
+  };
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -17,7 +35,7 @@ export const WaiterDashboard = () => {
   const handleAuthError = (error: any) => {
     if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
       alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-      localStorage.removeItem('access_token');
+      localStorage.removeItem('access_token_WAITER');
       window.location.href = '/login';
     }
   };
@@ -38,14 +56,15 @@ export const WaiterDashboard = () => {
 
   useEffect(() => {
     fetchOrders();
-    // Kết nối socket để lắng nghe sự kiện đồng bộ đơn hàng
     const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3000';
     const newSocket = io(`${wsUrl}/waiter`, { path: '/socket.io' });
 
-    // Khi có đơn mới hoặc trạng thái đơn thay đổi, luôn gọi lại fetchOrders để đồng bộ dữ liệu
     newSocket.on('newOrder', fetchOrders);
-    newSocket.on('orderReady', fetchOrders);
-    newSocket.on('order_status_update', fetchOrders);
+    newSocket.on('order_status_update', () => {
+      // Luôn reload lại danh sách đơn khi có bất kỳ cập nhật trạng thái nào
+      fetchOrders();
+    });
+
 
     return () => {
       newSocket.close();
@@ -71,6 +90,7 @@ export const WaiterDashboard = () => {
   const handleAcceptOrder = async (orderId: string) => {
     try {
       await waiterApi.acceptOrder(orderId);
+      // Luôn gọi lại fetchOrders để đồng bộ trạng thái với backend
       fetchOrders();
     } catch (error) {
       console.error('Lỗi khi xác nhận đơn:', error);
@@ -91,6 +111,7 @@ export const WaiterDashboard = () => {
   const handleSendToKitchen = async (orderId: string) => {
     try {
       await waiterApi.sendToKitchen(orderId);
+      // Luôn gọi lại fetchOrders để đồng bộ trạng thái với backend
       fetchOrders();
     } catch (error) {
       console.error('Lỗi khi gửi bếp:', error);
@@ -125,15 +146,19 @@ export const WaiterDashboard = () => {
       {!showHistory ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {orders.map(order => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onAccept={handleAcceptOrder}
-                onReject={handleRejectOrder}
-                onSendToKitchen={handleSendToKitchen}
-              />
-            ))}
+            {orders
+              .filter(order => order.status !== 'COMPLETED')
+              .map(order => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onAccept={handleAcceptOrder}
+                  onReject={handleRejectOrder}
+                  onSendToKitchen={handleSendToKitchen}
+                  onServe={handleServeOrder}
+                  onComplete={handleCompleteOrder}
+                />
+              ))}
           </div>
           {orders.length === 0 && (
             <div className="text-center text-gray-500 mt-8">
@@ -157,16 +182,15 @@ export const WaiterDashboard = () => {
                 >
                   <div className="flex justify-between">
                     <span className="font-bold">Đơn #{order.id.slice(0, 8)}</span>
-                    <span className={`px-2 py-1 rounded text-sm font-bold uppercase ${
-                      order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                      order.status === 'PENDING' ? 'bg-gray-100 text-gray-800' :
-                      order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                      order.status === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' :
-                      order.status === 'READY' ? 'bg-indigo-100 text-indigo-800' :
-                      order.status === 'SERVED' ? 'bg-purple-100 text-purple-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded text-sm font-bold uppercase ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                        order.status === 'PENDING' ? 'bg-gray-100 text-gray-800' :
+                          order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                              order.status === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' :
+                                order.status === 'READY' ? 'bg-indigo-100 text-indigo-800' :
+                                  order.status === 'SERVED' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-800'
+                      }`}>
                       {order.status}
                     </span>
                   </div>

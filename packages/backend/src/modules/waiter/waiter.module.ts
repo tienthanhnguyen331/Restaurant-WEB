@@ -6,11 +6,13 @@ import { WaiterGateway } from './waiter.gateway';
 import { OrderEntity } from '../order/entities/order.entity';
 import { User } from '../user/user.entity';
 import { AuthModule } from '../auth/auth.module';
+import { KitchenModule } from '../kitchen/kitchen.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([OrderEntity, User]),
-    AuthModule, // ✅ BAT BUOC
+    AuthModule,
+    KitchenModule,
   ],
   controllers: [WaiterController],
   providers: [WaiterService, WaiterGateway],

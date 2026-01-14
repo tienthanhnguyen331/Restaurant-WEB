@@ -3,11 +3,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
+import { getAccessTokenByRole } from '../auth/hooks/useAuth';
 export const ProfilePage = () => {
   const navigate = useNavigate();
-  
-  // Lấy chính xác key 'access_token' như đã lưu trong useAuth.ts
-  const token = localStorage.getItem('access_token'); 
+  // Lấy token theo role ADMIN
+  const token = getAccessTokenByRole('ADMIN');
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['profile'],
@@ -31,7 +31,7 @@ export const ProfilePage = () => {
   // Tự động điều hướng về login nếu có lỗi xác thực (401)
   useEffect(() => {
     if (error || (!isLoading && !token)) {
-      localStorage.removeItem('access_token');
+      localStorage.removeItem('access_token_ADMIN');
       navigate('/login');
     }
   }, [error, isLoading, token, navigate]);

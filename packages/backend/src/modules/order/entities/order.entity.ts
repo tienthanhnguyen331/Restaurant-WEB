@@ -8,6 +8,7 @@ export enum OrderStatus {
   REJECTED = 'REJECTED',
   PREPARING = 'PREPARING',
   READY = 'READY',
+  SERVED = 'SERVED',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
