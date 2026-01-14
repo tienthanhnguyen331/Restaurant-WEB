@@ -1,5 +1,11 @@
 -- database/migrations/order.sql
 
+-- Đảm bảo tất cả giá trị status đều hợp lệ trước khi chuyển sang ENUM
+UPDATE orders
+SET status = 'PENDING'
+WHERE status NOT IN ('PENDING', 'ACCEPTED', 'REJECTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED');
+
+-- Nếu cột status đang là text/varchar, chuyển sang ENUM order_status
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'order_status') THEN
@@ -7,6 +13,12 @@ BEGIN
             'PENDING', 'ACCEPTED', 'REJECTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'
         );
     END IF;
+    BEGIN
+        ALTER TABLE orders ALTER COLUMN status TYPE order_status USING status::order_status;
+    EXCEPTION WHEN others THEN
+        -- Nếu đã là ENUM đúng thì bỏ qua lỗi
+        NULL;
+    END;
 END $$;
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -18,20 +30,7 @@ CREATE TABLE IF NOT EXISTS orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-CREATE TABLE IF NOT EXISTS order_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    menu_item_id UUID NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
-    quantity INT NOT NULL DEFAULT 1,
-    price NUMERIC(12, 2) NOT NULL, 
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Index để tối ưu truy vấn
 CREATE INDEX IF NOT EXISTS idx_orders_table_id ON orders(table_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_menu_item_id ON order_items(menu_item_id);

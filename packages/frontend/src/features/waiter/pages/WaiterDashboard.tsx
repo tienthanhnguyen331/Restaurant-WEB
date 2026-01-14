@@ -44,7 +44,6 @@ export const WaiterDashboard = () => {
       const data = await waiterApi.getPendingOrders();
       setOrders(data);
     } catch (error) {
-      console.error('Fetch orders error:', error);
       handleAuthError(error);
     } finally {
       setLoading(false);
@@ -172,18 +171,20 @@ export const WaiterDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders
               .filter(o => o.status !== 'COMPLETED')
-              .map(order => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onAccept={handleAcceptOrder}
-                  onReject={handleRejectOrder}
-                  onSendToKitchen={handleSendToKitchen}
-                  onServe={handleServeOrder}
-                  onComplete={handleCompleteOrder}
-                  onShowDetail={setSelectedOrder}
-                />
-              ))}
+              .map(order => {
+                return (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onAccept={handleAcceptOrder}
+                    onReject={handleRejectOrder}
+                    onSendToKitchen={handleSendToKitchen}
+                    onServe={handleServeOrder}
+                    onComplete={handleCompleteOrder}
+                    onShowDetail={setSelectedOrder}
+                  />
+                );
+              })}
           </div>
 
           {orders.length === 0 && (

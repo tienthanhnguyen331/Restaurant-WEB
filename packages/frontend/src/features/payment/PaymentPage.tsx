@@ -1,7 +1,6 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Minus, Trash2, Banknote, Smartphone, Landmark } from 'lucide-react';
-import PaymentStatus from './components/PaymentStatus';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 import { usePayment } from './hooks/usePayment';
 import { useCart } from '../../contexts/CartContext';
@@ -30,7 +29,7 @@ export default function PaymentPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { items: cartItems, updateQuantity, removeItem, getItemPrice } = useCart();
 
-  const { pay, payWithMomo, status, error, payment, loading, MENU_RETURN_KEY, setReturnUrl } = usePayment();
+  const { pay, payWithMomo, loading, MENU_RETURN_KEY, setReturnUrl } = usePayment();
 
 
   const {

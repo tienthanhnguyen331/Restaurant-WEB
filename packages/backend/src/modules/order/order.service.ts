@@ -74,6 +74,9 @@ export class OrderService {
 
   async updateStatus(id: string, status: OrderStatus) {
       await this.orderRepo.update(id, { status });
+      // Phát event order_status_update cho waiter dashboard (namespace /waiter)
+      this.waiterGateway.notifyOrderStatusUpdate(id, status);
+      // Phát event order_status_update cho client/guest (namespace mặc định)
       this.orderGateway.notifyOrderStatusUpdate(id, status);
       return this.findOne(id);
   }
@@ -81,6 +84,7 @@ export class OrderService {
   async update(id: string, updateOrderDto: UpdateOrderDto) {
       await this.orderRepo.update(id, updateOrderDto);
       if (updateOrderDto.status) {
+        this.waiterGateway.notifyOrderStatusUpdate(id, updateOrderDto.status);
         this.orderGateway.notifyOrderStatusUpdate(id, updateOrderDto.status);
       }
       return this.findOne(id);

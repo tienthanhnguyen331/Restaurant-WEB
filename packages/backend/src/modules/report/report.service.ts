@@ -99,7 +99,7 @@ export class ReportService {
           FROM order_items oi
           JOIN menu_items mi ON oi.menu_item_id = mi.id
           JOIN orders o ON oi.order_id = o.id
-          WHERE o.status IN ('completed', 'cancelled')
+          WHERE o.status IN ('COMPLETED', 'CANCELLED')
             AND DATE(o.created_at) BETWEEN $1::date AND $2::date
           GROUP BY mi.id, mi.name
           ORDER BY total_revenue DESC
