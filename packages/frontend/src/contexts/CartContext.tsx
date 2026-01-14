@@ -32,6 +32,7 @@ export type { CartItem as CartItemType };
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
+  getItemCountByTable: (tableId: number) => number;
   totalPrice: number;
   addItem: (item: Omit<CartItem, 'id'>) => void;
   removeItem: (cartItemId: string) => void;
@@ -131,6 +132,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + getItemPrice(item), 0);
 
+  // Tính số lượng món theo từng bàn
+  const getItemCountByTable = (tableId: number) => {
+    return items.filter(item => item.tableId === tableId)
+      .reduce((sum, item) => sum + item.quantity, 0);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -142,6 +149,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         getItemPrice,
+        getItemCountByTable,
       }}
     >
       {children}

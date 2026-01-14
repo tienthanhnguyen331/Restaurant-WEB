@@ -77,7 +77,9 @@ export default function GuestMenuPage({ tableInfo, authToken }: GuestMenuPagePro
 }
 
 function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
-  const { itemCount } = useCart();
+  const { getItemCountByTable } = useCart();
+  const table_id = tableInfo?.tableNumber ? parseInt(tableInfo.tableNumber, 10) : 1;
+  const itemCount = getItemCountByTable(table_id);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'menu' | 'cart' | 'profile'>('menu');
   const [isLoggedIn, setIsLoggedIn] = useState(false);

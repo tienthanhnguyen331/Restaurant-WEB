@@ -1,25 +1,38 @@
 import React from 'react';
+import type { MenuItemDropdown } from '../../../services/menuItemApi';
 import { X } from 'lucide-react';
 import type { Order } from '../types';
-import { orderApi } from '../services/order-api';
+import type { MenuCategory } from '@shared/types/menu';
 
 interface OrderDetailModalProps {
   order: Order;
   onClose: () => void;
 }
 
-const ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'] as const;
-
 export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) => {
-  const handleStatusChange = async (newStatus: string) => {
-      try {
-          // Normalizes status to uppercase just in case backend expects it
-          await orderApi.updateStatus(order.id, newStatus);
-          onClose(); 
-      } catch (error) {
-          console.error("Failed to update status", error);
-          alert("Lỗi cập nhật trạng thái");
-      }
+  const [menuItems, setMenuItems] = React.useState<MenuItemDropdown[]>([]);
+  const [categories, setCategories] = React.useState<MenuCategory[]>([]);
+
+  React.useEffect(() => {
+    (async () => {
+      const menuRes = await import('../../../../src/services/menuItemApi');
+      const catRes = await import('../../../../src/services/categoryApi');
+      const menuList = await menuRes.menuItemApi.getMenuItems();
+      const catList = await catRes.categoryApi.getAll({});
+      setMenuItems(menuList);
+      setCategories(catList.data || catList);
+    })();
+  }, []);
+
+  const getMenuInfo = (menu_item_id: number | string) => {
+    const item = menuItems.find((m) => String(m.id) === String(menu_item_id));
+    if (!item) return { name: `#${menu_item_id}`, categoryId: '', categoryName: '' };
+    const category = categories.find((c) => String(c.id) === String(item.categoryId));
+    return {
+      name: item.name,
+      categoryId: item.categoryId,
+      categoryName: category ? category.name : '',
+    };
   };
 
   return (
@@ -36,34 +49,21 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
              <div><span className="font-semibold">Trạng thái:</span> <span className="uppercase font-bold text-blue-600">{order.status}</span></div>
           </div>
 
-          {/* Status Actions */}
-          <div className="flex flex-wrap gap-2">
-            {ORDER_STATUSES.map((status) => (
-                <button
-                    key={status}
-                    onClick={() => handleStatusChange(status)}
-                    disabled={order.status === status}
-                    className={`px-3 py-1 rounded text-sm font-medium capitalize 
-                        ${order.status === status 
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
-                >
-                    {status}
-                </button>
-            ))}
-          </div>
-
           <div>
             <h3 className="font-semibold mb-2">Món đã đặt:</h3>
-            {order.items.map((item) => (
-              <div key={item.id} className="flex justify-between border-b pb-2 mb-2">
-                <div>
-                  <div className="font-medium">Món #{item.menu_item_id}</div>
-                  <div className="text-sm text-gray-600">SL: {item.quantity}</div>
+            {order.items.map((item) => {
+              const info = getMenuInfo(item.menu_item_id);
+              return (
+                <div key={item.id} className="flex justify-between border-b pb-2 mb-2">
+                  <div>
+                    <div className="font-medium">{info.name}</div>
+                    <div className="text-sm text-gray-600">SL: {item.quantity}</div>
+                    <div className="text-xs text-gray-400">Category: {info.categoryName}</div>
+                  </div>
+                  <div className="font-semibold">{(Number(item.price) * item.quantity).toLocaleString()}đ</div>
                 </div>
-                <div className="font-semibold">{(Number(item.price) * item.quantity).toLocaleString()}đ</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="border-t pt-4 flex justify-between text-lg font-bold">

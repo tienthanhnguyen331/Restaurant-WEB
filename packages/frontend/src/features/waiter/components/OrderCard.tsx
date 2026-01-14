@@ -7,11 +7,12 @@ interface OrderCardProps {
   onSendToKitchen: (orderId: string) => void;
   onServe?: (orderId: string) => void;
   onComplete?: (orderId: string) => void;
+  onShowDetail?: (order: Order) => void;
 }
 
 import { useState, useEffect } from "react";
 
-export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe, onComplete }: OrderCardProps) => {
+export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe, onComplete, onShowDetail }: OrderCardProps) => {
   const [localStatus, setLocalStatus] = useState(order.status);
 
   // Keep localStatus in sync if parent updates order.status (socket updates / re-fetch)
@@ -29,7 +30,14 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe,
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div
+      className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={e => {
+        // Chỉ mở modal khi click vào vùng card, không phải nút action
+        if (e.target instanceof HTMLElement && e.target.tagName === 'BUTTON') return;
+        if (typeof onShowDetail === 'function') onShowDetail(order);
+      }}
+    >
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-semibold">Table {order.table_id}</h3>

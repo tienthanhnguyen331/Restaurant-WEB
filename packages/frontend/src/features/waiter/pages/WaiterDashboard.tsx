@@ -2,84 +2,54 @@ import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { waiterApi } from '../services/waiterApi';
 import { OrderCard } from '../components/OrderCard';
-import type { Order } from '../../order/types'; // Ensure we are using the canonical Order type
+import type { Order } from '../../order/types';
 import { orderApi } from '../../order/services/order-api';
 import { OrderDetailModal } from '../../order/components/OrderDetailModal';
 
 export const WaiterDashboard = () => {
-  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({
+    show: false,
+    message: '',
+  });
+
+  /* ===================== Utils ===================== */
 
   const showToast = (message: string, ms = 3000) => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: '' }), ms);
   };
 
-  const handleCompleteOrder = async (orderId: string) => {
-    try {
-      await waiterApi.completeOrder(orderId);
-      setOrders(prev => prev.filter(order => order.id !== orderId));
-      showToast('Đơn hàng đã được hoàn thành!');
-    } catch (error) {
-      console.error('Lỗi khi hoàn tất đơn:', error);
-      handleAuthError(error);
-    }
-  };
-  const handleServeOrder = async (orderId: string) => {
-    try {
-      await waiterApi.serveOrder(orderId);
-      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'SERVED' } : order));
-    } catch (error) {
-      console.error('Lỗi khi phục vụ đơn:', error);
-      handleAuthError(error);
-    }
-  };
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
-  const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
   const handleAuthError = (error: any) => {
-    if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-      alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       localStorage.removeItem('access_token_WAITER');
       window.location.href = '/login';
     }
   };
 
-  // Hàm lấy danh sách đơn đang xử lý, dùng useCallback để tránh tạo lại không cần thiết
+  /* ===================== Fetch ===================== */
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const data = await waiterApi.getPendingOrders();
       setOrders(data);
     } catch (error) {
-      console.error('Lỗi khi tải đơn hàng:', error);
+      console.error('Fetch orders error:', error);
       handleAuthError(error);
     } finally {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    fetchOrders();
-    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3000';
-    const newSocket = io(`${wsUrl}/waiter`, { path: '/socket.io' });
-
-    newSocket.on('newOrder', fetchOrders);
-    newSocket.on('order_status_update', () => {
-      // Luôn reload lại danh sách đơn khi có bất kỳ cập nhật trạng thái nào
-      fetchOrders();
-    });
-
-
-    return () => {
-      newSocket.close();
-    };
-  }, [fetchOrders]);
-
-  // Hàm này đã được thay bằng fetchOrders ở trên
 
   const loadOrderHistory = async () => {
     setHistoryLoading(true);
@@ -87,21 +57,35 @@ export const WaiterDashboard = () => {
       const data = await orderApi.getAll();
       setHistoryOrders(data);
     } catch (error) {
-      setHistoryOrders([]);
       handleAuthError(error);
     } finally {
       setHistoryLoading(false);
     }
   };
 
-  // Sau mỗi thao tác, luôn gọi lại fetchOrders để đảm bảo đồng bộ dữ liệu
+  /* ===================== Socket ===================== */
+
+  useEffect(() => {
+    fetchOrders();
+
+    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3000';
+    const socket = io(`${wsUrl}/waiter`, { path: '/socket.io' });
+
+    socket.on('newOrder', fetchOrders);
+    socket.on('order_status_update', fetchOrders);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [fetchOrders]);
+
+  /* ===================== Actions ===================== */
+
   const handleAcceptOrder = async (orderId: string) => {
     try {
       await waiterApi.acceptOrder(orderId);
-      // Luôn gọi lại fetchOrders để đồng bộ trạng thái với backend
       fetchOrders();
     } catch (error) {
-      console.error('Lỗi khi xác nhận đơn:', error);
       handleAuthError(error);
     }
   };
@@ -111,7 +95,6 @@ export const WaiterDashboard = () => {
       await waiterApi.rejectOrder(orderId);
       fetchOrders();
     } catch (error) {
-      console.error('Lỗi khi từ chối đơn:', error);
       handleAuthError(error);
     }
   };
@@ -119,17 +102,34 @@ export const WaiterDashboard = () => {
   const handleSendToKitchen = async (orderId: string) => {
     try {
       await waiterApi.sendToKitchen(orderId);
-      // Luôn gọi lại fetchOrders để đồng bộ trạng thái với backend
       fetchOrders();
     } catch (error) {
-      console.error('Lỗi khi gửi bếp:', error);
       handleAuthError(error);
     }
   };
 
-  if (loading) {
-    return <div className="p-8">Loading...</div>;
-  }
+  const handleServeOrder = async (orderId: string) => {
+    try {
+      await waiterApi.serveOrder(orderId);
+      fetchOrders();
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const handleCompleteOrder = async (orderId: string) => {
+    try {
+      await waiterApi.completeOrder(orderId);
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      showToast('Đơn hàng đã hoàn thành');
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  /* ===================== Render ===================== */
+
+  if (loading) return <div className="p-8">Loading...</div>;
 
   return (
     <div className="p-8">
@@ -139,16 +139,23 @@ export const WaiterDashboard = () => {
           {toast.message}
         </div>
       )}
+
       <h1 className="text-3xl font-bold mb-6">Waiter Dashboard</h1>
+
+      {/* Tabs */}
       <div className="mb-4 flex gap-4">
         <button
-          className={`px-4 py-2 rounded ${!showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 rounded ${
+            !showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          }`}
           onClick={() => setShowHistory(false)}
         >
           Đơn đang xử lý
         </button>
         <button
-          className={`px-4 py-2 rounded ${showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 rounded ${
+            showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
+          }`}
           onClick={() => {
             setShowHistory(true);
             if (historyOrders.length === 0) loadOrderHistory();
@@ -157,11 +164,14 @@ export const WaiterDashboard = () => {
           Lịch sử đơn hàng
         </button>
       </div>
+
+      {/* ================= TAB CONTENT ================= */}
+
       {!showHistory ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {orders
-              .filter(order => order.status !== 'COMPLETED')
+              .filter(o => o.status !== 'COMPLETED')
               .map(order => (
                 <OrderCard
                   key={order.id}
@@ -171,9 +181,11 @@ export const WaiterDashboard = () => {
                   onSendToKitchen={handleSendToKitchen}
                   onServe={handleServeOrder}
                   onComplete={handleCompleteOrder}
+                  onShowDetail={setSelectedOrder}
                 />
               ))}
           </div>
+
           {orders.length === 0 && (
             <div className="text-center text-gray-500 mt-8">
               No pending orders
@@ -183,41 +195,37 @@ export const WaiterDashboard = () => {
       ) : (
         <div>
           {historyLoading ? (
-            <div>Đang tải lịch sử đơn hàng...</div>
+            <div>Đang tải lịch sử...</div>
           ) : historyOrders.length === 0 ? (
-            <div>Chưa có đơn hàng nào.</div>
+            <div>Chưa có đơn hàng.</div>
           ) : (
             <div className="space-y-4">
               {historyOrders.map(order => (
                 <div
                   key={order.id}
-                  className="border p-4 rounded shadow hover:shadow-lg transition-shadow cursor-pointer"
+                  className="border p-4 rounded shadow hover:shadow-lg cursor-pointer"
                   onClick={() => setSelectedOrder(order)}
                 >
                   <div className="flex justify-between">
                     <span className="font-bold">Đơn #{order.id.slice(0, 8)}</span>
-                    <span className={`px-2 py-1 rounded text-sm font-bold uppercase ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                        order.status === 'PENDING' ? 'bg-gray-100 text-gray-800' :
-                          order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-800' :
-                            order.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                              order.status === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' :
-                                order.status === 'READY' ? 'bg-indigo-100 text-indigo-800' :
-                                  order.status === 'SERVED' ? 'bg-purple-100 text-purple-800' :
-                                    'bg-gray-100 text-gray-800'
-                      }`}>
-                      {order.status}
-                    </span>
+                    <span className="font-bold uppercase">{order.status}</span>
                   </div>
-                  <div className="text-sm text-gray-600">Bàn: {order.table_id} | Tổng: {order.total_amount}</div>
-                  <div className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">
+                    Bàn: {order.table_id} | Tổng: {order.total_amount}
+                  </div>
                 </div>
               ))}
             </div>
           )}
-          {selectedOrder && (
-            <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
-          )}
         </div>
+      )}
+
+      {/* ✅ MODAL RENDER ĐỘC LẬP – FIX 100% */}
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
       )}
     </div>
   );
