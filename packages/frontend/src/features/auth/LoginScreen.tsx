@@ -11,10 +11,10 @@ const schema = z.object({
 });
 
 interface LoginScreenProps {
-  onLoginSuccess?: () => void;
+  onLoginSuccess: (user: any) => void;
 }
 
-export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps = {}) => {
+export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/admin';
@@ -34,7 +34,7 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps = {}) => {
       if (user.role === 'USER') {
         alert(`Chào mừng ${user.name}! Bạn đã đăng nhập thành công với tài khoản khách hàng.`);
         if (onLoginSuccess) {
-          onLoginSuccess();
+          onLoginSuccess(user);
         } else {
           navigate('/guest-menu');
         }
@@ -59,18 +59,21 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps = {}) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit(onSubmit)} className="p-8 bg-white shadow-md rounded-lg w-96">
+    <div className="min-h-screen flex justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="p-8 bg-white shadow-md rounded-lg w-96 mt-16 mb-8 flex flex-col justify-start"
+        style={{ marginTop: '7vh', height: '24rem', minHeight: '24rem', maxHeight: '24rem' }}
+      >
         <h2 className="text-2xl font-bold mb-6">Đăng nhập</h2>
         <input {...register('email')} className="w-full border p-2 mb-4 rounded" placeholder="Email" />
         <p className="text-red-500 text-sm">{errors.email?.message}</p>
-        
         <div className="relative">
-          <input 
-            type={showPassword ? "text" : "password"} 
-            {...register('password')} 
-            className="w-full border p-2 mb-2 rounded pr-10" 
-            placeholder="Mật khẩu" 
+          <input
+            type={showPassword ? "text" : "password"}
+            {...register('password')}
+            className="w-full border p-2 mb-2 rounded pr-10"
+            placeholder="Mật khẩu"
           />
           <button
             type="button"
@@ -85,11 +88,9 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps = {}) => {
           </button>
         </div>
         {loginError && <p className="text-red-500 text-sm mb-4">{loginError}</p>}
-        
         <button type="submit" className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">
           Đăng nhập
         </button>
-        
         <div className="mt-4 text-center">
           <Link to="/register" className="text-blue-500 hover:text-blue-700">Đăng ký</Link>
         </div>

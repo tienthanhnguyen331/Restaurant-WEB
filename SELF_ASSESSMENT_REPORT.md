@@ -26,16 +26,16 @@ Students must input minus points to every uncompleted feature in the SE column.
 | ----- | :---- | ----- | :---- | :---- | :---- |
 |  |  | **Point** | **SE\*** | **TR\*** |  |
 | **1** | **Overall requirements** |  |  |  |  |
-|  | User-centered design | \-5 |  |  | Built with user experience in mind, not just feature list. Focus on solving real restaurant problems: seamless QR ordering, efficient waiter workflow, real-time kitchen coordination, and convenient payment options |
-|  | Database design | \-1 |  |  | Database with tables: users, restaurants, menus, menu_items, categories, modifiers, tables, orders, order_items, payments |
-|  | Database mock data | \-1 |  |  | Sample restaurants, menu items, categories, tables, and test orders |
-|  | Website layout | \-2 |  |  | Two layouts: Customer mobile ordering interface and Admin dashboard |
-|  | Website architect | \-3 |  |  | Based on MVC architecture. Clear separation of concerns with controllers, services, repositories. Client-side validation, Input validation, Business rule validation |
-|  | Website stability and compatibility | \-2 |  |  | Mobile-first responsive design, tested on Chrome and Safari |
-|  | Document | \-1 |  |  | Clear documentation for developers and users: setup guide, API endpoints, database design, system architecture, user guide |
-|  | Demo video | \-5 |  |  | Video demonstrating all features: restaurant signup, menu management, QR ordering, payment, KDS |
-|  | Publish to public hosts | \-1 |  |  | Deployed to a public hosting service with accessible URL |
-|  | Development progress is recorded in Github | \-7 |  |  | Git history with meaningful commits, branches for features, pull requests |
+|  | User-centered design | \-5 | 0 |  | Built with user experience in mind, not just feature list. Focus on solving real restaurant problems: seamless QR ordering, efficient waiter workflow, real-time kitchen coordination, and convenient payment options |
+|  | Database design | \-1 | 0 |  | Database with tables: users, restaurants, menus, menu_items, categories, modifiers, tables, orders, order_items, payments |
+|  | Database mock data | \-1 | 0 |  | Sample restaurants, menu items, categories, tables, and test orders |
+|  | Website layout | \-2 | 0 |  | Two layouts: Customer mobile ordering interface and Admin dashboard |
+|  | Website architect | \-3 | 0 |  | Based on MVC architecture. Clear separation of concerns with controllers, services, repositories. Client-side validation, Input validation, Business rule validation |
+|  | Website stability and compatibility | \-2 | 0 |  | Mobile-first responsive design, tested on Chrome and Safari |
+|  | Document | \-1 | 0 |  | Clear documentation for developers and users: setup guide, API endpoints, database design, system architecture, user guide |
+|  | Demo video | \-5 | 0 |  | Video demonstrating all features: restaurant signup, menu management, QR ordering, payment, KDS |
+|  | Publish to public hosts | \-1 | 0 |  | Deployed to a public hosting service with accessible URL |
+|  | Development progress is recorded in Github | \-7 | 0 |  | Git history with meaningful commits, branches for features, pull requests |
 | **2** | **Guest features (Customer Ordering)** |  |  |  |  |
 |  | Home page (Menu page) | \-0.25 |  |  | Restaurant menu page loaded via QR code scan with categories and items |
 |  | View list of menu items | \-0.25 |  |  | Display menu items with images, prices, descriptions |

@@ -55,7 +55,7 @@ function App() {
     <Routes>
       {/* ===== PUBLIC ROUTES ===== */}
       <Route path="/reviews" element={<ReviewPage />} />
-      <Route path="/login" element={<LoginScreen />} />
+      <Route path="/login" element={<LoginScreen onLoginSuccess={() => { /* handle login success, e.g. redirect or set state */ }} />} />
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />

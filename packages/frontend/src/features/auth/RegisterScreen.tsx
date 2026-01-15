@@ -47,22 +47,23 @@ export const RegisterScreen = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit(onSubmit)} className="p-8 bg-white shadow-md rounded-lg w-96">
+    <div className="min-h-screen flex justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="p-8 bg-white shadow-md rounded-lg w-96 mt-16 mb-8 flex flex-col justify-start"
+        style={{ marginTop: '7vh', height: '26rem', minHeight: '26rem', maxHeight: '28rem' }}
+      >
         <h2 className="text-2xl font-bold mb-6">Đăng ký</h2>
-
         <input {...register('name')} className="w-full border p-2 mb-4 rounded" placeholder="Tên" />
         <p className="text-red-500 text-sm">{errors.name?.message}</p>
-
         <input {...register('email')} className="w-full border p-2 mb-4 rounded" placeholder="Email" />
         <p className="text-red-500 text-sm">{errors.email?.message}</p>
-
         <div className="relative">
-          <input 
-            type={showPassword ? "text" : "password"} 
-            {...register('password')} 
-            className="w-full border p-2 mb-4 rounded pr-10" 
-            placeholder="Mật khẩu" 
+          <input
+            type={showPassword ? "text" : "password"}
+            {...register('password')}
+            className="w-full border p-2 mb-4 rounded pr-10"
+            placeholder="Mật khẩu"
           />
           <button
             type="button"
@@ -77,13 +78,12 @@ export const RegisterScreen = () => {
           </button>
         </div>
         <p className="text-red-500 text-sm">{errors.password?.message}</p>
-
         <div className="relative">
-          <input 
-            type={showConfirmPassword ? "text" : "password"} 
-            {...register('confirmPassword')} 
-            className="w-full border p-2 mb-4 rounded pr-10" 
-            placeholder="Xác nhận mật khẩu" 
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            {...register('confirmPassword')}
+            className="w-full border p-2 mb-4 rounded pr-10"
+            placeholder="Xác nhận mật khẩu"
           />
           <button
             type="button"
@@ -98,7 +98,6 @@ export const RegisterScreen = () => {
           </button>
         </div>
         <p className="text-red-500 text-sm">{errors.confirmPassword?.message}</p>
-
         <button
           type="submit"
           disabled={isLoading}
@@ -106,7 +105,6 @@ export const RegisterScreen = () => {
         >
           {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
         </button>
-
         <div className="mt-4 text-center">
           <span className="text-gray-600">Đã có tài khoản? </span>
           <Link to="/login" className="text-blue-500 hover:text-blue-700">Đăng nhập</Link>

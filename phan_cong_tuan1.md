@@ -7,7 +7,7 @@
 
 ---
 
-## Thành viên 1: Quản lý Người dùng (User/Auth)
+## Thành viên 1- Tín: Quản lý Người dùng (User/Auth)
 #### Gợi ý cấu trúc file/folder
 - Backend: packages/backend/src/modules/user/, packages/backend/src/modules/auth/
 - Frontend: packages/frontend/src/features/user/, packages/frontend/src/features/auth/
@@ -44,7 +44,7 @@
 
 ---
 
-## Thành viên 2: Quản lý Đơn hàng (Order)
+## Thành viên 2- Thành: Quản lý Đơn hàng (Order)
 #### Gợi ý cấu trúc file/folder
 - Backend: packages/backend/src/modules/order/
 - Frontend: packages/frontend/src/features/order/
@@ -76,7 +76,7 @@
 
 ---
 
-## Thành viên 3: Quản lý Thanh toán (Payment)
+## Thành viên 3- Tùng: Quản lý Thanh toán (Payment)
 #### Gợi ý cấu trúc file/folder
 - Backend: packages/backend/src/modules/payment/
 - Frontend: packages/frontend/src/features/payment/

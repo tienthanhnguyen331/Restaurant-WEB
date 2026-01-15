@@ -55,6 +55,15 @@ export default function PaymentPage() {
   const items = cartItems.filter((it) => typeof it.tableId === 'number' ? it.tableId === resolvedTableId : false);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>(PaymentMethod.MOMO);
+  const currentGuestUser = (() => {
+    try {
+      const guestStr = localStorage.getItem('guest_user');
+      return guestStr ? JSON.parse(guestStr) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const isGuestLoggedIn = Boolean(currentGuestUser);
   const [tab, setTab] = useState<'order' | 'status' | 'history'>('order');
   const successParam = searchParams.get('success');
   const [showSuccessModal, setShowSuccessModal] = useState(!!successParam);
@@ -182,9 +191,11 @@ export default function PaymentPage() {
           <TabButton active={tab === 'status'} onClick={() => setTab('status')}>
             Trạng thái
           </TabButton>
-          <TabButton active={tab === 'history'} onClick={() => setTab('history')}>
-            Lịch sử
-          </TabButton>
+          {isGuestLoggedIn && (
+            <TabButton active={tab === 'history'} onClick={() => setTab('history')}>
+              Lịch sử
+            </TabButton>
+          )}
         </div>
 
         {/* TAB: ORDER */}

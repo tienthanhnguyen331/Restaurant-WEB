@@ -7,7 +7,7 @@ import MenuItemCard from './MenuItemCard';
 import { useCart } from '../../contexts/CartContext';
 import { LoginScreen } from '../auth/LoginScreen';
 import { GuestOrderStatus } from './components/GuestOrderStatus';
-import { getCurrentUser } from '../auth/hooks/useAuth';
+// Guest user chỉ lấy từ localStorage key 'guest_user'
 import { useNavigate } from 'react-router-dom';
 
 const createOrderId = () =>
@@ -82,7 +82,14 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   const itemCount = getItemCountByTable(table_id);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'menu' | 'cart' | 'profile'>('menu');
-  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const guestStr = localStorage.getItem('guest_user');
+      return guestStr ? JSON.parse(guestStr) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenuFiltersState>({
@@ -148,17 +155,23 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
 
   // Callback khi đăng nhập thành công
   const handleLoginSuccess = () => {
-    const user = getCurrentUser();
-    setCurrentUser(user);
-    setIsLoggedIn(Boolean(user));
+    try {
+      const guestStr = localStorage.getItem('guest_user');
+      const user = guestStr ? JSON.parse(guestStr) : null;
+      setCurrentUser(user);
+      setIsLoggedIn(Boolean(user));
+    } catch {
+      setCurrentUser(null);
+      setIsLoggedIn(false);
+    }
   };
 
   // Callback khi đăng xuất
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token_USER');
+    localStorage.removeItem('guest_user');
+    localStorage.removeItem('access_token_GUEST');
   };
 
   if (isLoading) {
@@ -261,7 +274,13 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
               <GuestOrderStatus viewMode="history" />
             </div>
           ) : (
-            <LoginScreen onLoginSuccess={handleLoginSuccess} />
+            <LoginScreen onLoginSuccess={(user) => {
+              // Lưu thông tin guest vào 'guest_user' thay vì 'user'
+              if (user) {
+                localStorage.setItem('guest_user', JSON.stringify(user));
+              }
+              handleLoginSuccess();
+            }} />
           )}
           {isLoggedIn && (
             <div className="flex justify-center">

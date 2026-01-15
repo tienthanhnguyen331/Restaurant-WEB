@@ -32,7 +32,23 @@ CREATE TABLE IF NOT EXISTS orders (
     CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Index để tối ưu truy vấn
+-- Thêm cột user_id nếu chưa có và thêm constraint nếu chưa tồn tại
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name='orders' AND column_name='user_id'
+    ) THEN
+        ALTER TABLE orders ADD COLUMN user_id UUID;
+    END IF;
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name='orders' AND constraint_name='fk_orders_user'
+    ) THEN
+        ALTER TABLE orders ADD CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+-- ...existing code...
 CREATE INDEX IF NOT EXISTS idx_orders_table_id ON orders(table_id);
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
