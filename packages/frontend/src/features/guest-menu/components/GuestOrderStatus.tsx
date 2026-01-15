@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useOrderSocket } from '../../order/hooks/useOrderSocket'; 
 import { orderApi } from '../../order/services/order-api';
+import { getCurrentUser } from '../../auth/hooks/useAuth';
 // Lưu ý: Đảm bảo import đúng đường dẫn type của bạn
 import type { GuestOrder } from '../types/guest-order';
 
@@ -51,7 +52,8 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const data = await orderApi.getAll();
+        const currentUser = getCurrentUser();
+        const data = currentUser ? await orderApi.getMyOrders() : await orderApi.getAll();
         
         const mappedOrders: GuestOrder[] = data.map((o: any) => ({
           id: o.id,
@@ -67,6 +69,8 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
             : undefined,
           // Xử lý gộp món tại đây
           items: aggregateItems(o.items) as any 
+          ,
+          table_id: o.table_id ?? o.tableId ?? 0,
         }));
 
         // Sắp xếp đơn mới nhất lên đầu
@@ -211,8 +215,13 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
             <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md">
                 {/* Header: ID + Status */}
                 <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
                     <span className="font-bold text-gray-700">#{order.id.slice(0, 5)}</span>
-                    {getStatusBadge(order.status)}
+                    <span className="text-xs uppercase font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
+                      Bàn {order.table_id}
+                    </span>
+                  </div>
+                  {getStatusBadge(order.status)}
                 </div>
 
                 {/* Progress Bar (Vertical for Tracking View) */}

@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, Home, User } from 'lucide-react';
 import MenuFilters from './MenuFilters';
 import MenuItemCard from './MenuItemCard';
 import { useCart } from '../../contexts/CartContext';
-import { ProfilePage } from '../admin-dashboard/ProfilePage';
 import { LoginScreen } from '../auth/LoginScreen';
-import { useEffect } from 'react';
+import { GuestOrderStatus } from './components/GuestOrderStatus';
+import { getCurrentUser } from '../auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const createOrderId = () =>
@@ -82,7 +82,8 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
   const itemCount = getItemCountByTable(table_id);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'menu' | 'cart' | 'profile'>('menu');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenuFiltersState>({
     q: '',
@@ -147,12 +148,17 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
 
   // Callback khi đăng nhập thành công
   const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    setIsLoggedIn(Boolean(user));
   };
 
   // Callback khi đăng xuất
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setCurrentUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token_USER');
   };
 
   if (isLoading) {
@@ -234,11 +240,38 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
 
       {/* Profile Content - Hiển thị LoginScreen hoặc ProfilePage */}
       {activeTab === 'profile' && (
-        <div className="pb-20">
+        <div className="pb-20 space-y-6">
           {isLoggedIn ? (
-            <ProfilePage />
+            <div className="space-y-6">
+              <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
+                    {currentUser?.name?.[0] ?? 'U'}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">{currentUser?.name || 'Khách hàng'}</h2>
+                    <p className="text-sm text-gray-500">{currentUser?.email || 'Chưa có email'}</p>
+                  </div>
+                </div>
+                <div className="mt-5 flex items-center gap-3 text-sm text-gray-500">
+                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">Đã đăng nhập</span>
+                  <span className="font-medium">ID: {currentUser?.id?.slice(0, 8) ?? '---'}</span>
+                </div>
+              </div>
+              <GuestOrderStatus viewMode="history" />
+            </div>
           ) : (
             <LoginScreen onLoginSuccess={handleLoginSuccess} />
+          )}
+          {isLoggedIn && (
+            <div className="flex justify-center">
+              <button
+                onClick={handleLogout}
+                className="px-6 py-3 bg-red-50 text-red-600 border border-red-200 rounded-full font-semibold hover:bg-red-100"
+              >
+                Đăng xuất
+              </button>
+            </div>
           )}
         </div>
       )}

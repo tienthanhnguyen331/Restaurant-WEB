@@ -7,6 +7,7 @@ export interface GuestOrder {
   created_at: string;
   total_amount: number;
   status: OrderStatus;
+  table_id: number;
   payment?: {
     status: PaymentStatus;
     method: PaymentMethod;

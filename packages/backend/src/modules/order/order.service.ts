@@ -21,7 +21,7 @@ export class OrderService {
     private waiterGateway: WaiterGateway,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, userId?: string) {
     // 1. Tính tổng tiền
     const totalAmount = createOrderDto.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -30,7 +30,8 @@ export class OrderService {
       id: createOrderDto.id || uuidv4(),
       table_id: createOrderDto.table_id,
       total_amount: totalAmount,
-      status: OrderStatus.PENDING
+      status: OrderStatus.PENDING,
+      userId: userId ?? undefined,
     });
     const savedOrder = await this.orderRepo.save(order);
     this.logger.log(`[ORDER_CREATED] orderId=${savedOrder.id}, totalAmount=${totalAmount}`);
@@ -55,13 +56,13 @@ export class OrderService {
   }
 
   findAll() {
-    return this.orderRepo.find({ relations: ['items', 'items.menuItem', 'payments'] });
+    return this.orderRepo.find({ relations: ['items', 'items.menuItem', 'payments', 'user'], order: { created_at: 'DESC' } });
   }
 
   async findOne(id: string) {
     const order = await this.orderRepo.findOne({ 
       where: { id }, 
-      relations: ['items', 'items.menuItem', 'payments'] 
+      relations: ['items', 'items.menuItem', 'payments', 'user'] 
     });
     if (!order) 
       throw new NotFoundException(`Order ${id} not found`);
@@ -88,5 +89,14 @@ export class OrderService {
         this.orderGateway.notifyOrderStatusUpdate(id, updateOrderDto.status);
       }
       return this.findOne(id);
+  }
+
+  async findByUserId(userId?: string) {
+    if (!userId) return [];
+    return this.orderRepo.find({
+      where: { userId },
+      relations: ['items', 'items.menuItem', 'payments', 'user'],
+      order: { created_at: 'DESC' },
+    });
   }
 }

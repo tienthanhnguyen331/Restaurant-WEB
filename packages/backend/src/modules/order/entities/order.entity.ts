@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { OrderItemEntity } from './order-item.entity';
 import { Payment } from '../../payment/entities/payment.entity';
+import { User } from '../../user/user.entity';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -32,6 +33,13 @@ export class OrderEntity {
 
     @UpdateDateColumn()
     updated_at: Date;
+
+    @Column('uuid', { name: 'user_id', nullable: true })
+    userId?: string;
+
+    @ManyToOne(() => User, (user) => user.orders, { nullable: true })
+    @JoinColumn({ name: 'user_id' })
+    user?: User;
 
     @OneToMany(() => OrderItemEntity, (item) => item.order)
     items: OrderItemEntity[];
