@@ -73,6 +73,12 @@ export const WaiterDashboard = () => {
     socket.on('newOrder', fetchOrders);
     socket.on('order_status_update', fetchOrders);
 
+    // Lắng nghe yêu cầu xuất hóa đơn từ khách
+    socket.on('request_invoice', ({ orderId, tableId }) => {
+      console.log('[WAITER] Nhận request_invoice:', { orderId, tableId });
+      alert(`Bàn ${tableId} vừa yêu cầu xuất hóa đơn!`);
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -144,17 +150,15 @@ export const WaiterDashboard = () => {
       {/* Tabs */}
       <div className="mb-4 flex gap-4">
         <button
-          className={`px-4 py-2 rounded ${
-            !showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
-          }`}
+          className={`px-4 py-2 rounded ${!showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            }`}
           onClick={() => setShowHistory(false)}
         >
           Đơn đang xử lý
         </button>
         <button
-          className={`px-4 py-2 rounded ${
-            showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
-          }`}
+          className={`px-4 py-2 rounded ${showHistory ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            }`}
           onClick={() => {
             setShowHistory(true);
             if (historyOrders.length === 0) loadOrderHistory();
