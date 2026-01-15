@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Param, Patch, BadRequestException, Logger, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, BadRequestException, Logger, Req, UseGuards, Res } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderStatus } from './entities/order.entity';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
+import { PdfGeneratorService } from '../exports/pdf-generator.service';
+
 
 interface RequestWithUser extends Request {
   user?: { sub?: string };
@@ -18,6 +20,7 @@ export class OrderController {
   constructor(
     private readonly orderService: OrderService,
     private readonly jwtService: JwtService,
+    private readonly pdfGeneratorService: PdfGeneratorService, // Thêm DI
   ) {}
 
   @Post()
@@ -59,6 +62,27 @@ export class OrderController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
       return this.orderService.update(id, updateOrderDto);
+  }
+
+  @Get(':id/invoice')
+  async downloadInvoice(@Param('id') id: string, @Res() res: Response) {
+    const order = await this.orderService.findOne(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    // Chuyển đổi dữ liệu order sang dạng phù hợp cho PDF
+    const orderForPdf = {
+      id: order.id,
+      createdAt: order.created_at,
+      tableNumber: order.table_id,
+      items: order.items.map((item: any) => ({
+        name: item.menuItem?.name || '',
+        quantity: item.quantity,
+        price: item.price,
+        categoryName: item.menuItem?.category?.name || '',
+      })),
+    };
+    return this.pdfGeneratorService.generateOrderInvoice(orderForPdf, res);
   }
 
   private async resolveUserId(request: Request): Promise<string | undefined> {

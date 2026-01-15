@@ -8,9 +8,10 @@ import { OrderItemEntity } from './entities/order-item.entity';
 import { WaiterModule } from '../waiter/waiter.module';
 import { AuthModule } from '../auth/auth.module';
 import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
+import { ExportsModule } from '../exports/exports.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]), AuthModule, WaiterModule],
+  imports: [TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]), AuthModule, WaiterModule, ExportsModule],
   controllers: [OrderController],
   providers: [OrderService, OrderGateway, OptionalJwtAuthGuard],
   exports: [OrderService, OrderGateway],

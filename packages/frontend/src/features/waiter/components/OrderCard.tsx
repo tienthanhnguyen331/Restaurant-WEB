@@ -1,4 +1,5 @@
 import type { Order } from "../../order/types";
+import { saveAs } from 'file-saver';
 
 interface OrderCardProps {
   order: Order;
@@ -14,6 +15,7 @@ import { useState, useEffect } from "react";
 
 export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe, onComplete, onShowDetail }: OrderCardProps) => {
   const [localStatus, setLocalStatus] = useState(order.status);
+  const [downloading, setDownloading] = useState(false);
 
   // Keep localStatus in sync if parent updates order.status (socket updates / re-fetch)
   useEffect(() => {
@@ -26,6 +28,23 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe,
       case 'PREPARING': return 'bg-purple-100 text-purple-800';
       case 'READY': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    setDownloading(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const url = `${baseUrl}/api/orders/${order.id}/invoice`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Không thể tải hóa đơn');
+      const blob = await response.blob();
+      if (blob.size === 0) throw new Error('File rỗng');
+      saveAs(blob, `Order-${order.id}.pdf`);
+    } catch (e) {
+      alert('Tải hóa đơn thất bại!');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -90,12 +109,22 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe,
           </button>
         )}
         {localStatus === 'SERVED' && (
-          <button
-            onClick={() => onComplete && onComplete(order.id)}
-            className="w-full bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-900"
-          >
-            Complete
-          </button>
+          <>
+            <button
+              onClick={() => onComplete && onComplete(order.id)}
+              className="w-full bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-900"
+            >
+              Complete
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); handleDownloadInvoice(); }}
+              disabled={downloading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-1"
+              title="Tải hóa đơn PDF"
+            >
+              {downloading ? 'Đang tải...' : <><span role="img" aria-label="pdf">📄</span> Tải hóa đơn</>}
+            </button>
+          </>
         )}
       </div>
     </div>

@@ -41,11 +41,8 @@ const aggregateItems = (rawItems: any[]): GuestOrderItem[] => {
 };
 
 export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history' | 'tracking' }) => {
-  // Chúng ta sẽ lưu items trong state theo dạng đã gộp (GuestOrderItem)
-  // Nên cần override lại type của items trong state orders nếu cần thiết, 
-  // hoặc cứ để any cho items nếu bạn lười sửa type gốc GuestOrder.
-  // Ở đây mình ép kiểu lúc map dữ liệu.
   const [orders, setOrders] = useState<GuestOrder[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('ALL'); // State for the filter
   const { socket } = useOrderSocket();
 
   // 3. Fetch dữ liệu từ API và Gộp món ngay lập tức
@@ -60,20 +57,16 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
           created_at: o.created_at,
           total_amount: o.total_amount,
           status: o.status,
-          // Lấy payment cuối cùng
           payment: o.payments?.length > 0 
             ? { 
                 status: o.payments[o.payments.length - 1].status, 
                 method: o.payments[o.payments.length - 1].method 
               }
             : undefined,
-          // Xử lý gộp món tại đây
-          items: aggregateItems(o.items) as any 
-          ,
+          items: aggregateItems(o.items) as any,
           table_id: o.table_id ?? o.tableId ?? 0,
         }));
 
-        // Sắp xếp đơn mới nhất lên đầu
         setOrders(mappedOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       } catch (err) {
         console.error("Failed to load orders", err);
@@ -87,14 +80,12 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
   useEffect(() => {
     if (!socket) return;
     
-    // a. Order Status Update
     socket.on('order_status_update', ({ orderId, status }) => {
       setOrders(prev => prev.map(o => 
         o.id === orderId ? { ...o, status: status } : o
       ));
     });
 
-    // b. Payment Status Update
     socket.on('payment_status_update', ({ orderId, status }) => {
        setOrders(prev => prev.map(o => 
         o.id === orderId 
@@ -102,7 +93,7 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
               ...o, 
               payment: o.payment 
                 ? { ...o.payment, status } 
-                : { status: status as any, method: 'cash' } // Default method fallback
+                : { status: status as any, method: 'cash' } 
             } 
           : o
       ));
@@ -118,7 +109,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
   const getStatusBadge = (status: string) => {
     const s = status.toUpperCase();
     
-    // Used for Tracking View (Raw Status)
     if (viewMode === 'tracking') {
        return (
         <span className="px-2 py-0.5 rounded text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200 uppercase">
@@ -127,7 +117,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
        );
     }
 
-    // Used for History View (Vietnamese Friendly)
     const colors: Record<string, string> = {
       PENDING: 'bg-gray-200 text-gray-700 border-gray-300',
       ACCEPTED: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -164,7 +153,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
       return <span title="Chưa thanh toán">💰</span>;
   }
 
-  // Helper for Progress Bar
   const getProgressStep = (status: string) => {
       const s = status.toUpperCase();
       switch (s) {
@@ -174,7 +162,7 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
         case 'READY': return 4;
         case 'SERVED': return 5;
         case 'COMPLETED': return 6;
-        default: return 0; // REJECTED, CANCELLED
+        default: return 0;
       }
   };
 
@@ -187,19 +175,34 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
       { step: 6, label: 'Completed' }
   ];
 
-  // Filter for 'tracking' Tab:
-  // - Show ONLY the latest order (orders[0]) regardless of status.
-  // - This ensures users see "Completed" status until a new order pushes it down.
-  // - Filter out CANCELLED/REJECTED if desired, but user asked specifically to keep COMPLETED visible.
-  const displayOrders = viewMode === 'tracking' 
-    ? orders.slice(0, 1)
+  const filteredOrders = viewMode === 'history'
+    ? orders.filter(o => statusFilter === 'ALL' || o.status.toUpperCase() === statusFilter)
     : orders;
+
+  const displayOrders = viewMode === 'tracking' 
+    ? filteredOrders.slice(0, 1)
+    : filteredOrders;
+
+  const orderStatuses = ['ALL', 'PENDING', 'ACCEPTED', 'REJECTED', 'PREPARING', 'READY', 'SERVED', 'COMPLETED', 'CANCELLED'];
 
   return (
     <div className="p-4 space-y-4 max-w-3xl mx-auto">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">
             {viewMode === 'tracking' ? 'Theo dõi đơn hàng' : 'Lịch sử đơn hàng'}
         </h2>
+        {viewMode === 'history' && (
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            {orderStatuses.map(status => (
+              <option key={status} value={status}>{status === 'ALL' ? 'Tất cả' : status.charAt(0) + status.slice(1).toLowerCase()}</option>
+            ))}
+          </select>
+        )}
+      </div>
         
         {displayOrders.length === 0 && (
             <div className="text-center text-gray-500 py-8">
@@ -213,7 +216,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
 
             return (
             <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md">
-                {/* Header: ID + Status */}
                 <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-gray-700">#{order.id.slice(0, 5)}</span>
@@ -224,14 +226,10 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                   {getStatusBadge(order.status)}
                 </div>
 
-                {/* Progress Bar (Vertical for Tracking View) */}
                 {viewMode === 'tracking' && !isCancelled && (
                 <div className="mb-6 pl-2">
                     <div className="relative pt-1 pb-1">
-                        {/* Continuous Gray Line */}
                         <div className="absolute left-[5px] top-2 bottom-2 w-0.5 bg-gray-200" />
-
-                        {/* Active Blue Line (Approximate height based on progress) */}
                         <div 
                            className="absolute left-[5px] top-2 w-0.5 bg-blue-500 transition-all duration-700 ease-out" 
                            style={{ 
@@ -246,14 +244,12 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
 
                                 return (
                                 <div key={s.step} className="relative flex items-center pl-8">
-                                    {/* Dot Indicator */}
                                     <div className={`absolute left-0 w-3 h-3 rounded-full border-2 z-10 transition-all duration-300 bg-white ${
                                         isCompleted 
                                         ? 'border-blue-500 bg-blue-500 scale-125' 
                                         : 'border-gray-300'
                                     } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`} />
                                     
-                                    {/* Label */}
                                     <span className={`text-sm font-medium transition-colors ${
                                         isCompleted ? 'text-gray-800' : 'text-gray-400'
                                     } ${isCurrent ? 'text-blue-700 font-bold' : ''}`}>
@@ -267,7 +263,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                 </div>
                 )}
                 
-                {/* Meta info: Time + Payment */}
                 <div className="flex justify-between text-xs text-gray-500 mb-4">
                     <span>{new Date(order.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</span>
                     <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded">
@@ -278,12 +273,9 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                     </div>
                 </div>
 
-                {/* Items List (Updated Layout) */}
                 <div className="space-y-3">
-                    {/* Ép kiểu items về GuestOrderItem[] để TS không báo lỗi */}
                     {(order.items as unknown as GuestOrderItem[]).map((item, idx) => (
                         <div key={idx} className="flex justify-between items-start group">
-                            {/* Tên món & Đơn giá */}
                             <div className="flex-1 pr-2">
                                 <div className="font-medium text-gray-800 text-sm">
                                     {item.name}
@@ -293,7 +285,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                                 </div>
                             </div>
 
-                            {/* Tổng tiền dòng */}
                             <div className="text-right">
                                 <span className="font-semibold text-gray-900 text-sm block">
                                     {item.totalLinePrice.toLocaleString()}đ
@@ -303,7 +294,6 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                     ))}
                 </div>
                 
-                {/* Footer: Tổng cộng */}
                 <div className="flex justify-between items-center mt-4 pt-3 border-t border-dashed border-gray-300">
                     <span className="font-medium text-gray-600">Tổng cộng</span>
                     <span className="text-blue-600 text-lg font-bold">

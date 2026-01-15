@@ -9,48 +9,34 @@ import * as fs from 'fs';
 export class PdfGeneratorService {
   private getFontPath(): string {
     const possiblePaths = [
-      // 1. Vercel Root (thường là /var/task)
       path.join(process.cwd(), 'assets', 'fonts', 'Roboto-Regular.ttf'),
-      // 2. Bên trong thư mục dist (nếu build copy vào)
       path.join(process.cwd(), 'dist', 'assets', 'fonts', 'Roboto-Regular.ttf'),
-      // 3. Tương đối từ file hiện tại (dist/modules/exports/...) đi ra dist/assets
       path.join(__dirname, '..', '..', '..', 'assets', 'fonts', 'Roboto-Regular.ttf'),
-      // 4. Tương đối từ src (dev environment)
       path.join(__dirname, '..', '..', '..', '..', 'assets', 'fonts', 'Roboto-Regular.ttf'),
     ];
 
-    console.log('Searching for font in paths:', possiblePaths);
-
     for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        console.log(`Found font at: ${p}`);
-        return p;
-      }
+      if (fs.existsSync(p)) return p;
     }
 
-    console.warn('Could not find Roboto-Regular.ttf. Using Helvetica fallback.');
-    return 'Helvetica'; 
+    return 'Helvetica';
   }
 
+  /* ======================= QR PDF (SINGLE) ======================= */
   async generate(table: any, res: Response) {
     const fontPath = this.getFontPath();
+    const baseUrl =
+      process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
 
-    // Generate full QR URL with both tableId and token (requirement 2.1)
-    const baseUrl = process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
     const qrUrl = `${baseUrl}/menu?table=${table.id}&token=${table.qrToken || ''}`;
     const qrDataUrl = await QRCode.toDataURL(qrUrl);
 
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 50,
-    });
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     if (fontPath !== 'Helvetica') {
-        try {
-            doc.font(fontPath);
-        } catch (e) {
-            console.warn("Error loading font:", e.message);
-        }
+      try {
+        doc.font(fontPath);
+      } catch {}
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -61,22 +47,10 @@ export class PdfGeneratorService {
 
     doc.pipe(res);
 
-    doc
-      .fontSize(20)
-      .text(`Bàn số: ${table.tableNumber}`, {
-        align: 'center',
-      });
+    doc.fontSize(20).text(`Bàn số: ${table.tableNumber}`, { align: 'center' });
 
-    doc.moveDown(1);
-
-    doc
-      .rect(100, 150, 400, 400)
-      .stroke();
-
-    doc.image(qrDataUrl, 200, 200, {
-      width: 200,
-      height: 200,
-    });
+    doc.rect(100, 150, 400, 400).stroke();
+    doc.image(qrDataUrl, 200, 200, { width: 200, height: 200 });
 
     doc
       .moveDown(15)
@@ -86,22 +60,18 @@ export class PdfGeneratorService {
     doc.end();
   }
 
-  // Generate bulk PDF with all tables (requirement 3.2 - Batch Operations)
+  /* ======================= QR PDF (BULK) ======================= */
   async generateBulk(tables: any[], res: Response) {
     const fontPath = this.getFontPath();
-    const baseUrl = process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
+    const baseUrl =
+      process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
 
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 20,
-    });
+    const doc = new PDFDocument({ size: 'A4', margin: 20 });
 
     if (fontPath !== 'Helvetica') {
-        try {
-            doc.font(fontPath);
-        } catch (e) {
-            console.warn("Error loading font:", e.message);
-        }
+      try {
+        doc.font(fontPath);
+      } catch {}
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -112,93 +82,50 @@ export class PdfGeneratorService {
 
     doc.pipe(res);
 
-    // Title page
+    doc.fontSize(24).text('Restaurant QR Codes', { align: 'center' });
     doc
-      .fontSize(24)
-      .text('Restaurant QR Codes', { align: 'center' });
-
-    doc.moveDown(1);
-    doc
+      .moveDown()
       .fontSize(12)
       .text(`Generated: ${new Date().toLocaleString('vi-VN')}`, {
         align: 'center',
       });
 
-    doc.moveDown(2);
-    doc
-      .fontSize(14)
-      .text(`Total Tables: ${tables.length}`, {
-        align: 'center',
-      });
-
     doc.addPage();
-
-    // Grid layout: 2 columns x 2 rows per page (4 QR codes per page)
-    const pageWidth = doc.page.width;
-    const pageHeight = doc.page.height;
-    const margin = 20;
-    const contentWidth = pageWidth - margin * 2;
-    const contentHeight = pageHeight - margin * 2;
 
     const cols = 2;
     const rows = 2;
-    const cellWidth = contentWidth / cols;
-    const cellHeight = contentHeight / rows;
-
     const qrSize = 120;
-    const tableInfoHeight = 50;
+    const margin = 20;
+    const cellWidth = (doc.page.width - margin * 2) / cols;
+    const cellHeight = (doc.page.height - margin * 2) / rows;
 
     for (let i = 0; i < tables.length; i++) {
+      if (i > 0 && i % 4 === 0) doc.addPage();
+
       const table = tables[i];
       const qrUrl = `${baseUrl}/menu?table=${table.id}&token=${table.qrToken || ''}`;
       const qrDataUrl = await QRCode.toDataURL(qrUrl);
 
-      // Calculate position in grid
-      const row = i % (cols * rows);
-      const col = row % cols;
-      const rowNum = Math.floor(row / cols);
+      const index = i % 4;
+      const col = index % cols;
+      const row = Math.floor(index / cols);
 
-      // Add new page if needed
-      if (i > 0 && row === 0) {
-        doc.addPage();
-      }
+      const x = margin + col * cellWidth;
+      const y = margin + row * cellHeight;
 
-      // Calculate cell position
-      const cellX = margin + col * cellWidth;
-      const cellY = margin + rowNum * cellHeight;
+      doc.rect(x + 5, y + 5, cellWidth - 10, cellHeight - 10).stroke();
 
-      // Draw border around cell
-      doc
-        .rect(cellX + 5, cellY + 5, cellWidth - 10, cellHeight - 10)
-        .stroke();
+      doc.fontSize(12).text(`Table ${table.tableNumber}`, x + 10, y + 10);
+      doc.fontSize(9).text(table.location, x + 10, y + 28);
 
-      // Table info (without bold, just use regular font)
-      doc
-        .fontSize(12)
-        .text(`Table ${table.tableNumber}`, cellX + 10, cellY + 10, {
-          width: cellWidth - 20,
-        });
-
-      // Location
-      doc
-        .fontSize(9)
-        .text(`${table.location}`, cellX + 10, cellY + 28, {
-          width: cellWidth - 20,
-        });
-
-      // QR Code (centered in cell)
-      const qrX = cellX + (cellWidth - qrSize) / 2;
-      const qrY = cellY + tableInfoHeight;
-
-      doc.image(qrDataUrl, qrX, qrY, {
+      doc.image(qrDataUrl, x + (cellWidth - qrSize) / 2, y + 60, {
         width: qrSize,
         height: qrSize,
       });
 
-      // Scan instruction
       doc
         .fontSize(8)
-        .text('Scan to Order', cellX + 10, cellY + cellHeight - 20, {
+        .text('Scan to Order', x + 10, y + cellHeight - 20, {
           width: cellWidth - 20,
           align: 'center',
         });
@@ -206,4 +133,92 @@ export class PdfGeneratorService {
 
     doc.end();
   }
+
+  /* ======================= ORDER INVOICE ======================= */
+  async generateOrderInvoice(order: any, res: Response) {
+  const fontPath = this.getFontPath();
+
+  const doc = new PDFDocument({
+    size: [226, 800], // ~ 80mm width
+    margin: 10,
+  });
+
+  if (fontPath !== 'Helvetica') {
+    try {
+      doc.font(fontPath);
+    } catch {}
+  }
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename=Invoice-POS-${order.code || order.id}.pdf`,
+  );
+
+  doc.pipe(res);
+
+  const formatMoney = (v: number) =>
+    v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+  /* ===== HEADER ===== */
+  //doc.fontSize(12).text('RESTAURANT NAME', { align: 'center' });
+  doc.fontSize(10).text('HÓA ĐƠN THANH TOÁN', { align: 'center' });
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(8)
+    .text(`Mã đơn: ${order.code || order.id}`);
+  if (order.table?.tableNumber) {
+    doc.text(`Bàn: ${order.table.tableNumber}`);
+  }
+  doc.text(
+    `Thời gian: ${new Date(order.createdAt).toLocaleString('vi-VN')}`,
+  );
+
+  doc.moveDown(0.5);
+  doc.text('--------------------------------');
+
+  /* ===== ITEMS ===== */
+  let total = 0;
+
+  for (const item of order.items) {
+    const itemTotal = item.quantity * item.price;
+    total += itemTotal;
+
+    doc.fontSize(9).text(item.name, { continued: false });
+
+    doc
+      .fontSize(8)
+      .text(
+        `${item.quantity} x ${formatMoney(item.price)}`,
+        { continued: true },
+      )
+      .text(formatMoney(itemTotal), { align: 'right' });
+
+    doc.moveDown(0.3);
+  }
+
+  doc.text('--------------------------------');
+
+  /* ===== TOTAL ===== */
+  doc
+    .fontSize(10)
+    .fillColor('blue')
+    .text(`TỔNG CỘNG`, { continued: true })
+    .text(formatMoney(total), { align: 'right' })
+    .fillColor('black');
+
+  doc.moveDown();
+
+  /* ===== FOOTER ===== */
+  doc
+    .fontSize(8)
+    .text('Cảm ơn quý khách!', { align: 'center' });
+  doc
+    .fontSize(7)
+    .text('Hẹn gặp lại', { align: 'center' });
+
+  doc.end();
+}
+
 }

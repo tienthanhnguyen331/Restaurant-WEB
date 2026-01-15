@@ -13,6 +13,13 @@ export const orderApi = {
     const res = await fetch(`${API_URL}/api/orders`);
     return res.json();
   },
+  getAllByStatus: async (status: string) => {
+    if (status === 'ALL') {
+      return orderApi.getAll();
+    }
+    const res = await fetch(`${API_URL}/api/orders?status=${status}`);
+    return res.json();
+  },
   getMyOrders: async () => {
     const res = await fetch(`${API_URL}/api/orders/me`, {
       headers: buildHeaders({ 'Content-Type': 'application/json' }),
