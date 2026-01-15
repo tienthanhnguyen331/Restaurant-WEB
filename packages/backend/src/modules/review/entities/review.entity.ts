@@ -8,14 +8,19 @@ import {
     JoinColumn
 } from 'typeorm';
 import { MenuItemEntity } from '../../menu-items/entities/menu-item.entity';
+import { User } from '../../user/user.entity';
 
 @Entity('reviews')
 export class ReviewEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
-    user_id: string;
+    @Column({ nullable: true })
+    user_id?: string;
+
+    @ManyToOne(() => User)
+    @JoinColumn({ name: 'user_id' })
+    user?: User;
 
     @Column()
     menu_item_id: string;

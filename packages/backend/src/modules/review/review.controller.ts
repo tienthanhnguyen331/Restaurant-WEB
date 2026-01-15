@@ -1,14 +1,15 @@
 import { Controller, Get, Param, Query, Post, Body } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { GetReviewsDto } from './dto/get-reviews.dto';
 
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Get()
-  findAll(@Query('menu_item_id') menuItemId?: string) {
-    return this.reviewService.findAll(menuItemId);
+  findAll(@Query() query: GetReviewsDto) {
+    return this.reviewService.findAll(query);
   }
 
   @Get(':id')

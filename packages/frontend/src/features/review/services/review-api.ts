@@ -1,10 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const reviewApi = {
-  getAll: async (menuItemId?: string) => {
-    const url = menuItemId
-      ? `${API_URL}/api/reviews?menu_item_id=${menuItemId}`
-      : `${API_URL}/api/reviews`;
+  getAll: async (menuItemId?: string, page: number = 1, limit: number = 10) => {
+    const params = new URLSearchParams();
+    if (menuItemId) {
+      params.append('menu_item_id', menuItemId);
+    }
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    const url = `${API_URL}/api/reviews?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`Failed to fetch reviews: ${res.statusText}`);

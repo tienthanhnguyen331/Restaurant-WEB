@@ -23,39 +23,43 @@ export class ReportService {
     }
 
     const period = query.period || 'daily';
-    let dateFormat: string;
+    let dateGroupFormat: string;
 
     switch (period) {
       case 'weekly':
-        // Format: 2025-12-tuần 2 (week 2 of that month)
-        // Calculate week number within the month
-        dateFormat = `to_char(report_date, 'YYYY') || '-' || to_char(report_date, 'MM') || '-tuần ' || 
-          CAST(CEILING(EXTRACT(DAY FROM report_date)::numeric / 7) AS INT)`;
+        dateGroupFormat = `to_char(o.created_at, 'YYYY') || '-' || to_char(o.created_at, 'MM') || '-tuần ' || 
+          CAST(CEILING(EXTRACT(DAY FROM o.created_at)::numeric / 7) AS INT)`;
         break;
       case 'monthly':
-        dateFormat = "to_char(report_date, 'YYYY-MM')";
+        dateGroupFormat = "to_char(o.created_at, 'YYYY-MM')";
         break;
       case 'daily':
       default:
-        // Normalize to string to avoid timezone shifting on the client
-        dateFormat = "to_char(report_date, 'YYYY-MM-DD')";
+        dateGroupFormat = "to_char(o.created_at, 'YYYY-MM-DD')";
     }
 
     try {
       const result = await this.dataSource.query(`
         SELECT 
-          ${dateFormat} as period,
-          SUM(total_revenue) as revenue,
-          SUM(total_orders) as total_orders,
-          SUM(completed_orders) as completed_orders
-        FROM v_revenue_daily
-        WHERE report_date BETWEEN $1::date AND $2::date
-        GROUP BY ${dateFormat}
+          ${dateGroupFormat} as period,
+          SUM(o.total_amount) as revenue,
+          COUNT(DISTINCT o.id) as total_orders
+        FROM orders o
+        WHERE o.status = 'COMPLETED'
+          AND DATE(o.created_at) BETWEEN $1::date AND $2::date
+        GROUP BY ${dateGroupFormat}
         ORDER BY period ASC
       `, [query.from, query.to]);
 
-      this.logger.log(`[REVENUE_REPORT_SUCCESS] Found ${result.length} records`);
-      return result;
+      // We add completed_orders to be consistent with the previous output, though it's the same as total_orders here.
+      const finalResult = result.map(r => ({
+        ...r,
+        completed_orders: r.total_orders,
+      }));
+
+
+      this.logger.log(`[REVENUE_REPORT_SUCCESS] Found ${finalResult.length} records`);
+      return finalResult;
     } catch (error) {
       this.logger.error(`[REVENUE_REPORT_ERROR] ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw error;

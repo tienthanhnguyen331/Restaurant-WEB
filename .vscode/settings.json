@@ -6,5 +6,6 @@
   "oracledevtools.enableProjectExplorer": false,
   "files.associations": {
     "*.sql": "postgres"
-  }
+  },
+  "CodeGPT.apiKey": "Gemini CLI"
 }

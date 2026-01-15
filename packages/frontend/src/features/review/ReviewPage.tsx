@@ -14,13 +14,21 @@ export const ReviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const data = await reviewApi.getAll(menuItemId);
-      console.log('Reviews data:', data);
-      setReviews(Array.isArray(data) ? data : []);
+      // Gọi API với page và limit=5 để dễ test phân trang
+      const response = await reviewApi.getAll(menuItemId, page, 5);
+      console.log('Reviews data:', response);
+      const reviewsData = Array.isArray(response) ? response : (response?.data || []);
+      setReviews(reviewsData);
+      
+      if (!Array.isArray(response) && response?.meta) {
+        setTotalPages(response.meta.totalPages);
+      }
 
       if (menuItemId) {
         const avgData = await reviewApi.getAverageRating(menuItemId);
@@ -38,7 +46,7 @@ export const ReviewPage: React.FC = () => {
 
   useEffect(() => {
     fetchReviews();
-  }, [menuItemId]);
+  }, [menuItemId, page]);
 
   const handleSubmitReview = async (data: { rating: number; comment: string }) => {
     if (!menuItemId) {
@@ -108,6 +116,27 @@ export const ReviewPage: React.FC = () => {
       )}
 
       <ReviewList reviews={reviews} />
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-gray-100"
+          >
+            Trước
+          </button>
+          <span className="py-2 font-medium">Trang {page} / {totalPages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-gray-100"
+          >
+            Sau
+          </button>
+        </div>
+      )}
     </div>
   );
 };

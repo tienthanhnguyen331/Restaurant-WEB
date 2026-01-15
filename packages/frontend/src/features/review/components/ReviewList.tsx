@@ -9,6 +9,7 @@ export const ReviewList: React.FC<{ reviews: Review[] }> = ({ reviews }) => {
       {reviews.map((review) => (
         <div key={review.id} className="border rounded p-4 bg-white">
           <div className="flex items-center gap-2 mb-2">
+            <p className="font-semibold">{review.user?.name ?? 'Người dùng ẩn danh'}</p>
             <div className="flex text-yellow-400">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-gray-300'}`} />

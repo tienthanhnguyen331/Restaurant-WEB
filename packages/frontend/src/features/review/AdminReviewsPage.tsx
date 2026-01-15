@@ -5,19 +5,31 @@ import type { Review } from './types';
 export const AdminReviewsPage: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [page]);
 
   const fetchReviews = async () => {
     try {
-      const data = await reviewApi.getAll();
-      if (Array.isArray(data)) {
-        setReviews(data);
+      setLoading(true);
+      // Gọi API lấy tất cả review (menuItemId = undefined), page hiện tại, limit = 10
+      const response = await reviewApi.getAll(undefined, page, 10);
+      // Kiểm tra: nếu là mảng thì dùng luôn, nếu là object phân trang thì lấy .data
+      const reviewsData = Array.isArray(response) ? response : (response?.data || []);
+
+      if (Array.isArray(reviewsData)) {
+        setReviews(reviewsData);
       } else {
-        console.error('Data received is not an array:', data);
+        console.error('Data received is not an array:', response);
         setReviews([]);
+      }
+
+      // Cập nhật tổng số trang từ metadata
+      if (!Array.isArray(response) && response?.meta) {
+        setTotalPages(response.meta.totalPages);
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
@@ -48,7 +60,7 @@ export const AdminReviewsPage: React.FC = () => {
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Chưa có đánh giá nào.</td>
               </tr>
             ) : (
-              reviews.map((review: any) => (
+              reviews.map((review) => (
                 <tr key={review.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(review.created_at).toLocaleDateString('vi-VN')}
@@ -73,6 +85,27 @@ export const AdminReviewsPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Trước
+          </button>
+          <span className="text-sm text-gray-700">Trang {page} / {totalPages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Sau
+          </button>
+        </div>
+      )}
     </div>
   );
 };

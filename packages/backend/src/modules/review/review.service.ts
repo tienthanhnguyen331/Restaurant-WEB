@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReviewEntity } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { GetReviewsDto } from './dto/get-reviews.dto';
 
 
 @Injectable()
@@ -12,17 +13,36 @@ export class ReviewService{
         private reviewRepo: Repository<ReviewEntity>,
     ) {}
     
-    async findAll(menuItemId?: string)
+    async findAll(dto: GetReviewsDto)
     {
+        const { menu_item_id, page = 1, limit = 10 } = dto;
+        const skip = (page - 1) * limit;
+
         const query = this.reviewRepo.createQueryBuilder('review')
             .leftJoinAndSelect('review.menu_item', 'menu_item')
+            .leftJoinAndSelect('review.user', 'user')
             .orderBy('review.created_at', 'DESC');
         
-        if(menuItemId)
+        if(menu_item_id)
         {
-            query.where('review.menu_item_id = :menuItemId', { menuItemId });
+            // Filter trực tiếp trên bảng review sẽ an toàn và nhanh hơn
+            query.where('review.menu_item_id = :menuItemId', { menuItemId: menu_item_id });
         }
-        return query.getMany();
+        
+        // Ép kiểu Number để tránh lỗi nếu DTO chưa transform
+        query.skip(Number(skip)).take(Number(limit));
+
+        const [data, total] = await query.getManyAndCount();
+
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            }
+        };
     }
     async findOne(id: string)
     {
