@@ -205,7 +205,7 @@ export const AdminProfilePage: React.FC = () => {
               if (form) form.dispatchEvent(new Event('submit', { bubbles: true }));
             }}
           >
-            <div className="space-y-4">
+            <div className="space-y-4" data-section="profile">
               <ProfileInfoForm
                 initialData={{
                   fullName: profile.name,

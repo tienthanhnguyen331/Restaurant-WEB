@@ -89,7 +89,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         placeholder="Nhập tên hiển thị"
         disabled={isSubmitting || isLoading}
       />
-
+        <button type="submit" className="hidden" />
       {errors.submit && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
           {errors.submit}
