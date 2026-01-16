@@ -119,7 +119,7 @@ export const AvatarUploadComponent: React.FC<AvatarUploadComponentProps> = ({
         >
           Chọn Hình Ảnh
         </button>
-
+        <button type="submit" className="hidden" />
         {file && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
             <strong>Tệp được chọn:</strong> {file.name}

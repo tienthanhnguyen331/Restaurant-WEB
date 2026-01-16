@@ -236,21 +236,15 @@ export const AdminProfilePage: React.FC = () => {
               if (button) button.click();
             }}
           >
-            <form data-section="avatar" onSubmit={(e) => {
-              e.preventDefault();
-              const fileInput = document.querySelector('[data-section="avatar"] input[type="file"]') as HTMLInputElement;
-              const file = fileInput?.files?.[0];
-              if (file) {
-                uploadAvatarMutation.mutate(file);
-              }
-            }}>
+            {/* THAY ĐỔI Ở ĐÂY: Đổi <form> thành <div> và bỏ onSubmit */}
+            <div data-section="avatar"> 
               <AvatarUploadComponent
                 currentAvatar={profile.avatar}
                 onSubmit={uploadAvatarMutation.mutateAsync}
                 isLoading={uploadAvatarMutation.isPending}
               />
-              <button type="submit" className="hidden" />
-            </form>
+              {/* Đã xóa <button type="submit" className="hidden" /> ở đây vì không cần thiết nữa */}
+            </div>
             {successMessages.avatar && (
               <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded text-sm">
                 {successMessages.avatar}
