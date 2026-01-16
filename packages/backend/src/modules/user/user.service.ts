@@ -1,7 +1,7 @@
 
 import { Injectable, ConflictException } from '@nestjs/common';
-  // Cập nhật user cho admin
-  
+// Cập nhật user cho admin
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
@@ -11,14 +11,14 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async findOneByEmail(email: string): Promise<User | null> {
-  return this.userRepository.findOne({
-    where: { email },
-    select: ['id', 'email', 'password', 'name', 'role'] // Ép kiểu lấy password ở đây
-  });
-}
+    return this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'password', 'name', 'role'] // Ép kiểu lấy password ở đây
+    });
+  }
 
   async create(userData: Partial<User>): Promise<User> {
     const user = this.userRepository.create(userData);
@@ -28,14 +28,14 @@ export class UserService {
   async findOneById(id: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { id },
-      select: ['id', 'name', 'email', 'role', 'avatar','createdAt'],
+      select: ['id', 'name', 'email', 'role', 'avatar', 'createdAt'],
     });
   }
   async updateUserByAdmin(id: string, body: { username: string; email: string; role: string }) {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new Error('User not found');
     user.name = body.username;
-    user.email = body.email;
+    // user.email = body.email; // Không cho phép sửa email
     user.role = body.role as UserRole;
     await this.userRepository.save(user);
     // Trả về dữ liệu mới cho frontend
@@ -54,12 +54,7 @@ export class UserService {
       order: { createdAt: 'DESC' },
     });
   }
-  async deleteUserByAdmin(id: string) {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new Error('User not found');
-    await this.userRepository.remove(user);
-    return { success: true };
-  }
+
 
   // Tạo user cho admin (có chọn role)
   async createUserByAdmin(body: { username: string; email: string; password: string; role: string }) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { updateAdminUser, deleteAdminUser } from '../services/adminUserApi';
+import { updateAdminUser } from '../services/adminUserApi';
 import { getAccessTokenByRole } from '../../../features/auth/hooks/useAuth';
 import type { UserAdmin } from '../types/user.type';
 
@@ -22,25 +22,7 @@ const actionBtnStyle = {
 const ROLES = ['WAITER', 'KITCHEN', 'USER', 'ADMIN'];
 
 const UserTable: React.FC<UserTableProps> = ({ users, loading, error }) => {
-		const [deleting, setDeleting] = useState<string | null>(null);
-		const handleDelete = async (user: UserAdmin) => {
-			if (!window.confirm(`Bạn có chắc chắn muốn xóa tài khoản ${user.username}?`)) return;
-			setDeleting(user.id);
-			const token = getAccessTokenByRole('ADMIN');
-			if (!token) {
-				alert('Vui lòng đăng nhập lại');
-				setDeleting(null);
-				return;
-			}
-			try {
-				await deleteAdminUser(token, user.id);
-				window.location.reload();
-			} catch (err: any) {
-				alert(err?.response?.data?.message || 'Lỗi xóa tài khoản');
-			} finally {
-				setDeleting(null);
-			}
-		};
+
 	const [editUser, setEditUser] = useState<UserAdmin | null>(null);
 	const [editData, setEditData] = useState<{ username: string; email: string; role: string }>({ username: '', email: '', role: 'USER' });
 
@@ -115,13 +97,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, loading, error }) => {
 							<td style={{ textAlign: 'center' }}>{new Date(user.createdAt).toLocaleString('vi-VN')}</td>
 							<td style={{ textAlign: 'center' }}>
 								<button style={{ ...actionBtnStyle, background: '#fef3c7', color: '#b45309' }} onClick={() => openEdit(user)}>Sửa</button>
-								<button
-									style={{ ...actionBtnStyle, background: '#fee2e2', color: '#b91c1c' }}
-									onClick={() => handleDelete(user)}
-									disabled={deleting === user.id}
-								>
-									{deleting === user.id ? 'Đang xóa...' : 'Xóa'}
-								</button>
+
 							</td>
 						</tr>
 					))}
@@ -142,7 +118,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, loading, error }) => {
 						</div>
 						<div style={{ marginBottom: 12 }}>
 							<label>Email:</label>
-							<input name="email" value={editData.email} onChange={handleEditChange} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd' }} />
+							<input name="email" value={editData.email} onChange={handleEditChange} disabled style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', background: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
 						</div>
 						<div style={{ marginBottom: 20 }}>
 							<label>Vai trò:</label>

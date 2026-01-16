@@ -9,11 +9,11 @@ import { orderApi } from '../order/services/order-api';
 import { GuestOrderStatus } from '../guest-menu/components/GuestOrderStatus';
 
 const createOrderId = () =>
-  (crypto.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  }));
+(crypto.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  const r = (Math.random() * 16) | 0;
+  const v = c === 'x' ? r : (r & 0x3) | 0x8;
+  return v.toString(16);
+}));
 
 export const PaymentMethod = {
   CASH: 'cash',
@@ -131,8 +131,8 @@ export default function PaymentPage() {
         optionIds.forEach((optionId) => {
           const option = group.options?.find((o: any) => o.id === optionId);
           if (option) {
-            const priceText = option.priceAdjustment > 0 
-              ? ` (+${option.priceAdjustment.toLocaleString()})` 
+            const priceText = option.priceAdjustment > 0
+              ? ` (+${option.priceAdjustment.toLocaleString()})`
               : '';
             modifierTexts.push(`${option.name}${priceText}`);
           }
@@ -191,11 +191,6 @@ export default function PaymentPage() {
           <TabButton active={tab === 'status'} onClick={() => setTab('status')}>
             Trạng thái
           </TabButton>
-          {isGuestLoggedIn && (
-            <TabButton active={tab === 'history'} onClick={() => setTab('history')}>
-              Lịch sử
-            </TabButton>
-          )}
         </div>
 
         {/* TAB: ORDER */}
@@ -210,7 +205,7 @@ export default function PaymentPage() {
                 {items.map((item) => {
                   const modifiers = formatModifiers(item);
                   const itemPrice = getItemPrice(item);
-                  
+
                   return (
                     <li key={item.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
                       <div className="flex justify-between items-start mb-2">
@@ -300,17 +295,15 @@ export default function PaymentPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod(PaymentMethod.CASH)}
-                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${
-                      selectedPaymentMethod === PaymentMethod.CASH
+                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.CASH
                         ? 'border-blue-500 bg-blue-50 shadow'
                         : 'border-gray-200 bg-white'
-                    }`}
+                      }`}
                   >
                     <Banknote className="w-5 h-5 text-green-600" />
                     <span className="flex-1 text-left font-medium text-gray-900 text-sm">Tiền mặt</span>
-                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      selectedPaymentMethod === PaymentMethod.CASH ? 'border-blue-500' : 'border-gray-300'
-                    }`}>
+                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === PaymentMethod.CASH ? 'border-blue-500' : 'border-gray-300'
+                      }`}>
                       {selectedPaymentMethod === PaymentMethod.CASH && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full block" />
                       )}
@@ -321,17 +314,15 @@ export default function PaymentPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod(PaymentMethod.BANK)}
-                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${
-                      selectedPaymentMethod === PaymentMethod.BANK
+                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.BANK
                         ? 'border-blue-500 bg-blue-50 shadow'
                         : 'border-gray-200 bg-white'
-                    }`}
+                      }`}
                   >
                     <Landmark className="w-5 h-5 text-blue-600" />
                     <span className="flex-1 text-left font-medium text-gray-900 text-sm">Chuyển khoản</span>
-                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      selectedPaymentMethod === PaymentMethod.BANK ? 'border-blue-500' : 'border-gray-300'
-                    }`}>
+                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === PaymentMethod.BANK ? 'border-blue-500' : 'border-gray-300'
+                      }`}>
                       {selectedPaymentMethod === PaymentMethod.BANK && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full block" />
                       )}
@@ -342,17 +333,15 @@ export default function PaymentPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod(PaymentMethod.MOMO)}
-                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${
-                      selectedPaymentMethod === PaymentMethod.MOMO
+                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.MOMO
                         ? 'border-blue-500 bg-blue-50 shadow'
                         : 'border-gray-200 bg-white'
-                    }`}
+                      }`}
                   >
                     <Smartphone className="w-5 h-5 text-pink-500" />
                     <span className="flex-1 text-left font-medium text-gray-900 text-sm">Ví MoMo</span>
-                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      selectedPaymentMethod === PaymentMethod.MOMO ? 'border-blue-500' : 'border-gray-300'
-                    }`}>
+                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === PaymentMethod.MOMO ? 'border-blue-500' : 'border-gray-300'
+                      }`}>
                       {selectedPaymentMethod === PaymentMethod.MOMO && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full block" />
                       )}
@@ -367,14 +356,7 @@ export default function PaymentPage() {
         {/* TAB: STATUS */}
         {tab === 'status' && (
           <div className="flex-1 overflow-y-auto px-4 pb-4">
-             <GuestOrderStatus viewMode="tracking" />
-          </div>
-        )}
-
-        {/* TAB: HISTORY */}
-        {tab === 'history' && (
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-             <GuestOrderStatus viewMode="history" />
+            <GuestOrderStatus viewMode="tracking" />
           </div>
         )}
 
@@ -390,13 +372,13 @@ export default function PaymentPage() {
                     alert('Giỏ hàng trống!');
                     return;
                   }
-                  
+
                   const resolvedOrderId = orderIdRef.current;
                   if (!resolvedOrderId) {
                     alert('Không tìm thấy mã đơn hàng!');
                     return;
                   }
-                  
+
                   // Common Payload
                   // Đảm bảo table_id là số nguyên hợp lệ
                   let resolvedTableId = 1;
@@ -425,29 +407,29 @@ export default function PaymentPage() {
                       console.log('Creating order (MOMO flow)...');
                       const orderResponse = await orderApi.create(orderPayload);
                       console.log('Order created:', orderResponse);
-                      
+
                       payWithMomo(resolvedOrderId, grandTotal);
                     } catch (err: any) {
                       console.error('Order creation error:', err);
                       alert(`Lỗi tạo đơn hàng: ${err.message || 'Unknown code'}`);
                     }
-                  } 
+                  }
                   else {
                     // CASH / BANK
                     try {
                       console.log('Creating order (CASH/BANK flow)...');
                       await orderApi.create(orderPayload);
-                      
+
                       // Create Payment Record (Pending)
                       await pay({
                         orderId: resolvedOrderId,
                         amount: grandTotal,
                         method: selectedPaymentMethod
                       });
-                      
+
                       alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán ${selectedPaymentMethod === PaymentMethod.CASH ? 'tiền mặt' : 'chuyển khoản'} tại quầy.`);
-                      setTab('history');
-                      
+                      setTab('status');
+
                       // Optional: Clear cart here if needed
                     } catch (err: any) {
                       console.error('Order process error:', err);
@@ -482,11 +464,10 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded-full text-sm font-medium ${
-        active
+      className={`px-3 py-1 rounded-full text-sm font-medium ${active
           ? 'bg-blue-400 text-white'
           : 'bg-gray-100 text-gray-700'
-      }`}
+        }`}
     >
       {children}
     </button>

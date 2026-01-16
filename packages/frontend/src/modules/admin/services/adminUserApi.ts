@@ -10,13 +10,7 @@ export const createAdminUser = async (
 	return data;
 };
 
-export const deleteAdminUser = async (token: string, userId: string): Promise<void> => {
-	await api.delete(`/admin/users/${userId}`, {
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
-	});
-};
+
 import axios from 'axios';
 import type { UserAdmin } from '../types/user.type';
 

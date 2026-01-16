@@ -8,7 +8,7 @@ import { UserRole } from './user.entity';
 @Controller('admin/users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(private readonly userService: UserService) { }
 
 	@Get()
 	@Roles(UserRole.ADMIN)
@@ -34,11 +34,7 @@ export class UserController {
 	) {
 		return this.userService.updateUserByAdmin(id, body);
 	}
-	@Delete(':id')
-	@Roles(UserRole.ADMIN)
-	async deleteUserByAdmin(@Param('id') id: string) {
-		return this.userService.deleteUserByAdmin(id);
-	}
+
 
 	@Post()
 	@Roles(UserRole.ADMIN)
