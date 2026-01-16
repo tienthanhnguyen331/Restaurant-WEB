@@ -26,7 +26,7 @@ export class AdminProfileService {
   async getProfile(userId: string): Promise<Partial<User>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'name', 'displayName', 'email', 'avatar', 'role', 'isEmailVerified', 'createdAt', 'updatedAt'],
+      select: ['id', 'name', 'displayName', 'email', 'avatar', 'role', 'isVerified', 'createdAt', 'updatedAt'],
     });
 
     if (!user) {
@@ -55,7 +55,7 @@ export class AdminProfileService {
 
     const updatedUser = await this.userRepository.save(user);
 
-    const { password, emailVerificationToken, ...result } = updatedUser;
+    const { password, verificationToken, ...result } = updatedUser;
     return result;
   }
 
@@ -132,8 +132,8 @@ export class AdminProfileService {
     // In production: Store token and send email with verification link
     // For now, we'll update immediately (simplified flow)
     user.email = changeEmailDto.newEmail;
-    user.isEmailVerified = false;
-    user.emailVerificationToken = verificationToken;
+    user.isVerified = false;
+    user.verificationToken = verificationToken;
 
     await this.userRepository.save(user);
 
@@ -186,7 +186,7 @@ export class AdminProfileService {
       user.avatar = uploadResult.secure_url;
       const updatedUser = await this.userRepository.save(user);
 
-      const { password, emailVerificationToken, ...result } = updatedUser;
+      const { password, verificationToken, ...result } = updatedUser;
       return result;
     } catch (error) {
       throw new BadRequestException(`Không thể tải lên avatar: ${error.message}`);
@@ -199,19 +199,19 @@ export class AdminProfileService {
   async verifyEmailChange(userId: string, token: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'emailVerificationToken'],
+      select: ['id', 'verificationToken'],
     });
 
     if (!user) {
       throw new BadRequestException('Người dùng không tồn tại');
     }
 
-    if (user.emailVerificationToken !== token) {
+    if (user.verificationToken !== token) {
       throw new UnauthorizedException('Token xác nhận không hợp lệ');
     }
 
-    user.isEmailVerified = true;
-    user.emailVerificationToken = "";
+    user.isVerified = true;
+    user.verificationToken = "";
 
     await this.userRepository.save(user);
 

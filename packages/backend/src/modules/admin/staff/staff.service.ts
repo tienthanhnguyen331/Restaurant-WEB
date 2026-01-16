@@ -40,7 +40,7 @@ export class StaffService {
       email,
       password: hashedPassword,
       role,
-      isEmailVerified: true, // Auto-verify staff accounts created by admin
+      isVerified: true, // Auto-verify staff accounts created by admin
     });
 
     const savedStaff = await this.userRepository.save(staff);

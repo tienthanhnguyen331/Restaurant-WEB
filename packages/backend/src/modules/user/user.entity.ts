@@ -31,11 +31,14 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
-  @Column({ default: false })
-  isEmailVerified: boolean;
+  @Column({ default: false, name: 'is_verified' })
+  isVerified: boolean;
 
-  @Column({ nullable: true, select: false })
-  emailVerificationToken?: string;
+  @Column({ nullable: true, select: false, name: 'verification_token' })
+  verificationToken?: string;
+
+  @Column({ nullable: true, select: false, name: 'verification_token_expires' })
+  verificationTokenExpires?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
