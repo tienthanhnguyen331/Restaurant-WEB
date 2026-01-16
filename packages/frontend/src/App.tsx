@@ -22,6 +22,8 @@ import { KitchenRoutes } from './features/kitchen/kitchen.routes';
 // Auth
 import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
+import { ForgotPasswordScreen } from './features/auth/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './features/auth/ResetPasswordScreen';
 
 // Customer / Guest
 import { ScanPage } from './features/customer-view/ScanPage';
@@ -58,6 +60,8 @@ function App() {
       <Route path="/reviews" element={<ReviewPage />} />
       <Route path="/login" element={<LoginScreen onLoginSuccess={() => { /* handle login success, e.g. redirect or set state */ }} />} />
       <Route path="/register" element={<RegisterScreen />} />
+      <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+      <Route path="/reset-password" element={<ResetPasswordScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
       <Route path="/guest/order-status" element={<GuestOrderStatus />} /> {/* Route test mới */}

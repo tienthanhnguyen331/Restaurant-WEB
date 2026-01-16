@@ -31,6 +31,19 @@ export class UserService {
     });
   }
 
+  async findByResetPasswordToken(token: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { resetPasswordToken: token },
+      select: [
+        'id',
+        'email',
+        'name',
+        'resetPasswordToken',
+        'resetPasswordTokenExpires',
+      ],
+    });
+  }
+
   async create(userData: Partial<User>): Promise<User> {
     const user = this.userRepository.create(userData);
     return this.userRepository.save(user);

@@ -15,6 +15,8 @@ import { AuthenticatedUser } from '../../common/decorators/current-user.decorato
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -88,5 +90,30 @@ export class AuthController {
       name: user.name,
       role: user.role,
     };
+  }
+
+  /**
+   * Request password reset
+   * @param forgotPasswordDto Email address
+   * @returns Generic success message (for security - doesn't reveal if email exists)
+   */
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return await this.authService.forgotPassword(forgotPasswordDto.email);
+  }
+
+  /**
+   * Reset password with token
+   * @param resetPasswordDto Reset token and new password
+   * @returns Success message
+   */
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.newPassword,
+    );
   }
 }

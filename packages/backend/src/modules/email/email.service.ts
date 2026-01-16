@@ -225,4 +225,130 @@ export class EmailService {
       </html>
     `;
   }
+
+  async sendResetPasswordEmail(
+    email: string,
+    name: string,
+    resetLink: string,
+  ): Promise<void> {
+    try {
+      const mailOptions = {
+        from: this.configService.get<string>('EMAIL_FROM', 'noreply@restaurant.com'),
+        to: email,
+        subject: 'Reset Your Password - Restaurant App',
+        html: this.getResetPasswordEmailTemplate(name, resetLink),
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Password reset email sent successfully to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email to ${email}:`, error);
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+  }
+
+  private getResetPasswordEmailTemplate(name: string, resetLink: string): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          .header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+          }
+          .content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+          }
+          .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+          }
+          .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+          }
+          .warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+          }
+          .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            font-family: monospace;
+            margin: 20px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Reset Your Password</h1>
+          </div>
+          <div class="content">
+            <p>Hi <strong>${name}</strong>,</p>
+            <p>We received a request to reset your password. If you didn't make this request, you can safely ignore this email.</p>
+            
+            <p>To reset your password, click the link below:</p>
+            
+            <a href="${resetLink}" class="button">Reset Password</a>
+            
+            <p>Or copy and paste this link in your browser:</p>
+            <div class="code-block">${resetLink}</div>
+            
+            <div class="warning">
+              <strong>⏰ Important:</strong> This reset link will expire in 15 minutes for security reasons. If the link has expired, you can request a new one.
+            </div>
+            
+            <p><strong>Security Tips:</strong></p>
+            <ul>
+              <li>Never share your reset link with anyone</li>
+              <li>Make sure your new password is strong and unique</li>
+              <li>If you didn't request this, your account may be at risk - change your password immediately</li>
+            </ul>
+            
+            <p>If you have any questions or didn't request a password reset, please contact our support team.</p>
+            
+            <p>Best regards,<br><strong>Restaurant App Team</strong></p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2024 Restaurant App. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }

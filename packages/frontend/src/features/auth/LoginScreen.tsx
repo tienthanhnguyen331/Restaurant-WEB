@@ -91,8 +91,9 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
         <button type="submit" className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">
           Đăng nhập
         </button>
-        <div className="mt-4 text-center">
-          <Link to="/register" className="text-blue-500 hover:text-blue-700">Đăng ký</Link>
+        <div className="mt-4 text-center space-y-2">
+          <Link to="/register" className="block text-blue-500 hover:text-blue-700">Đăng ký</Link>
+          <Link to="/forgot-password" className="block text-blue-500 hover:text-blue-700">Quên mật khẩu?</Link>
         </div>
       </form>
     </div>

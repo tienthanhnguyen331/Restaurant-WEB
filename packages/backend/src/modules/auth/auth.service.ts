@@ -206,4 +206,113 @@ export class AuthService {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
     return `${frontendUrl}/api/auth/verify-email?token=${token}`;
   }
+
+  /**
+   * Generate reset password link
+   */
+  private generateResetPasswordLink(token: string): string {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
+    return `${frontendUrl}/reset-password?token=${token}`;
+  }
+
+  /**
+   * Get reset password token expiration (15 minutes from now)
+   */
+  private getResetPasswordTokenExpiration(): Date {
+    const expirationMinutes = this.configService.get<number>(
+      'RESET_PASSWORD_EXPIRES_IN',
+      15,
+    );
+    return new Date(Date.now() + expirationMinutes * 60 * 1000);
+  }
+
+  /**
+   * Request password reset - sends reset email
+   * Does not reveal whether email exists (for security)
+   */
+  async forgotPassword(email: string) {
+    // Find user by email, but don't throw error if not found
+    // This is for security - don't reveal if email exists
+    const user = await this.userService.findOneByEmail(email);
+
+    // Always return success message to prevent email enumeration attacks
+    if (!user) {
+      this.logger.warn(`Forgot password request for non-existent email: ${email}`);
+      return {
+        message: 'If an account exists with this email, a password reset link will be sent shortly.',
+      };
+    }
+
+    try {
+      // Generate reset token
+      const resetPasswordToken = this.generateVerificationToken();
+      const resetPasswordTokenExpires = this.getResetPasswordTokenExpiration();
+
+      // Save token to database
+      await this.userService.update(user.id, {
+        resetPasswordToken,
+        resetPasswordTokenExpires,
+      });
+
+      // Generate reset link
+      const resetLink = this.generateResetPasswordLink(resetPasswordToken);
+
+      // Send reset password email
+      await this.emailService.sendResetPasswordEmail(
+        user.email,
+        user.name,
+        resetLink,
+      );
+
+      this.logger.log(`Password reset email sent to ${user.email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send reset password email to ${email}:`, error);
+      // Don't throw error - maintain security by not revealing email existence
+    }
+
+    // Return generic success message
+    return {
+      message: 'If an account exists with this email, a password reset link will be sent shortly.',
+    };
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string) {
+    if (!token) {
+      throw new BadRequestException('Reset token is required');
+    }
+
+    // Find user with this reset token
+    const user = await this.userService.findByResetPasswordToken(token);
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Check if token is still valid
+    if (
+      user.resetPasswordTokenExpires &&
+      new Date(user.resetPasswordTokenExpires) < new Date()
+    ) {
+      throw new BadRequestException('Reset token has expired. Please request a new password reset.');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear reset token
+    await this.userService.update(user.id, {
+      password: hashedPassword,
+      resetPasswordToken: undefined,
+      resetPasswordTokenExpires: undefined,
+    });
+
+    this.logger.log(`Password reset successfully for ${user.email}`);
+
+    return {
+      message: 'Password reset successfully! You can now log in with your new password.',
+    };
+  }
 }

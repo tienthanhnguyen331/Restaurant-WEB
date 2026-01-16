@@ -40,6 +40,12 @@ export class User {
   @Column({ nullable: true, select: false, name: 'verification_token_expires' })
   verificationTokenExpires?: Date;
 
+  @Column({ nullable: true, select: false, name: 'reset_password_token' })
+  resetPasswordToken?: string;
+
+  @Column({ nullable: true, select: false, name: 'reset_password_token_expires' })
+  resetPasswordTokenExpires?: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
