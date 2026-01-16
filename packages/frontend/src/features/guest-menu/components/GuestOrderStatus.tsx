@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { useOrderSocket } from '../../order/hooks/useOrderSocket'; 
 import { orderApi } from '../../order/services/order-api';
 import { getCurrentUser } from '../../auth/hooks/useAuth';
@@ -39,6 +40,16 @@ const aggregateItems = (rawItems: any[]): GuestOrderItem[] => {
 
   return Object.values(groupedMap);
 };
+
+// Hàm gửi request_invoice vào namespace /waiter
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+function emitRequestInvoice(orderId: string, tableId: string | number) {
+  const waiterSocket = io(`${SOCKET_URL}/waiter`);
+  waiterSocket.on('connect', () => {
+    waiterSocket.emit('request_invoice', { orderId, tableId });
+    waiterSocket.close();
+  });
+}
 
 export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history' | 'tracking' }) => {
   const [orders, setOrders] = useState<GuestOrder[]>([]);
@@ -300,6 +311,22 @@ export const GuestOrderStatus = ({ viewMode = 'history' }: { viewMode?: 'history
                         {order.total_amount.toLocaleString()}đ
                     </span>
                 </div>
+
+                {/* Nút Xuất hóa đơn cho khách */}
+                {viewMode === 'tracking' && order.status.toUpperCase() === 'SERVED' && (
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+                      onClick={() => {
+                        console.log('[GUEST] Emit request_invoice', { orderId: order.id, tableId: order.table_id });
+                        emitRequestInvoice(order.id, order.table_id);
+                        alert('Đã gửi yêu cầu xuất hóa đơn cho nhân viên!');
+                      }}
+                    >
+                      Xuất hóa đơn
+                    </button>
+                  </div>
+                )}
             </div>
           );
         })}

@@ -1,4 +1,3 @@
-
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { WaiterService } from './waiter.service';
@@ -37,5 +36,13 @@ export class WaiterGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleJoinWaiterRoom(client: Socket, data: any) {
     client.join('waiters');
     console.log(`Waiter ${client.id} joined waiter room`);
+  }
+
+  @SubscribeMessage('request_invoice')
+  handleRequestInvoice(client: Socket, data: { orderId: string; tableId: string | number }) {
+    console.log('[WAITER_GATEWAY] Nhận request_invoice từ guest:', data);
+    // Broadcast cho tất cả waiter
+    this.server.emit('request_invoice', data);
+    console.log('[WAITER_GATEWAY] Đã emit request_invoice cho waiter:', data);
   }
 }

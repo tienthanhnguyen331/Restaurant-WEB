@@ -20,7 +20,7 @@ export class OrderController {
   constructor(
     private readonly orderService: OrderService,
     private readonly jwtService: JwtService,
-    private readonly pdfGeneratorService: PdfGeneratorService, // Thêm DI
+    private readonly pdfGeneratorService: PdfGeneratorService, 
   ) {}
 
   @Post()
@@ -66,7 +66,8 @@ export class OrderController {
 
   @Get(':id/invoice')
   async downloadInvoice(@Param('id') id: string, @Res() res: Response) {
-    const order = await this.orderService.findOne(id);
+    // Join user để lấy tên khách
+    const order = await this.orderService.findOne(id, ['user']);
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
@@ -75,6 +76,9 @@ export class OrderController {
       id: order.id,
       createdAt: order.created_at,
       tableNumber: order.table_id,
+      userId: order.userId,
+      userName: order.user?.name,
+        userEmail: order.user?.email,
       items: order.items.map((item: any) => ({
         name: item.menuItem?.name || '',
         quantity: item.quantity,

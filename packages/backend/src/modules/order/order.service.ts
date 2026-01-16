@@ -59,10 +59,13 @@ export class OrderService {
     return this.orderRepo.find({ relations: ['items', 'items.menuItem', 'payments', 'user'], order: { created_at: 'DESC' } });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, extraRelations: string[] = []) {
+    // Luôn join các quan hệ cơ bản, cho phép truyền thêm relations nếu cần
+    const baseRelations = ['items', 'items.menuItem', 'payments'];
+    const relations = Array.from(new Set([...baseRelations, ...extraRelations]));
     const order = await this.orderRepo.findOne({ 
       where: { id }, 
-      relations: ['items', 'items.menuItem', 'payments', 'user'] 
+      relations
     });
     if (!order) 
       throw new NotFoundException(`Order ${id} not found`);

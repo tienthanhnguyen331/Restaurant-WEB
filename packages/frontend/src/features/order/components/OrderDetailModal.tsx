@@ -5,6 +5,7 @@ import type { MenuItemDropdown } from '../../../services/menuItemApi';
 import { X } from 'lucide-react';
 import type { Order } from '../types';
 import type { MenuCategory } from '@shared/types/menu';
+import { saveAs } from 'file-saver';
 
 interface OrderDetailModalProps {
   order: Order;
@@ -16,6 +17,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
   const [categories, setCategories] = React.useState<MenuCategory[]>([]);
   const [currentOrder, setCurrentOrder] = React.useState<Order>(order);
   const { socket } = useOrderSocket();
+  const [downloading, setDownloading] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -63,6 +65,23 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
     };
   };
 
+  const handleDownloadInvoice = async () => {
+  setDownloading(true);
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const url = `${baseUrl}/api/orders/${currentOrder.id}/invoice`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Không thể tải hóa đơn');
+    const blob = await response.blob();
+    if (blob.size === 0) throw new Error('File rỗng');
+    saveAs(blob, `Order-${currentOrder.id}.pdf`);
+  } catch (e) {
+    alert('Tải hóa đơn thất bại!');
+  } finally {
+    setDownloading(false);
+  }
+};
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -98,6 +117,26 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
             <span>Tổng cộng:</span>
             <span className="text-blue-600">{Number(currentOrder.total_amount).toLocaleString()}đ</span>
           </div>
+          {(currentOrder.status === 'SERVED' || currentOrder.status === 'COMPLETED') && (
+  <div className="pt-4">
+    <button
+      onClick={handleDownloadInvoice}
+      disabled={downloading}
+      className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+      title="Tải hóa đơn PDF"
+    >
+      {downloading ? (
+        'Đang tải...'
+      ) : (
+        <>
+          <span role="img" aria-label="pdf">📄</span>
+          Tải hóa đơn
+        </>
+      )}
+    </button>
+  </div>
+)}
+
         </div>
       </div>
     </div>

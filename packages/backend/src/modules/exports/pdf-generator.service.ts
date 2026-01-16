@@ -168,8 +168,16 @@ export class PdfGeneratorService {
   doc
     .fontSize(8)
     .text(`Mã đơn: ${order.code || order.id}`);
-  if (order.table?.tableNumber) {
-    doc.text(`Bàn: ${order.table.tableNumber}`);
+  if (order.tableNumber) {
+    doc.text(`Bàn: ${order.tableNumber}`);
+  }
+  if (order.userName) {
+    doc.text(`Tên khách hàng: ${order.userName}`);
+      if (order.userEmail) {
+        doc.text(`Email: ${order.userEmail}`);
+      }
+  } else if (order.userId) {
+    doc.text(`User ID: ${order.userId}`);
   }
   doc.text(
     `Thời gian: ${new Date(order.createdAt).toLocaleString('vi-VN')}`,
