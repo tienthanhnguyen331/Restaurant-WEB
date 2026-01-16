@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface AvatarUploadComponentProps {
   currentAvatar?: string;
@@ -12,10 +12,20 @@ export const AvatarUploadComponent: React.FC<AvatarUploadComponentProps> = ({
   isLoading = false,
 }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(currentAvatar || null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Sync preview with currentAvatar (Cloudinary URL from API)
+  // This ensures avatar persists after reload/re-login
+  useEffect(() => {
+    if (!file) {
+      // Only update preview if no file is selected
+      // This way, selected file preview is not overwritten by API data
+      setPreview(currentAvatar || null);
+    }
+  }, [currentAvatar, file]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +72,9 @@ export const AvatarUploadComponent: React.FC<AvatarUploadComponentProps> = ({
     try {
       await onSubmit(file);
       setSuccessMessage('Avatar đã được cập nhật thành công!');
+      // Clear file selection to allow preview to sync with API data
       setFile(null);
+      setPreview(null); // Reset preview, will be updated by useEffect when API data arrives
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

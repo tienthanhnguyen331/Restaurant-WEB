@@ -74,8 +74,10 @@ export const AdminProfilePage: React.FC = () => {
   const uploadAvatarMutation = useMutation({
     mutationFn: (file: File) => adminProfileApi.uploadAvatar(file),
     onSuccess: (response) => {
-      if (response.data) {
-        setProfile(response.data);
+      // response is the full user object from backend (with avatar URL)
+      // Update profile state with new avatar URL from Cloudinary
+      if (response.data && response.data.avatar) {
+        setProfile((prev) => prev ? { ...prev, avatar: response.data.avatar } : prev);
       }
     },
     onError: (error: any) => {

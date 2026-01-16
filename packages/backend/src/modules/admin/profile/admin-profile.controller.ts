@@ -112,7 +112,9 @@ export class AdminProfileController {
     return {
       statusCode: 200,
       message: 'Tải lên avatar thành công',
-      data: updatedProfile,
+      data: {
+    avatar: updatedProfile.avatar,
+  },
     };
   }
 
