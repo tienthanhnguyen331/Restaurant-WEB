@@ -1,6 +1,7 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { GuestMenuService } from './guest-menu.service';
 import { GuestMenuQueryDto } from './dto/guest-menu-query.dto';
+import { FuzzySearchQueryDto } from './dto/fuzzy-search.dto';
 
 /**
  * Controller xử lý Guest Menu API (Public - không cần authentication)
@@ -104,6 +105,60 @@ export class GuestMenuController {
       throw new BadRequestException({
         code: 'FETCH_MENU_FAILED',
         message: 'Không thể tải menu',
+        errors: { general: [error.message] },
+      });
+    }
+  }
+
+  /**
+   * GET /api/menu/search?q=...&maxEditDistance=...
+   * Fuzzy search with typo tolerance
+   *
+   * Query Parameters:
+   * - q: string - Search query (required)
+   * - maxEditDistance: number - Levenshtein distance tolerance (0-5, default: 2)
+   * - minScoreThreshold: number - Minimum relevance score (0-1, default: 0.3)
+   * - categoryId: uuid - Optional category filter
+   * - page: number - Page number (default: 1)
+   * - limit: number - Items per page (default: 20, max: 100)
+   *
+   * Response:
+   * {
+   *   items: [
+   *     {
+   *       item: { ...GuestMenuItem },
+   *       score: 0.95,
+   *       matchType: 'exact' | 'fuzzy' | 'partial',
+   *       matchedFields: ['name'],
+   *       suggestion?: 'pizza'
+   *     }
+   *   ],
+   *   total: number,
+   *   page: number,
+   *   limit: number,
+   *   didYouMean?: 'pizza'
+   * }
+   *
+   * Example queries:
+   * - "pizza" -> matches "pizza", "pizzas"
+   * - "piza" -> matches "pizza" (1 typo)
+   * - "cheeseburger" -> matches "cheese burger"
+   * - "soup" -> matches items with "soup" in name/description
+   */
+  @Get('search')
+  async fuzzySearch(@Query() query: FuzzySearchQueryDto) {
+    try {
+      const restaurantId = '00000000-0000-0000-0000-000000000000';
+      return await this.guestMenuService.fuzzySearch(restaurantId, query);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('FuzzySearchController error:', error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException({
+        code: 'FUZZY_SEARCH_FAILED',
+        message: 'Fuzzy search failed',
         errors: { general: [error.message] },
       });
     }
