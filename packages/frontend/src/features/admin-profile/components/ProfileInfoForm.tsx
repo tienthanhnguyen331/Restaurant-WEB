@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormInput } from '../../../components/FormComponents';
 
 interface ProfileInfoFormProps {
@@ -18,7 +18,11 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,7 +50,6 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage('');
 
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -57,8 +60,6 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
-      setSuccessMessage('Thông tin hồ sơ đã được cập nhật thành công!');
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
       setErrors({ submit: error.message || 'Lỗi cập nhật hồ sơ' });
     } finally {
@@ -67,51 +68,33 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông Tin Cơ Bản</h3>
-      
-      {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
-          {successMessage}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <FormInput
+        label="Họ và Tên"
+        name="fullName"
+        value={formData.fullName}
+        onChange={handleChange}
+        error={errors.fullName}
+        placeholder="Nhập họ và tên"
+        disabled={isSubmitting || isLoading}
+        required
+      />
+
+      <FormInput
+        label="Tên Hiển Thị (Tùy Chọn)"
+        name="displayName"
+        value={formData.displayName || ''}
+        onChange={handleChange}
+        error={errors.displayName}
+        placeholder="Nhập tên hiển thị"
+        disabled={isSubmitting || isLoading}
+      />
+
+      {errors.submit && (
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+          {errors.submit}
         </div>
       )}
-
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label="Họ và Tên"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          error={errors.fullName}
-          placeholder="Nhập họ và tên"
-          disabled={isSubmitting || isLoading}
-          required
-        />
-
-        <FormInput
-          label="Tên Hiển Thị (Tùy Chọn)"
-          name="displayName"
-          value={formData.displayName || ''}
-          onChange={handleChange}
-          error={errors.displayName}
-          placeholder="Nhập tên hiển thị"
-          disabled={isSubmitting || isLoading}
-        />
-
-        {errors.submit && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-            {errors.submit}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting || isLoading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isSubmitting ? 'Đang cập nhật...' : 'Cập Nhật Thông Tin'}
-        </button>
-      </form>
-    </div>
+    </form>
   );
 };

@@ -18,7 +18,6 @@ export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,7 +47,6 @@ export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage('');
 
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -59,9 +57,7 @@ export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
-      setSuccessMessage('Email đã được gửi. Vui lòng kiểm tra email để xác nhận.');
       setFormData({ newEmail: '', password: '' });
-      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error: any) {
       setErrors({ submit: error.message || 'Lỗi thay đổi email' });
     } finally {
@@ -70,57 +66,39 @@ export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Thay Đổi Email</h3>
-      
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded text-sm">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded text-sm">
         Email hiện tại: <strong>{currentEmail}</strong>
       </div>
 
-      {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
-          {successMessage}
+      <FormInput
+        label="Email Mới"
+        name="newEmail"
+        type="email"
+        value={formData.newEmail}
+        onChange={handleChange}
+        error={errors.newEmail}
+        placeholder="Nhập email mới"
+        disabled={isSubmitting || isLoading}
+        required
+      />
+
+      <PasswordInput
+        label="Mật Khẩu (Xác Nhận)"
+        name="password"
+        value={formData.password}
+        onChange={handleChange}
+        error={errors.password}
+        placeholder="Nhập mật khẩu để xác nhận"
+        disabled={isSubmitting || isLoading}
+        required
+      />
+
+      {errors.submit && (
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+          {errors.submit}
         </div>
       )}
-
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label="Email Mới"
-          name="newEmail"
-          type="email"
-          value={formData.newEmail}
-          onChange={handleChange}
-          error={errors.newEmail}
-          placeholder="Nhập email mới"
-          disabled={isSubmitting || isLoading}
-          required
-        />
-
-        <PasswordInput
-          label="Mật Khẩu (Xác Nhận)"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          error={errors.password}
-          placeholder="Nhập mật khẩu để xác nhận"
-          disabled={isSubmitting || isLoading}
-          required
-        />
-
-        {errors.submit && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-            {errors.submit}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting || isLoading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isSubmitting ? 'Đang gửi...' : 'Thay Đổi Email'}
-        </button>
-      </form>
-    </div>
+    </form>
   );
 };
