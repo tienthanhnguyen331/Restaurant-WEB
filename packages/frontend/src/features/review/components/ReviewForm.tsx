@@ -18,6 +18,10 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ menuItemId, onSubmit, on
       alert('Vui lòng chọn số sao đánh giá');
       return;
     }
+    if (!comment.trim()) {
+      alert('Vui lòng nhập nội dung nhận xét');
+      return;
+    }
     onSubmit({ rating, comment });
   };
 
@@ -36,11 +40,10 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ menuItemId, onSubmit, on
               className="focus:outline-none"
             >
               <Star
-                className={`w-8 h-8 ${
-                  star <= (hoverRating || rating)
+                className={`w-8 h-8 ${star <= (hoverRating || rating)
                     ? 'fill-yellow-400 text-yellow-400'
                     : 'text-gray-300'
-                }`}
+                  }`}
               />
             </button>
           ))}
