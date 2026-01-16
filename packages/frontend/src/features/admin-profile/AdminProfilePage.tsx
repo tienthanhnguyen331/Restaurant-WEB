@@ -7,6 +7,7 @@ import {
   ChangeEmailForm,
   AvatarUploadComponent,
   SectionCard,
+  StaffManagement,
 } from './components';
 
 interface UserProfile {
@@ -306,6 +307,13 @@ export const AdminProfilePage: React.FC = () => {
               </div>
             )}
           </SectionCard>
+
+          {/* Staff Management Section */}
+          <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Quản Lý Nhân Viên</h2>
+            <p className="text-gray-600 mb-6">Tạo, cập nhật, và xoá tài khoản nhân viên</p>
+            <StaffManagement />
+          </div>
         </div>
 
         {/* Footer Info */}
