@@ -16,6 +16,9 @@ export class User {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  displayName?: string;
+
   @Column({ unique: true })
   email: string;
 
@@ -27,6 +30,12 @@ export class User {
 
   @Column({ nullable: true })
   avatar: string;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ nullable: true, select: false })
+  emailVerificationToken?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -35,6 +35,7 @@ import { ReportModule } from './modules/report/report.module';
 
 import { WaiterModule } from './modules/waiter/waiter.module';
 import { KitchenModule } from './modules/kitchen/kitchen.module';
+import { AdminProfileModule } from './modules/admin/profile/admin-profile.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { KitchenModule } from './modules/kitchen/kitchen.module';
     ReportModule,
     WaiterModule,
     KitchenModule,
+    AdminProfileModule,
   ],
 })
 export class AppModule {}
