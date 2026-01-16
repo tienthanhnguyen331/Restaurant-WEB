@@ -1,7 +1,19 @@
 import axios from 'axios';
+import { getAccessTokenByRole } from '../features/auth/hooks/useAuth';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://restaurant-web-five-wine.vercel.app';
-const API_BASE = `${BASE_URL}/api/admin/profile`;
+// Lưu ý: getProfile thường nằm ở /api/auth/profile, còn các tính năng admin nằm ở /api/admin/profile
+const ADMIN_API_BASE = `${BASE_URL}/api/admin/profile`;
+const AUTH_API_BASE = `${BASE_URL}/api/auth/profile`;
+
+const getAuthHeaders = () => {
+  const token = getAccessTokenByRole('ADMIN'); 
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
 
 interface UpdateProfilePayload {
   fullName: string;
@@ -21,44 +33,45 @@ interface ChangeEmailPayload {
 
 export const adminProfileApi = {
   /**
-   * Get current admin's profile information
+   * Lấy thông tin hồ sơ (Sử dụng endpoint auth chung)
    */
-  getProfile: () => axios.get(`${API_BASE}`).then(res => res.data),
+  getProfile: async () => {
+    // Phải thêm getAuthHeaders() để Backend biết bạn là ai
+    return axios.get(`${AUTH_API_BASE}`, getAuthHeaders());
+  },
 
   /**
-   * Update basic profile information
+   * Cập nhật thông tin cơ bản
    */
   updateProfile: (data: UpdateProfilePayload) =>
-    axios.patch(`${API_BASE}`, data).then(res => res.data),
+    // Thêm tham số thứ 3 là headers
+    axios.patch(`${ADMIN_API_BASE}`, data, getAuthHeaders()).then(res => res.data),
 
   /**
-   * Change password
+   * Thay đổi mật khẩu
    */
   changePassword: (data: ChangePasswordPayload) =>
-    axios.patch(`${API_BASE}/password`, data).then(res => res.data),
+    axios.patch(`${ADMIN_API_BASE}/password`, data, getAuthHeaders()).then(res => res.data),
 
   /**
-   * Initiate email change
+   * Thay đổi email
    */
   changeEmail: (data: ChangeEmailPayload) =>
-    axios.patch(`${API_BASE}/email`, data).then(res => res.data),
+    axios.patch(`${ADMIN_API_BASE}/email`, data, getAuthHeaders()).then(res => res.data),
 
   /**
-   * Upload avatar
+   * Tải lên avatar
    */
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append('avatar', file);
-    return axios.post(`${API_BASE}/avatar`, formData, {
+    
+    const authConfig = getAuthHeaders();
+    return axios.post(`${ADMIN_API_BASE}/avatar`, formData, {
       headers: {
+        ...authConfig.headers,
         'Content-Type': 'multipart/form-data',
       },
     }).then(res => res.data);
   },
-
-  /**
-   * Verify email change with token
-   */
-  verifyEmail: (token: string) =>
-    axios.get(`${API_BASE}/email/verify/${token}`).then(res => res.data),
 };

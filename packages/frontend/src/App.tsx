@@ -3,7 +3,7 @@ import React from 'react';
 
 // Admin
 import { AdminPage } from './features/admin-dashboard/AdminPage';
-import { ProfilePage } from './features/admin-dashboard/ProfilePage';
+//import { ProfilePage } from './features/admin-dashboard/ProfilePage';
 import AdminLayout from './components/AdminLayout';
 import { CategoryPage } from './features/admin-menu/CategoryPage';
 import { PhotoPage } from './features/admin-menu/PhotoPage';
@@ -13,6 +13,7 @@ import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToI
 import { OrderHistoryPage } from './features/order/OrderHistoryPage';
 import { AdminReviewsPage } from './features/review/AdminReviewsPage';
 import { ReportPage } from './features/report/ReportPage';
+import { AdminProfilePage } from './features/admin-profile/AdminProfilePage';
 
 // Waiter & Kitchen
 import { WaiterRoutes } from './features/waiter/waiter.routes';
@@ -169,7 +170,7 @@ function App() {
         <Route
           path="profile"
           element={
-            <ProfilePage />
+            <AdminProfilePage />
           }
         />
       </Route>
