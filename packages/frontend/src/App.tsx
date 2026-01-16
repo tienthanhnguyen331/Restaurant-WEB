@@ -13,7 +13,7 @@ import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToI
 import { OrderHistoryPage } from './features/order/OrderHistoryPage';
 import { AdminReviewsPage } from './features/review/AdminReviewsPage';
 import { ReportPage } from './features/report/ReportPage';
-
+import AccountManagementPage from './modules/admin/pages/AccountManagementPage';
 // Waiter & Kitchen
 import { WaiterRoutes } from './features/waiter/waiter.routes';
 import { KitchenRoutes } from './features/kitchen/kitchen.routes';
@@ -34,6 +34,7 @@ import { GuestOrderStatus } from './features/guest-menu/components/GuestOrderSta
    PROTECTED ROUTE
 ======================= */
 import { getAccessTokenByRole } from './features/auth/hooks/useAuth';
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = getAccessTokenByRole();
   const location = useLocation();
@@ -102,6 +103,16 @@ function App() {
           element={
             <div className="p-8">
               <PhotoPage />
+            </div>
+          }
+        />
+
+        {/* Account Management */}
+        <Route
+          path="accounts"
+          element={
+            <div className="p-8">
+              <AccountManagementPage />
             </div>
           }
         />

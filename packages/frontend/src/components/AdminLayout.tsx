@@ -37,11 +37,6 @@ export default function AdminLayout() {
       icon: '📸',
     },
     {
-      path: '/admin/orders',
-      label: 'Orders History',
-      icon: '🧾',
-    },
-    {
       path: '/admin/reviews',
       label: 'Reviews',
       icon: '⭐',
@@ -50,6 +45,11 @@ export default function AdminLayout() {
       path: '/admin/reports',
       label: 'Reports',
       icon: '📈',
+    },
+    {
+      path: '/admin/accounts',
+      label: 'quản lý tài khoản',
+      icon: '👤',
     },
   ];
 

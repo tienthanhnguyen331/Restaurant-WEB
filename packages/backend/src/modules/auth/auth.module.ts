@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,15 +8,20 @@ import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
-    UserModule, // Kết nối với UserModule bạn vừa tạo ở trên
+    forwardRef(() => UserModule), // Dùng forwardRef để tránh circular dependency
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'dev-secret-key',
-        signOptions: { expiresIn: '1d' },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        // Log thử giá trị JWT_SECRET khi cấu hình JwtModule
+        // eslint-disable-next-line no-console
+        
+        return {
+          secret: configService.get<string>('JWT_SECRET'),
+          signOptions: { expiresIn: '1d' },
+        };
+      },
     }),
   ],
   providers: [AuthService],

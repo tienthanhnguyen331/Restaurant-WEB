@@ -19,9 +19,9 @@ import { MenuItemPhotoEntity } from './modules/menu-item-photos/entities/menu-it
 import { ModifierGroupEntity } from './modules/modifiers/entities/modifier-group.entity';
 import { ModifierOptionEntity } from './modules/modifiers/entities/modifier-option.entity';
 import { MenuItemModifierGroupEntity } from './modules/modifiers/entities/menu-item-modifier-group.entity';
-import { AuthModule } from './modules/auth/auth.module'; // Thêm dòng này
-import { UserModule } from './modules/user/user.module'; // Thêm dòng này
-import { User } from './modules/user/user.entity';      // Thêm dòng này
+import { AuthModule } from './modules/auth/auth.module'; 
+import { UserModule } from './modules/user/user.module'; 
+import { User } from './modules/user/user.entity';
 
 import { OrderModule } from './modules/order/order.module';
 import { OrderEntity } from './modules/order/entities/order.entity';
@@ -35,7 +35,6 @@ import { ReportModule } from './modules/report/report.module';
 
 import { WaiterModule } from './modules/waiter/waiter.module';
 import { KitchenModule } from './modules/kitchen/kitchen.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -47,6 +46,7 @@ import { KitchenModule } from './modules/kitchen/kitchen.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
+        
         type: 'postgres',
         host: config.get<string>('DATABASE_HOST'),
         port: config.get<number>('DATABASE_PORT'),
@@ -74,10 +74,6 @@ import { KitchenModule } from './modules/kitchen/kitchen.module';
       }),
     }),
 
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'dev-secret-key',
-      signOptions: { expiresIn: '1d' },
-    }),
 
     ScheduleModule.forRoot(),
 
