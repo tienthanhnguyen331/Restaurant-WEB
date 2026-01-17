@@ -11,7 +11,7 @@ const api = axios.create({
 // Add auth token to requests
 // Helper lấy token KITCHEN
 function getKitchenToken() {
-  return localStorage.getItem('access_token_KITCHEN');
+  return localStorage.getItem('access_token_KITCHEN_STAFF');
 }
 api.interceptors.request.use((config) => {
   const token = getKitchenToken();

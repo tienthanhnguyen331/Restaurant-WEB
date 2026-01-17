@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {login} from './hooks/useAuth'
+import { login } from './hooks/useAuth'
 import * as z from 'zod';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useState } from 'react';
@@ -25,11 +25,11 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
     resolver: zodResolver(schema)
   });
 
-  const onSubmit = async (data : any) => {
+  const onSubmit = async (data: any) => {
     setLoginError(''); // Xóa lỗi cũ khi submit
     try {
       const user = await login(data);
-      
+
       // Kiểm tra role của user
       if (user.role === 'USER') {
         alert(`Chào mừng ${user.name}! Bạn đã đăng nhập thành công với tài khoản khách hàng.`);
@@ -42,7 +42,7 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
         navigate(from, { replace: true });
       } else if (user.role === 'WAITER') {
         navigate('/waiter');
-      } else if (user.role === 'KITCHEN') {
+      } else if (user.role === 'KITCHEN_STAFF') {
         navigate('/kitchen');
       } else {
         setLoginError('Tài khoản không có quyền truy cập phù hợp.');
@@ -81,9 +81,9 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
             className="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
           >
             {showPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
             )}
           </button>
         </div>
@@ -91,8 +91,9 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
         <button type="submit" className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">
           Đăng nhập
         </button>
-        <div className="mt-4 text-center">
-          <Link to="/register" className="text-blue-500 hover:text-blue-700">Đăng ký</Link>
+        <div className="mt-4 text-center space-y-2">
+          <Link to="/register" className="block text-blue-500 hover:text-blue-700">Đăng ký</Link>
+          <Link to="/forgot-password" className="block text-blue-500 hover:text-blue-700">Quên mật khẩu?</Link>
         </div>
       </form>
     </div>

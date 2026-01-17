@@ -7,7 +7,7 @@ import { Roles } from '@/src/common/decorators/roles.decorator';
 
 @Controller('kitchen')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.KITCHEN)
+@Roles(UserRole.KITCHEN_STAFF)
 export class KitchenController {
   constructor(private readonly kitchenService: KitchenService) {}
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GuestMenuController } from './guest-menu.controller';
 import { GuestMenuService } from './guest-menu.service';
+import { FuzzySearchService } from './services/fuzzy-search.service';
 import { MenuCategoryEntity } from '../menu-categories/entities/menu-category.entity';
 import { MenuItemEntity } from '../menu-items/entities/menu-item.entity';
 import { MenuItemPhotoEntity } from '../menu-item-photos/entities/menu-item-photo.entity';
@@ -24,7 +25,7 @@ import { ModifierOptionEntity } from '../modifiers/entities/modifier-option.enti
     ]),
   ],
   controllers: [GuestMenuController],
-  providers: [GuestMenuService],
-  exports: [GuestMenuService],
+  providers: [GuestMenuService, FuzzySearchService],
+  exports: [GuestMenuService, FuzzySearchService],
 })
 export class GuestMenuModule {}

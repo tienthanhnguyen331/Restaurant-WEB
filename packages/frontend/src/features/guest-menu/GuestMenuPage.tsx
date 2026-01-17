@@ -7,6 +7,7 @@ import MenuItemCard from './MenuItemCard';
 import { useCart } from '../../contexts/CartContext';
 import { LoginScreen } from '../auth/LoginScreen';
 import { GuestOrderStatus } from './components/GuestOrderStatus';
+import UserProfilePage from './components/UserProfilePage';
 // Guest user chỉ lấy từ localStorage key 'guest_user'
 import { useNavigate } from 'react-router-dom';
 
@@ -91,6 +92,7 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     }
   });
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenuFiltersState>({
     q: '',
@@ -270,8 +272,31 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
                   <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">Đã đăng nhập</span>
                   <span className="font-medium">ID: {currentUser?.id?.slice(0, 8) ?? '---'}</span>
                 </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-full font-semibold hover:bg-blue-100"
+                  >
+                    Xem hồ sơ
+                  </button>
+                </div>
               </div>
               <GuestOrderStatus viewMode="history" />
+              {/* Modal hiển thị chi tiết profile */}
+              {showProfileModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                  <div className="bg-white rounded-lg shadow-lg p-2 w-full max-w-2xl relative">
+                    <button
+                      onClick={() => setShowProfileModal(false)}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
+                      aria-label="Đóng"
+                    >
+                      ×
+                    </button>
+                    <UserProfilePage user={currentUser} />
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <LoginScreen onLoginSuccess={(user) => {

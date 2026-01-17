@@ -3,7 +3,7 @@ import React from 'react';
 
 // Admin
 import { AdminPage } from './features/admin-dashboard/AdminPage';
-import { ProfilePage } from './features/admin-dashboard/ProfilePage';
+//import { ProfilePage } from './features/admin-dashboard/ProfilePage';
 import AdminLayout from './components/AdminLayout';
 import { CategoryPage } from './features/admin-menu/CategoryPage';
 import { PhotoPage } from './features/admin-menu/PhotoPage';
@@ -13,6 +13,7 @@ import AttachModifiersToItem from './features/admin-modifiers/AttachModifiersToI
 import { OrderHistoryPage } from './features/order/OrderHistoryPage';
 import { AdminReviewsPage } from './features/review/AdminReviewsPage';
 import { ReportPage } from './features/report/ReportPage';
+import { AdminProfilePage } from './features/admin-profile/AdminProfilePage';
 import AccountManagementPage from './modules/admin/pages/AccountManagementPage';
 // Waiter & Kitchen
 import { WaiterRoutes } from './features/waiter/waiter.routes';
@@ -21,6 +22,8 @@ import { KitchenRoutes } from './features/kitchen/kitchen.routes';
 // Auth
 import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
+import { ForgotPasswordScreen } from './features/auth/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './features/auth/ResetPasswordScreen';
 
 // Customer / Guest
 import { ScanPage } from './features/customer-view/ScanPage';
@@ -58,6 +61,8 @@ function App() {
       <Route path="/reviews" element={<ReviewPage />} />
       <Route path="/login" element={<LoginScreen onLoginSuccess={() => { /* handle login success, e.g. redirect or set state */ }} />} />
       <Route path="/register" element={<RegisterScreen />} />
+      <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+      <Route path="/reset-password" element={<ResetPasswordScreen />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
       <Route path="/guest/order-status" element={<GuestOrderStatus />} /> {/* Route test mới */}
@@ -180,7 +185,7 @@ function App() {
         <Route
           path="profile"
           element={
-            <ProfilePage />
+            <AdminProfilePage />
           }
         />
       </Route>

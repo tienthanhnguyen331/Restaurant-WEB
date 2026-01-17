@@ -4,6 +4,37 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { MenuCategoryEntity } from '../menu-categories/entities/menu-category.entity';
 import { MenuItemEntity } from '../menu-items/entities/menu-item.entity';
 import { GuestMenuQueryDto } from './dto/guest-menu-query.dto';
+import { FuzzySearchQueryDto, FuzzySearchResponseDto, FuzzySearchItemDto } from './dto/fuzzy-search.dto';
+import { FuzzySearchService, FuzzySearchConfig } from './services/fuzzy-search.service';
+
+/**
+ * Guest menu item structure
+ */
+export interface GuestMenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  prepTimeMinutes?: number;
+  status: string;
+  isChefRecommended: boolean;
+  primaryPhotoUrl?: string | null;
+  modifierGroups?: Array<{
+    id: string;
+    name: string;
+    selectionType: string;
+    isRequired: boolean;
+    minSelections?: number;
+    maxSelections?: number;
+    displayOrder?: number;
+    options: Array<{
+      id: string;
+      name: string;
+      priceAdjustment: number;
+      status: string;
+    }>;
+  }>;
+}
 
 /**
  * Response interface cho Guest Menu
@@ -15,31 +46,7 @@ export interface GuestMenuResponse {
       name: string;
       description?: string;
       displayOrder: number;
-      items: Array<{
-        id: string;
-        name: string;
-        description?: string;
-        price: number;
-        prepTimeMinutes?: number;
-        status: string;
-        isChefRecommended: boolean;
-        primaryPhotoUrl?: string | null;
-        modifierGroups?: Array<{
-          id: string;
-          name: string;
-          selectionType: string;
-          isRequired: boolean;
-          minSelections?: number;
-          maxSelections?: number;
-          displayOrder?: number;
-          options: Array<{
-            id: string;
-            name: string;
-            priceAdjustment: number;
-            status: string;
-          }>;
-        }>;
-      }>;
+      items: GuestMenuItem[];
     }>;
   };
   page: number;
@@ -58,6 +65,7 @@ export class GuestMenuService {
     private readonly categoryRepo: Repository<MenuCategoryEntity>,
     @InjectRepository(MenuItemEntity)
     private readonly menuItemRepo: Repository<MenuItemEntity>,
+    private readonly fuzzySearchService: FuzzySearchService,
   ) {}
 
   /**
@@ -247,4 +255,89 @@ export class GuestMenuService {
       modifierGroups,
     };
   }
+
+  /**
+   * Fuzzy search on menu items with typo tolerance
+   * Business Rules:
+   * - Search query supports typos (Levenshtein distance)
+   * - Results ranked: exact > fuzzy > partial
+   * - Each result includes relevance score (0-1)
+   * - Supports multi-word queries
+   */
+  async fuzzySearch(
+    restaurantId: string,
+    query: FuzzySearchQueryDto,
+  ): Promise<FuzzySearchResponseDto> {
+    const {
+      q,
+      maxEditDistance = 2,
+      minScoreThreshold = 0.3,
+      categoryId,
+      page = 1,
+      limit = 20,
+    } = query;
+
+    // Validate pagination
+    const validLimit = Math.min(Math.max(limit, 1), 100);
+    const validPage = Math.max(page, 1);
+    const offset = (validPage - 1) * validLimit;
+
+    // Validate fuzzy config
+    this.fuzzySearchService.validateConfig({ maxEditDistance, minScoreThreshold });
+
+    // Get all active menu items (optionally filter by category)
+    let itemQuery = this.menuItemRepo
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.photos', 'photo')
+      .leftJoinAndSelect('item.modifierGroups', 'modifierGroup')
+      .leftJoinAndSelect('modifierGroup.options', 'option')
+      .where('item.restaurant_id = :restaurantId', { restaurantId })
+      .andWhere('item.status = :status', { status: 'available' })
+      .andWhere('item.is_deleted = :isDeleted', { isDeleted: false });
+
+    if (categoryId) {
+      itemQuery = itemQuery.andWhere('item.category_id = :categoryId', { categoryId });
+    }
+
+    const allItems = await itemQuery.getMany();
+
+    // Perform fuzzy search on name and description
+    const fuzzyResults = this.fuzzySearchService.fuzzySearch(
+      allItems,
+      q,
+      ['name', 'description'],
+      {
+        maxEditDistance,
+        minScoreThreshold,
+        fieldWeights: {
+          name: 1.0,
+          description: 0.5,
+        },
+      },
+    );
+
+    // Find best suggestion from top results
+    const bestSuggestion = fuzzyResults
+      .filter((r) => r.matchType !== 'exact')
+      .sort((a, b) => b.score - a.score)[0]?.suggestion;
+
+    // Transform to response DTOs
+    const paginatedResults = fuzzyResults.slice(offset, offset + validLimit);
+    const items: FuzzySearchItemDto[] = paginatedResults.map((result) => ({
+      item: this.transformMenuItem(result.item),
+      score: parseFloat(result.score.toFixed(3)),
+      matchType: result.matchType,
+      matchedFields: result.matchedFields,
+      suggestion: result.suggestion,
+    }));
+
+    return {
+      items,
+      total: fuzzyResults.length,
+      page: validPage,
+      limit: validLimit,
+      didYouMean: bestSuggestion,
+    };
+  }
 }
+

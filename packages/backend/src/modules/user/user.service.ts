@@ -1,5 +1,5 @@
 
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 // Cập nhật user cho admin
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,66 +14,90 @@ export class UserService {
   ) { }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { email },
-      select: ['id', 'email', 'password', 'name', 'role'] // Ép kiểu lấy password ở đây
+      return this.userRepository.findOne({
+        where: { email },
+        select: ['id', 'email', 'password', 'name', 'role', 'isVerified'], // Ép kiểu lấy password ở đây
     });
   }
+
+  async findByVerificationToken(token: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { verificationToken: token },
+      select: [
+        'id',
+        'email',
+        'name',
+        'verificationToken',
+        'verificationTokenExpires',
+        'isVerified',
+      ],
+    });
+  }
+
+  async findByResetPasswordToken(token: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { resetPasswordToken: token },
+      select: [
+        'id',
+        'email',
+        'name',
+        'resetPasswordToken',
+        'resetPasswordTokenExpires',
+      ],
+      });
+    }
 
   async create(userData: Partial<User>): Promise<User> {
     const user = this.userRepository.create(userData);
     return this.userRepository.save(user);
   }
 
-  async findOneById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { id },
-      select: ['id', 'name', 'email', 'role', 'avatar', 'createdAt'],
-    });
-  }
-  async updateUserByAdmin(id: string, body: { username: string; email: string; role: string }) {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new Error('User not found');
-    user.name = body.username;
-    // user.email = body.email; // Không cho phép sửa email
-    user.role = body.role as UserRole;
-    await this.userRepository.save(user);
-    // Trả về dữ liệu mới cho frontend
-    return {
-      id: user.id,
-      username: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-    };
-  }
-  // Lấy danh sách user cho admin
-  async findAllForAdmin(): Promise<Partial<User>[]> {
-    return this.userRepository.find({
-      select: ['id', 'name', 'email', 'role', 'createdAt', 'password'], // Thêm password vào select
-      order: { createdAt: 'DESC' },
-    });
+  async update(id: string, userData: Partial<User>): Promise<User> {
+    await this.userRepository.update(id, userData);
+    return this.findOneById(id);
   }
 
+  async delete(id: string): Promise<void> {
+    await this.userRepository.delete(id);
+  }
 
-  // Tạo user cho admin (có chọn role)
-  async createUserByAdmin(body: { username: string; email: string; password: string; role: string }) {
-    // Kiểm tra email đã tồn tại chưa
-    const existed = await this.userRepository.findOne({ where: { email: body.email } });
-    if (existed) throw new ConflictException('Email đã tồn tại');
-    const user = this.userRepository.create({
-      name: body.username,
-      email: body.email,
-      password: body.password, // Có thể hash nếu muốn bảo mật hơn
-      role: body.role as UserRole,
+  async findOneById(id: string): Promise<User> {
+  const user = await this.userRepository.findOne({
+    where: { id },
+  });
+
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+
+  return user;
+}
+
+
+  // Lấy thông tin profile cho user đang đăng nhập
+  async getProfile(userId: string): Promise<Partial<User>> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'name', 'displayName', 'email', 'avatar', 'role', 'isVerified', 'createdAt', 'updatedAt'],
     });
-    await this.userRepository.save(user);
-    return {
-      id: user.id,
-      username: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-    };
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  // Cập nhật thông tin profile cho user đang đăng nhập
+  async updateProfile(userId: string, updateProfileDto: { fullName: string; displayName?: string }): Promise<Partial<User>> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.name = updateProfileDto.fullName;
+    if (updateProfileDto.displayName) {
+      user.displayName = updateProfileDto.displayName;
+    }
+    const updatedUser = await this.userRepository.save(user);
+    const { password, verificationToken, ...result } = updatedUser;
+    return result;
   }
 }

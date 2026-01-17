@@ -5,7 +5,7 @@ export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
   WAITER = 'WAITER',
-  KITCHEN = 'KITCHEN',
+  KITCHEN_STAFF = 'KITCHEN_STAFF',
 }
 
 @Entity('users')
@@ -15,6 +15,9 @@ export class User {
 
   @Column()
   name: string;
+
+  @Column({ nullable: true })
+  displayName?: string;
 
   @Column({ unique: true })
   email: string;
@@ -29,6 +32,21 @@ export class User {
 
   @Column({ nullable: true })
   avatar: string;
+
+  @Column({ default: false, name: 'is_verified' })
+  isVerified: boolean;
+
+  @Column({ nullable: true, select: false, name: 'verification_token' })
+  verificationToken?: string;
+
+  @Column({ nullable: true, select: false, name: 'verification_token_expires' })
+  verificationTokenExpires?: Date;
+
+  @Column({ nullable: true, select: false, name: 'reset_password_token' })
+  resetPasswordToken?: string;
+
+  @Column({ nullable: true, select: false, name: 'reset_password_token_expires' })
+  resetPasswordTokenExpires?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
