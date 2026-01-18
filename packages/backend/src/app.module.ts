@@ -48,7 +48,6 @@ import { StaffModule } from './modules/admin/staff/staff.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        
         type: 'postgres',
         host: config.get<string>('DATABASE_HOST'),
         port: config.get<number>('DATABASE_PORT'),
@@ -70,9 +69,12 @@ import { StaffModule } from './modules/admin/staff/staff.module';
           ReviewEntity,
         ],
         // Tự động tạo bảng nếu chưa có (chỉ nên dùng khi mới deploy hoặc dev)
-        // Set biến môi trường DB_SYNC=true trên Vercel để kích hoạt
+        // Set biến môi trường DB_SYNC=true trên Render để kích hoạt
         synchronize: config.get<string>('DB_SYNC') === 'true',
-        // SSL is disabled for local/non-SSL servers
+        // SSL configuration for Neon PostgreSQL (required for cloud databases)
+        ssl: config.get<string>('DATABASE_SSL') === 'true' 
+          ? { rejectUnauthorized: false } 
+          : false,
       }),
     }),
 

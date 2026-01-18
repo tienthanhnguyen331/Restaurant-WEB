@@ -8,11 +8,17 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Get frontend URL from environment for CORS
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   // Enable CORS for frontend
   app.enableCors({
-    origin: true, // Allow all origins temporarily
+    origin: process.env.NODE_ENV === 'production'
+      ? [frontendUrl, /\.vercel\.app$/]  // Allow Vercel domains in production
+      : true,  // Allow all origins in development
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Serve static files from uploads folder
