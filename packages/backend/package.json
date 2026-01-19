@@ -34,6 +34,7 @@
     "@nestjs/schedule": "^6.1.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.11",
+    "@sendgrid/mail": "^8.1.6",
     "@types/nodemailer": "^7.0.5",
     "@types/streamifier": "^0.1.2",
     "archiver": "^7.0.1",
