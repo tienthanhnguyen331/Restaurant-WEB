@@ -26,7 +26,7 @@ export class PdfGeneratorService {
   async generate(table: any, res: Response) {
     const fontPath = this.getFontPath();
     const baseUrl =
-      process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
+      process.env.FRONTEND_URL || 'https://restaurant-web-five-wine.vercel.app';
 
     const qrUrl = `${baseUrl}/menu?table=${table.id}&token=${table.qrToken || ''}`;
     const qrDataUrl = await QRCode.toDataURL(qrUrl);
@@ -36,7 +36,7 @@ export class PdfGeneratorService {
     if (fontPath !== 'Helvetica') {
       try {
         doc.font(fontPath);
-      } catch {}
+      } catch { }
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -64,14 +64,14 @@ export class PdfGeneratorService {
   async generateBulk(tables: any[], res: Response) {
     const fontPath = this.getFontPath();
     const baseUrl =
-      process.env.FRONTEND_URL || 'https://restaurant-web-2t3m.vercel.app';
+      process.env.FRONTEND_URL || 'https://restaurant-web-five-wine.vercel.app';
 
     const doc = new PDFDocument({ size: 'A4', margin: 20 });
 
     if (fontPath !== 'Helvetica') {
       try {
         doc.font(fontPath);
-      } catch {}
+      } catch { }
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -136,97 +136,97 @@ export class PdfGeneratorService {
 
   /* ======================= ORDER INVOICE ======================= */
   async generateOrderInvoice(order: any, res: Response) {
-  const fontPath = this.getFontPath();
+    const fontPath = this.getFontPath();
 
-  const doc = new PDFDocument({
-    size: [226, 800], // ~ 80mm width
-    margin: 10,
-  });
+    const doc = new PDFDocument({
+      size: [226, 800], // ~ 80mm width
+      margin: 10,
+    });
 
-  if (fontPath !== 'Helvetica') {
-    try {
-      doc.font(fontPath);
-    } catch {}
-  }
+    if (fontPath !== 'Helvetica') {
+      try {
+        doc.font(fontPath);
+      } catch { }
+    }
 
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename=Invoice-POS-${order.code || order.id}.pdf`,
-  );
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=Invoice-POS-${order.code || order.id}.pdf`,
+    );
 
-  doc.pipe(res);
+    doc.pipe(res);
 
-  const formatMoney = (v: number) =>
-    v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    const formatMoney = (v: number) =>
+      v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
-  /* ===== HEADER ===== */
-  //doc.fontSize(12).text('RESTAURANT NAME', { align: 'center' });
-  doc.fontSize(10).text('HÓA ĐƠN THANH TOÁN', { align: 'center' });
-  doc.moveDown(0.5);
-
-  doc
-    .fontSize(8)
-    .text(`Mã đơn: ${order.code || order.id}`);
-  if (order.tableNumber) {
-    doc.text(`Bàn: ${order.tableNumber}`);
-  }
-  if (order.userName) {
-    doc.text(`Tên khách hàng: ${order.userName}`);
-      if (order.userEmail) {
-        doc.text(`Email: ${order.userEmail}`);
-      }
-  } else if (order.userId) {
-    doc.text(`User ID: ${order.userId}`);
-  }
-  doc.text(
-    `Thời gian: ${new Date(order.createdAt).toLocaleString('vi-VN')}`,
-  );
-
-  doc.moveDown(0.5);
-  doc.text('--------------------------------');
-
-  /* ===== ITEMS ===== */
-  let total = 0;
-
-  for (const item of order.items) {
-    const itemTotal = item.quantity * item.price;
-    total += itemTotal;
-
-    doc.fontSize(9).text(item.name, { continued: false });
+    /* ===== HEADER ===== */
+    //doc.fontSize(12).text('RESTAURANT NAME', { align: 'center' });
+    doc.fontSize(10).text('HÓA ĐƠN THANH TOÁN', { align: 'center' });
+    doc.moveDown(0.5);
 
     doc
       .fontSize(8)
-      .text(
-        `${item.quantity} x ${formatMoney(item.price)}`,
-        { continued: true },
-      )
-      .text(formatMoney(itemTotal), { align: 'right' });
+      .text(`Mã đơn: ${order.code || order.id}`);
+    if (order.tableNumber) {
+      doc.text(`Bàn: ${order.tableNumber}`);
+    }
+    if (order.userName) {
+      doc.text(`Tên khách hàng: ${order.userName}`);
+      if (order.userEmail) {
+        doc.text(`Email: ${order.userEmail}`);
+      }
+    } else if (order.userId) {
+      doc.text(`User ID: ${order.userId}`);
+    }
+    doc.text(
+      `Thời gian: ${new Date(order.createdAt).toLocaleString('vi-VN')}`,
+    );
 
-    doc.moveDown(0.3);
+    doc.moveDown(0.5);
+    doc.text('--------------------------------');
+
+    /* ===== ITEMS ===== */
+    let total = 0;
+
+    for (const item of order.items) {
+      const itemTotal = item.quantity * item.price;
+      total += itemTotal;
+
+      doc.fontSize(9).text(item.name, { continued: false });
+
+      doc
+        .fontSize(8)
+        .text(
+          `${item.quantity} x ${formatMoney(item.price)}`,
+          { continued: true },
+        )
+        .text(formatMoney(itemTotal), { align: 'right' });
+
+      doc.moveDown(0.3);
+    }
+
+    doc.text('--------------------------------');
+
+    /* ===== TOTAL ===== */
+    doc
+      .fontSize(10)
+      .fillColor('blue')
+      .text(`TỔNG CỘNG`, { continued: true })
+      .text(formatMoney(total), { align: 'right' })
+      .fillColor('black');
+
+    doc.moveDown();
+
+    /* ===== FOOTER ===== */
+    doc
+      .fontSize(8)
+      .text('Cảm ơn quý khách!', { align: 'center' });
+    doc
+      .fontSize(7)
+      .text('Hẹn gặp lại', { align: 'center' });
+
+    doc.end();
   }
-
-  doc.text('--------------------------------');
-
-  /* ===== TOTAL ===== */
-  doc
-    .fontSize(10)
-    .fillColor('blue')
-    .text(`TỔNG CỘNG`, { continued: true })
-    .text(formatMoney(total), { align: 'right' })
-    .fillColor('black');
-
-  doc.moveDown();
-
-  /* ===== FOOTER ===== */
-  doc
-    .fontSize(8)
-    .text('Cảm ơn quý khách!', { align: 'center' });
-  doc
-    .fontSize(7)
-    .text('Hẹn gặp lại', { align: 'center' });
-
-  doc.end();
-}
 
 }
