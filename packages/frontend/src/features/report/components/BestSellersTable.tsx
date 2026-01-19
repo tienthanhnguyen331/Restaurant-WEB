@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../../utils/formatCurrency';
 // packages/frontend/src/features/report/components/BestSellersTable.tsx
 
 interface BestSellerItem {
@@ -47,10 +48,10 @@ export function BestSellersTable({ data = [], isLoading }: BestSellersTableProps
               <td className="px-6 py-4 text-sm text-center text-gray-700">{item.total_times_ordered}</td>
               <td className="px-6 py-4 text-sm text-center text-gray-700">{item.total_quantity_sold}</td>
               <td className="px-6 py-4 text-sm text-right font-semibold text-gray-900">
-                {Number(item.total_revenue || 0).toLocaleString('vi-VN')}
+                {formatCurrency(Number(item.total_revenue || 0))}
               </td>
               <td className="px-6 py-4 text-sm text-right text-gray-700">
-                {Number(item.avg_order_value || 0).toLocaleString('vi-VN')}
+                {formatCurrency(Number(item.avg_order_value || 0))}
               </td>
             </tr>
           ))}

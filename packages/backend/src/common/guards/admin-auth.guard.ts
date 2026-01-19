@@ -15,20 +15,21 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 export class AdminAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    
+
     // TODO: Implement JWT verification
     // const token = this.extractTokenFromHeader(request);
     // if (!token) {
     //   throw new UnauthorizedException('Token không được cung cấp');
     // }
-    
+
     // const payload = await this.jwtService.verifyAsync(token);
     // if (payload.role !== 'admin') {
     //   throw new UnauthorizedException('Chỉ admin mới có quyền truy cập');
     // }
-    
+
     // Gắn user info vào request (placeholder data cho testing)
-    request.user = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (request as any).user = {
       userId: '00000000-0000-0000-0000-000000000001',
       restaurantId: '00000000-0000-0000-0000-000000000000',
       role: 'admin',

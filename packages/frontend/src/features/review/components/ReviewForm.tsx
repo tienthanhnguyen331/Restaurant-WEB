@@ -7,7 +7,7 @@ interface ReviewFormProps {
   onCancel?: () => void;
 }
 
-export const ReviewForm: React.FC<ReviewFormProps> = ({ menuItemId, onSubmit, onCancel }) => {
+export const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit, onCancel }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -41,8 +41,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({ menuItemId, onSubmit, on
             >
               <Star
                 className={`w-8 h-8 ${star <= (hoverRating || rating)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-gray-300'
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'text-gray-300'
                   }`}
               />
             </button>

@@ -20,7 +20,8 @@ export interface AuthenticatedUser {
 export const CurrentUser = createParamDecorator(
   (data: keyof AuthenticatedUser | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const user = (request as any).user;
 
     return data ? user?.[data] : user;
   },

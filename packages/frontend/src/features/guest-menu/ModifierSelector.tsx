@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/formatCurrency';
 interface ModifierOption {
   id: string;
   name: string;
@@ -56,7 +57,7 @@ export default function ModifierSelector({
 
   const isValidSelection = (group: ModifierGroup): boolean => {
     const selections = selectedModifiers[group.id] || [];
-    
+
     if (group.isRequired && selections.length === 0) {
       return false;
     }
@@ -88,14 +89,13 @@ export default function ModifierSelector({
                   <span className="text-xs text-red-500">Required</span>
                 )}
               </div>
-              
+
               {/* Selection Info */}
               <p className="text-xs text-gray-500 mt-1">
                 {group.selectionType === 'single'
                   ? 'Select one option'
-                  : `Select ${group.minSelections || 0}${
-                      group.maxSelections ? `-${group.maxSelections}` : '+'
-                    } options`}
+                  : `Select ${group.minSelections || 0}${group.maxSelections ? `-${group.maxSelections}` : '+'
+                  } options`}
               </p>
             </div>
 
@@ -106,13 +106,12 @@ export default function ModifierSelector({
                 return (
                   <label
                     key={option.id}
-                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
-                      isSelected
-                        ? 'bg-blue-50 border-blue-300 border'
-                        : 'bg-gray-50 border border-transparent hover:bg-gray-100'
-                    }`}
+                    className={`flex items-start p-2 rounded cursor-pointer transition-colors ${isSelected
+                      ? 'bg-blue-50 border-blue-300 border'
+                      : 'bg-gray-50 border border-transparent hover:bg-gray-100'
+                      }`}
                   >
-                    <div className="flex items-center">
+                    <div className="flex items-center h-5">
                       <input
                         type={group.selectionType === 'single' ? 'radio' : 'checkbox'}
                         name={group.id}
@@ -124,17 +123,19 @@ export default function ModifierSelector({
                             handleMultipleSelection(group.id, option.id, group);
                           }
                         }}
-                        className="mr-2 h-4 w-4"
+                        className="mr-3 h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       />
-                      <span className="text-sm font-medium text-gray-900">
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <span className="text-sm font-medium text-gray-900 break-words pr-2">
                         {option.name}
                       </span>
+                      {option.priceAdjustment > 0 && (
+                        <span className="text-xs text-green-600 font-bold whitespace-nowrap mt-0.5">
+                          +{formatCurrency(option.priceAdjustment)}
+                        </span>
+                      )}
                     </div>
-                    {option.priceAdjustment > 0 && (
-                      <span className="text-sm text-green-600 font-medium">
-                        +${option.priceAdjustment.toFixed(2)}
-                      </span>
-                    )}
                   </label>
                 );
               })}

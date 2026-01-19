@@ -4,7 +4,7 @@ import { UserRole } from '../../modules/user/user.entity';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector) { }
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>('roles', [
@@ -17,7 +17,8 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const user = (request as any).user;
 
     if (!user || !user.role) {
       throw new ForbiddenException('User role not found');

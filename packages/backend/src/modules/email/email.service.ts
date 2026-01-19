@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 
 @Injectable()
 export class EmailService {
@@ -26,7 +26,10 @@ export class EmailService {
     try {
       const msg = {
         to: email,
-        from: this.fromEmail,
+        from: {
+          email: this.fromEmail,
+          name: 'Restaurant Support'
+        },
         subject: 'Verify Your Email - Restaurant App',
         html: this.getVerificationEmailTemplate(name, verificationLink),
       };
@@ -43,7 +46,10 @@ export class EmailService {
     try {
       const msg = {
         to: email,
-        from: this.fromEmail,
+        from: {
+          email: this.fromEmail,
+          name: 'Restaurant Support'
+        },
         subject: 'Welcome to Restaurant App',
         html: this.getWelcomeEmailTemplate(name),
       };
@@ -64,7 +70,10 @@ export class EmailService {
     try {
       const msg = {
         to: email,
-        from: this.fromEmail,
+        from: {
+          email: this.fromEmail,
+          name: 'Restaurant Support'
+        },
         subject: 'Reset Your Password - Restaurant App',
         html: this.getResetPasswordEmailTemplate(name, resetLink),
       };

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { formatCurrency } from '../../../utils/formatCurrency';
 import { Search, AlertCircle, CheckCircle } from 'lucide-react';
 import { useFuzzySearch, useDebounce, type FuzzySearchResultItem } from '../hooks/useFuzzySearch';
 
@@ -188,7 +189,7 @@ export default function FuzzySearchComponent({
                         <div className="flex flex-col items-end gap-2">
                           {/* Price */}
                           <div className="font-semibold text-gray-900">
-                            ₫{result.item.price.toLocaleString('vi-VN')}
+                            {formatCurrency(result.item.price)}
                           </div>
 
                           {/* Relevance Score */}

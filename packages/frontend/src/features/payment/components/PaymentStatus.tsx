@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export interface PaymentStatusProps {
   status?: 'pending' | 'success' | 'failed';

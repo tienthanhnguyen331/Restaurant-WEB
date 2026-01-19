@@ -80,12 +80,12 @@ export class MomoService {
       accessKey: this.cfg.accessKey,
       ...rest,
     };
-    
+
     const raw = Object.keys(fields)
       .sort()
       .map((k) => `${k}=${fields[k]}`)
       .join('&');
-    
+
     const expected = this.sign(raw);
     const isValid = expected === signature;
 
@@ -137,17 +137,19 @@ export class MomoService {
     this.logger.debug(`[createPayment] Request body:`, JSON.stringify(momoRequest, null, 2));
 
     try {
-      const res = await fetch('https://test-payment.momo.vn/v2/gateway/api/create', {
+      const endpoint = this.configService.get<string>('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api');
+
+      const res = await fetch(`${endpoint}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(momoRequest),
       });
 
       const data = (await res.json()) as MomoCreateResponse;
-      
+
       this.logger.log(`[createPayment] SUCCESS - orderId=${payload.orderId}, resultCode=${data.resultCode}, payUrl=${data.payUrl ? 'generated' : 'none'}`);
       this.logger.debug(`[createPayment] Response:`, JSON.stringify(data, null, 2));
-      
+
       return data;
     } catch (error) {
       this.logger.error(`[createPayment] ERROR - orderId=${payload.orderId}, error=${error instanceof Error ? error.message : 'Unknown'}`);
@@ -169,16 +171,18 @@ export class MomoService {
     this.logger.log(`[queryPayment] START - orderId=${orderId}, requestId=${requestId}`);
 
     try {
-      const res = await fetch('https://test-payment.momo.vn/v2/gateway/api/query', {
+      const endpoint = this.configService.get<string>('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api');
+
+      const res = await fetch(`${endpoint}/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
       const data = (await res.json()) as MomoQueryResponse;
-      
+
       this.logger.log(`[queryPayment] SUCCESS - orderId=${orderId}, resultCode=${data.resultCode}`);
-      
+
       return data;
     } catch (error) {
       this.logger.error(`[queryPayment] ERROR - orderId=${orderId}, error=${error instanceof Error ? error.message : 'Unknown'}`);

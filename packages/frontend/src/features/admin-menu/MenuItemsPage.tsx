@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatCurrency } from '../../utils/formatCurrency';
 import type {
   CreateMenuItemDto,
   MenuCategory,
@@ -11,8 +12,7 @@ import menuItemApi from '../../services/menuItemApi';
 import { categoryApi } from '../../services/categoryApi';
 
 function formatMoneyVnd(value: number) {
-  // Fallback formatting (repo doesn't have a shared formatter)
-  return value.toLocaleString('vi-VN');
+  return formatCurrency(Number(value));
 }
 
 function statusBadge(status: MenuItemStatus) {
@@ -269,7 +269,7 @@ export const MenuItemsPage: React.FC = () => {
                     <td className="py-3 px-4 text-sm text-gray-700">
                       {categoryNameById.get(item.categoryId) ?? item.categoryId}
                     </td>
-                    <td className="py-3 px-4 text-sm">{formatMoneyVnd(Number(item.price))}đ</td>
+                    <td className="py-3 px-4 text-sm">{formatMoneyVnd(Number(item.price))}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         {statusBadge(item.status)}

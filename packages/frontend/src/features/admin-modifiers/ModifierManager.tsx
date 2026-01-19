@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/formatCurrency';
 import { useState, useEffect } from 'react';
 import modifierApi from '../../services/modifierApi';
 import type { ModifierGroupWithOptions, ModifierOption } from '../../services/modifierApi';
@@ -8,7 +9,7 @@ export default function ModifierManager() {
   const [groups, setGroups] = useState<ModifierGroupWithOptions[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // UI states
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState<ModifierGroupWithOptions | null>(null);
@@ -33,7 +34,7 @@ export default function ModifierManager() {
 
   const handleDeleteGroup = async (id: string) => {
     if (!confirm('Delete this modifier group? This will detach it from all items.')) return;
-    
+
     try {
       await modifierApi.deleteModifierGroup(id);
       await loadGroups();
@@ -44,7 +45,7 @@ export default function ModifierManager() {
 
   const handleDeleteOption = async (optionId: string) => {
     if (!confirm('Delete this option?')) return;
-    
+
     try {
       await modifierApi.deleteOption(optionId);
       await loadGroups();
@@ -130,11 +131,10 @@ export default function ModifierManager() {
                 <div>
                   <h2 className="text-xl font-bold">{group.name}</h2>
                   <div className="flex gap-2 mt-2 text-sm">
-                    <span className={`px-2 py-1 rounded ${
-                      group.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded ${group.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                      }`}>
                       {group.status}
                     </span>
                     <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
@@ -194,8 +194,8 @@ export default function ModifierManager() {
                         <div>
                           <span className="font-medium">{option.name}</span>
                           <span className="text-gray-600 ml-2">
-                            {Number(option.priceAdjustment) > 0 
-                              ? `+$${Number(option.priceAdjustment).toFixed(2)}` 
+                            {Number(option.priceAdjustment) > 0
+                              ? `+${formatCurrency(Number(option.priceAdjustment))}`
                               : 'No extra charge'}
                           </span>
                           {option.status === 'inactive' && (

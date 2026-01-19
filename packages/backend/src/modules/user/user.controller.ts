@@ -1,12 +1,12 @@
 import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 
 @Controller('api/user')
 @UseGuards(JwtAuthGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('profile')
   async getProfile(@Request() req) {

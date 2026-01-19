@@ -1,12 +1,13 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Minus, Trash2, Banknote, Smartphone, Landmark } from 'lucide-react';
+import { Plus, Minus, Trash2, Banknote, Smartphone } from 'lucide-react';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 import { usePayment } from './hooks/usePayment';
 import { useCart } from '../../contexts/CartContext';
 import type { CartItem } from '../../contexts/CartContext';
 import { orderApi } from '../order/services/order-api';
 import { GuestOrderStatus } from '../guest-menu/components/GuestOrderStatus';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const createOrderId = () =>
 (crypto.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -17,7 +18,6 @@ const createOrderId = () =>
 
 export const PaymentMethod = {
   CASH: 'cash',
-  BANK: 'bank',
   MOMO: 'momo',
 } as const;
 
@@ -55,15 +55,8 @@ export default function PaymentPage() {
   const items = cartItems.filter((it) => typeof it.tableId === 'number' ? it.tableId === resolvedTableId : false);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>(PaymentMethod.MOMO);
-  const currentGuestUser = (() => {
-    try {
-      const guestStr = localStorage.getItem('guest_user');
-      return guestStr ? JSON.parse(guestStr) : null;
-    } catch {
-      return null;
-    }
-  })();
-  const isGuestLoggedIn = Boolean(currentGuestUser);
+
+
   const [tab, setTab] = useState<'order' | 'status' | 'history'>('order');
   const successParam = searchParams.get('success');
   const [showSuccessModal, setShowSuccessModal] = useState(!!successParam);
@@ -132,7 +125,7 @@ export default function PaymentPage() {
           const option = group.options?.find((o: any) => o.id === optionId);
           if (option) {
             const priceText = option.priceAdjustment > 0
-              ? ` (+${option.priceAdjustment.toLocaleString()})`
+              ? ` (+${formatCurrency(option.priceAdjustment)})`
               : '';
             modifierTexts.push(`${option.name}${priceText}`);
           }
@@ -214,7 +207,7 @@ export default function PaymentPage() {
                             {item.menuItemName}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {item.basePrice.toLocaleString()} mỗi món
+                            {formatCurrency(item.basePrice)} mỗi món
                           </p>
                         </div>
                         <button
@@ -261,7 +254,7 @@ export default function PaymentPage() {
                           </button>
                         </div>
                         <span className="font-bold text-blue-600">
-                          {itemPrice.toLocaleString()}
+                          {formatCurrency(itemPrice)}
                         </span>
                       </div>
                     </li>
@@ -274,16 +267,16 @@ export default function PaymentPage() {
             <div className="mt-8 space-y-3 border-t pt-4">
               <div className="flex justify-between text-sm">
                 <span>Tạm tính ({items.length} món)</span>
-                <span>{subTotal.toLocaleString()}</span>
+                <span>{formatCurrency(subTotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Giảm giá</span>
-                <span>{discount.toLocaleString()}</span>
+                <span>{formatCurrency(discount)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-3">
                 <span>Tổng cộng</span>
                 <span className="text-blue-600">
-                  {grandTotal.toLocaleString()}
+                  {formatCurrency(grandTotal)}
                 </span>
               </div>
 
@@ -296,8 +289,8 @@ export default function PaymentPage() {
                     type="button"
                     onClick={() => setSelectedPaymentMethod(PaymentMethod.CASH)}
                     className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.CASH
-                        ? 'border-blue-500 bg-blue-50 shadow'
-                        : 'border-gray-200 bg-white'
+                      ? 'border-blue-500 bg-blue-50 shadow'
+                      : 'border-gray-200 bg-white'
                       }`}
                   >
                     <Banknote className="w-5 h-5 text-green-600" />
@@ -310,32 +303,15 @@ export default function PaymentPage() {
                     </span>
                   </button>
 
-                  {/* Bank Transfer */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod(PaymentMethod.BANK)}
-                    className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.BANK
-                        ? 'border-blue-500 bg-blue-50 shadow'
-                        : 'border-gray-200 bg-white'
-                      }`}
-                  >
-                    <Landmark className="w-5 h-5 text-blue-600" />
-                    <span className="flex-1 text-left font-medium text-gray-900 text-sm">Chuyển khoản</span>
-                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === PaymentMethod.BANK ? 'border-blue-500' : 'border-gray-300'
-                      }`}>
-                      {selectedPaymentMethod === PaymentMethod.BANK && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full block" />
-                      )}
-                    </span>
-                  </button>
+                  {/* Bank Transfer Removed */}
 
                   {/* MoMo */}
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod(PaymentMethod.MOMO)}
                     className={`w-full flex items-center gap-3 p-3 border rounded-lg transition-all ${selectedPaymentMethod === PaymentMethod.MOMO
-                        ? 'border-blue-500 bg-blue-50 shadow'
-                        : 'border-gray-200 bg-white'
+                      ? 'border-blue-500 bg-blue-50 shadow'
+                      : 'border-gray-200 bg-white'
                       }`}
                   >
                     <Smartphone className="w-5 h-5 text-pink-500" />
@@ -415,9 +391,9 @@ export default function PaymentPage() {
                     }
                   }
                   else {
-                    // CASH / BANK
+                    // CASH
                     try {
-                      console.log('Creating order (CASH/BANK flow)...');
+                      console.log('Creating order (CASH flow)...');
                       await orderApi.create(orderPayload);
 
                       // Create Payment Record (Pending)
@@ -427,7 +403,7 @@ export default function PaymentPage() {
                         method: selectedPaymentMethod
                       });
 
-                      alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán ${selectedPaymentMethod === PaymentMethod.CASH ? 'tiền mặt' : 'chuyển khoản'} tại quầy.`);
+                      alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán tiền mặt tại quầy.`);
                       setTab('status');
 
                       // Optional: Clear cart here if needed
@@ -440,7 +416,7 @@ export default function PaymentPage() {
                 disabled={loading || items.length === 0}
                 title="Thanh toán"
               >
-                {`Thanh toán ${grandTotal.toLocaleString()}`}
+                {`Thanh toán ${formatCurrency(grandTotal)}`}
               </button>
             </div>
           </div>
@@ -465,8 +441,8 @@ function TabButton({
     <button
       onClick={onClick}
       className={`px-3 py-1 rounded-full text-sm font-medium ${active
-          ? 'bg-blue-400 text-white'
-          : 'bg-gray-100 text-gray-700'
+        ? 'bg-blue-400 text-white'
+        : 'bg-gray-100 text-gray-700'
         }`}
     >
       {children}

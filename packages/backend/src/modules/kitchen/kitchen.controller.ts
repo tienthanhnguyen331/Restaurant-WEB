@@ -2,14 +2,14 @@ import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
 import { KitchenService } from './kitchen.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UserRole } from '../user/user.entity';
-import { RolesGuard } from '@/src/common/guards/roles.guard';
-import { Roles } from '@/src/common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller('kitchen')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.KITCHEN_STAFF)
 export class KitchenController {
-  constructor(private readonly kitchenService: KitchenService) {}
+  constructor(private readonly kitchenService: KitchenService) { }
 
   @Get('orders')
   async getOrders() {

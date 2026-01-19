@@ -30,14 +30,14 @@ export default function ModifierOptionForm({
   } = useForm<CreateModifierOptionDto>({
     defaultValues: option
       ? {
-          name: option.name,
-          priceAdjustment: option.priceAdjustment,
-          status: option.status,
-        }
+        name: option.name,
+        priceAdjustment: option.priceAdjustment,
+        status: option.status,
+      }
       : {
-          priceAdjustment: 0,
-          status: 'active',
-        },
+        priceAdjustment: 0,
+        status: 'active',
+      },
   });
 
   const onSubmit = async (data: CreateModifierOptionDto) => {
@@ -88,7 +88,7 @@ export default function ModifierOptionForm({
         {/* Price Adjustment */}
         <div>
           <label className="block text-sm font-medium mb-1">
-            Price Adjustment ($) <span className="text-red-500">*</span>
+            Price Adjustment (VNĐ) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"

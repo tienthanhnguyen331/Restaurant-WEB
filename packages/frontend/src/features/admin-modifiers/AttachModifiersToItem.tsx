@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { formatCurrency } from '../../utils/formatCurrency';
 import modifierApi from '../../services/modifierApi';
 import menuItemApi from '../../services/menuItemApi';
 import type { ModifierGroupWithOptions } from '../../services/modifierApi';
@@ -122,7 +123,7 @@ export default function AttachModifiersToItem() {
           <label className="block text-sm font-medium mb-1">
             Chọn Món <span className="text-red-500">*</span>
           </label>
-          
+
           {loadingItems ? (
             <div className="text-sm text-gray-500">Đang tải danh sách món...</div>
           ) : (
@@ -135,7 +136,7 @@ export default function AttachModifiersToItem() {
                 className="w-full border rounded px-3 py-2 mb-2"
                 placeholder="🔍 Tìm món theo tên..."
               />
-              
+
               {/* Dropdown */}
               <select
                 className="w-full border rounded p-2"
@@ -145,7 +146,7 @@ export default function AttachModifiersToItem() {
                 <option value="">-- Chọn món --</option>
                 {filteredItems?.map(item => (
                   <option key={item.id} value={item.id}>
-                    {item.name} - {item.price.toLocaleString('vi-VN')}đ
+                    {item.name} - {formatCurrency(item.price)}
                     {item.categoryName ? ` (${item.categoryName})` : ''}
                     {item.status !== 'available' ? ` [${item.status}]` : ''}
                   </option>
@@ -157,7 +158,7 @@ export default function AttachModifiersToItem() {
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded">
                   <div className="text-sm font-medium text-blue-900">{selectedItem.name}</div>
                   <div className="text-xs text-blue-700 mt-1">
-                    Giá: {selectedItem.price.toLocaleString('vi-VN')}đ
+                    Giá: {formatCurrency(selectedItem.price)}
                     {selectedItem.description && ` • ${selectedItem.description}`}
                   </div>
                   <div className="text-xs text-blue-600 mt-1">
@@ -165,7 +166,7 @@ export default function AttachModifiersToItem() {
                   </div>
                 </div>
               )}
-              
+
               {searchQuery && filteredItems.length === 0 && (
                 <div className="mt-2 text-sm text-gray-500">
                   Không tìm thấy món nào phù hợp với "{searchQuery}"

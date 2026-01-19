@@ -2,6 +2,7 @@ import React from 'react';
 import { useOrderSocket } from '../hooks/useOrderSocket';
 import { orderApi } from '../services/order-api';
 import type { MenuItemDropdown } from '../../../services/menuItemApi';
+import { formatCurrency } from '../../../utils/formatCurrency';
 import { X } from 'lucide-react';
 import type { Order } from '../types';
 import type { MenuCategory } from '@shared/types/menu';
@@ -66,21 +67,21 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
   };
 
   const handleDownloadInvoice = async () => {
-  setDownloading(true);
-  try {
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    const url = `${baseUrl}/api/orders/${currentOrder.id}/invoice`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Không thể tải hóa đơn');
-    const blob = await response.blob();
-    if (blob.size === 0) throw new Error('File rỗng');
-    saveAs(blob, `Order-${currentOrder.id}.pdf`);
-  } catch (e) {
-    alert('Tải hóa đơn thất bại!');
-  } finally {
-    setDownloading(false);
-  }
-};
+    setDownloading(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const url = `${baseUrl}/api/orders/${currentOrder.id}/invoice`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Không thể tải hóa đơn');
+      const blob = await response.blob();
+      if (blob.size === 0) throw new Error('File rỗng');
+      saveAs(blob, `Order-${currentOrder.id}.pdf`);
+    } catch (e) {
+      alert('Tải hóa đơn thất bại!');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -92,8 +93,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
 
         <div className="p-6 space-y-4">
           <div className="bg-gray-50 p-4 rounded grid grid-cols-2 gap-2 text-sm">
-             <div><span className="font-semibold">Bàn:</span> {currentOrder.table_id}</div>
-             <div><span className="font-semibold">Trạng thái:</span> <span className="uppercase font-bold text-blue-600">{currentOrder.status}</span></div>
+            <div><span className="font-semibold">Bàn:</span> {currentOrder.table_id}</div>
+            <div><span className="font-semibold">Trạng thái:</span> <span className="uppercase font-bold text-blue-600">{currentOrder.status}</span></div>
           </div>
 
           <div>
@@ -107,7 +108,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
                     <div className="text-sm text-gray-600">SL: {item.quantity}</div>
                     <div className="text-xs text-gray-400">Category: {info.categoryName}</div>
                   </div>
-                  <div className="font-semibold">{(Number(item.price) * item.quantity).toLocaleString()}đ</div>
+                  <div className="font-semibold">{formatCurrency(Number(item.price) * item.quantity)}</div>
                 </div>
               );
             })}
@@ -115,27 +116,27 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
 
           <div className="border-t pt-4 flex justify-between text-lg font-bold">
             <span>Tổng cộng:</span>
-            <span className="text-blue-600">{Number(currentOrder.total_amount).toLocaleString()}đ</span>
+            <span className="text-blue-600">{formatCurrency(Number(currentOrder.total_amount))}</span>
           </div>
           {(currentOrder.status === 'SERVED' || currentOrder.status === 'COMPLETED') && (
-  <div className="pt-4">
-    <button
-      onClick={handleDownloadInvoice}
-      disabled={downloading}
-      className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
-      title="Tải hóa đơn PDF"
-    >
-      {downloading ? (
-        'Đang tải...'
-      ) : (
-        <>
-          <span role="img" aria-label="pdf">📄</span>
-          Tải hóa đơn
-        </>
-      )}
-    </button>
-  </div>
-)}
+            <div className="pt-4">
+              <button
+                onClick={handleDownloadInvoice}
+                disabled={downloading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+                title="Tải hóa đơn PDF"
+              >
+                {downloading ? (
+                  'Đang tải...'
+                ) : (
+                  <>
+                    <span role="img" aria-label="pdf">📄</span>
+                    Tải hóa đơn
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
