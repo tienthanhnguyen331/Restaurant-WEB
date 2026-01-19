@@ -26,7 +26,7 @@ export class PdfGeneratorService {
   async generate(table: any, res: Response) {
     const fontPath = this.getFontPath();
     const baseUrl =
-      process.env.FRONTEND_URL || 'https://restaurant-web-five-wine.vercel.app';
+      process.env.FRONTEND_URL || 'https://restaurant-web-8ped.vercel.app';
 
     const qrUrl = `${baseUrl}/menu?table=${table.id}&token=${table.qrToken || ''}`;
     const qrDataUrl = await QRCode.toDataURL(qrUrl);
@@ -64,7 +64,7 @@ export class PdfGeneratorService {
   async generateBulk(tables: any[], res: Response) {
     const fontPath = this.getFontPath();
     const baseUrl =
-      process.env.FRONTEND_URL || 'https://restaurant-web-five-wine.vercel.app';
+      process.env.FRONTEND_URL || 'https://restaurant-web-8ped.vercel.app';
 
     const doc = new PDFDocument({ size: 'A4', margin: 20 });
 
