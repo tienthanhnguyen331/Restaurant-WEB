@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminProfileApi } from '../../services/adminProfileApi';
 import { userProfileApi } from '../guest-menu/services/userProfileApi';
 import {
@@ -26,14 +27,16 @@ type EditingSection = 'profile' | 'avatar' | 'password' | 'email' | null;
 interface AdminProfilePageProps {
   profileOverride?: UserProfile;
   mode?: 'admin' | 'guest';
+  onProfileUpdate?: (newProfile: UserProfile) => void;
 }
 
-export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverride, mode = 'admin' }) => {
+export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverride, mode = 'admin', onProfileUpdate }) => {
   // Nếu có profileOverride thì dùng, không thì lấy từ API như cũ
   const [profile, setProfile] = useState<UserProfile | null>(profileOverride || null);
+  const [updatedProfile, setUpdatedProfile] = useState<UserProfile | null>(null); // NEW
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
   const [successMessages, setSuccessMessages] = useState<Record<string, string>>({});
-
+  const queryClient = useQueryClient();
   // Fetch profile
   const { data: profileData, isLoading: isLoadingProfile } = useQuery({
     queryKey: [mode === 'guest' ? 'user-profile' : 'admin-profile'],
@@ -43,24 +46,33 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
   useEffect(() => {
     if (!profileOverride && profileData?.data) {
       setProfile(profileData.data);
+      setUpdatedProfile(null); // Reset updatedProfile khi nhận data mới từ API
     }
   }, [profileData, profileOverride]);
+
+  // Sync profileOverride when it changes
+  useEffect(() => {
+    if (profileOverride) {
+      setProfile(profileOverride);
+      setUpdatedProfile(null);
+    }
+  }, [profileOverride]);
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: (data: { fullName: string; displayName?: string }) =>
       mode === 'guest' ? userProfileApi.updateProfile(data) : adminProfileApi.updateProfile(data),
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       if (response.data) {
         setProfile(response.data);
+        setUpdatedProfile(response.data); // Lưu user mới cập nhật
+        // 🔥 Quan trọng
+        queryClient.invalidateQueries({
+          queryKey: [mode === 'guest' ? 'user-profile' : 'admin-profile'],
+        });
+
         setEditingSection(null);
-        setSuccessMessages(prev => ({
-          ...prev,
-          profile: 'Thông tin hồ sơ đã được cập nhật thành công!',
-        }));
-        setTimeout(() => {
-          setSuccessMessages(prev => ({ ...prev, profile: '' }));
-        }, 3000);
+        onProfileUpdate?.(response.data);
       }
     },
     onError: (error: any) => {
@@ -95,15 +107,22 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
   const uploadAvatarMutation = useMutation({
     mutationFn: (file: File) => mode === 'guest' ? userProfileApi.uploadAvatar(file) : adminProfileApi.uploadAvatar(file),
     onSuccess: (response) => {
-      // response is the full user object from backend (with avatar URL)
-      // Update profile state with new avatar URL from Cloudinary
       if (response.data && response.data.avatar) {
         setProfile((prev) => prev ? { ...prev, avatar: response.data.avatar } : prev);
+        setUpdatedProfile((prev) => prev ? { ...prev, avatar: response.data.avatar } : prev);
         setEditingSection(null);
         setSuccessMessages(prev => ({
           ...prev,
           avatar: 'Avatar đã được cập nhật thành công!',
         }));
+
+        // Notify parent about update
+        if (response.data && response.data.avatar) {
+          const currentProfile = updatedProfile || profile;
+          if (currentProfile) {
+            onProfileUpdate?.({ ...currentProfile, avatar: response.data.avatar });
+          }
+        }
         setTimeout(() => {
           setSuccessMessages(prev => ({ ...prev, avatar: '' }));
         }, 3000);
@@ -122,7 +141,8 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
     );
   }
 
-  if (!profile) {
+  const displayProfile = updatedProfile || profile;
+  if (!displayProfile) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -148,26 +168,26 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="flex items-center">
             <div className="mr-6">
-              {profile.avatar ? (
+              {displayProfile && displayProfile.avatar ? (
                 <img
-                  src={profile.avatar}
-                  alt={profile.name}
+                  src={displayProfile.avatar}
+                  alt={displayProfile.name}
                   className="w-20 h-20 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-semibold">
-                  {profile.name.charAt(0).toUpperCase()}
+                  {displayProfile ? displayProfile.name.charAt(0).toUpperCase() : ''}
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{profile.name}</h2>
-              <p className="text-gray-600">{profile.email}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{displayProfile ? displayProfile.name : ''}</h2>
+              <p className="text-gray-600">{displayProfile ? displayProfile.email : ''}</p>
               <div className="flex items-center mt-2 gap-2">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  {profile.role}
+                  {displayProfile ? displayProfile.role : ''}
                 </span>
-                {profile.isEmailVerified && (
+                {displayProfile && displayProfile.isEmailVerified && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     ✓ Email xác nhận
                   </span>
@@ -196,8 +216,8 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
             <div className="space-y-4" data-section="profile">
               <ProfileInfoForm
                 initialData={{
-                  fullName: profile.name,
-                  displayName: profile.displayName,
+                  fullName: displayProfile ? displayProfile.name : '',
+                  displayName: displayProfile ? displayProfile.displayName : '',
                 }}
                 onSubmit={updateProfileMutation.mutateAsync}
                 isLoading={updateProfileMutation.isPending}
@@ -225,9 +245,9 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
             }}
           >
             {/* THAY ĐỔI Ở ĐÂY: Đổi <form> thành <div> và bỏ onSubmit */}
-            <div data-section="avatar"> 
+            <div data-section="avatar">
               <AvatarUploadComponent
-                currentAvatar={profile.avatar}
+                currentAvatar={displayProfile.avatar}
                 onSubmit={uploadAvatarMutation.mutateAsync}
                 isLoading={uploadAvatarMutation.isPending}
               />

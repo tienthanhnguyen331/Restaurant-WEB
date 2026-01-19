@@ -323,106 +323,111 @@ export default function PaymentPage() {
                       )}
                     </span>
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                </div >
+              </div >
+            </div >
+          </div >
+        )
+        }
 
         {/* TAB: STATUS */}
-        {tab === 'status' && (
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            <GuestOrderStatus viewMode="tracking" />
-          </div>
-        )}
+        {
+          tab === 'status' && (
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
+              <GuestOrderStatus viewMode="tracking" />
+            </div>
+          )
+        }
 
         {/* FOOTER - PAYMENT SECTION */}
         {/* Chỉ hiện footer khi ở tab 'order' và có món trong giỏ */}
-        {tab === 'order' && items.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-            <div className="flex gap-3">
-              <button
-                className="flex-1 bg-blue-500 text-white font-bold py-3 rounded-full hover:bg-blue-600 disabled:opacity-50"
-                onClick={async () => {
-                  if (items.length === 0) {
-                    alert('Giỏ hàng trống!');
-                    return;
-                  }
-
-                  const resolvedOrderId = orderIdRef.current;
-                  if (!resolvedOrderId) {
-                    alert('Không tìm thấy mã đơn hàng!');
-                    return;
-                  }
-
-                  // Common Payload
-                  // Đảm bảo table_id là số nguyên hợp lệ
-                  let resolvedTableId = 1;
-                  if (typeof table_id === 'string') {
-                    const parsed = parseInt(table_id, 10);
-                    if (!isNaN(parsed) && parsed > 0) {
-                      resolvedTableId = parsed;
+        {
+          tab === 'order' && items.length > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 bg-white border-t p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 bg-blue-500 text-white font-bold py-3 rounded-full hover:bg-blue-600 disabled:opacity-50"
+                  onClick={async () => {
+                    if (items.length === 0) {
+                      alert('Giỏ hàng trống!');
+                      return;
                     }
-                  } else if (typeof table_id === 'number' && table_id > 0) {
-                    resolvedTableId = table_id;
-                  }
 
-                  const orderPayload = {
-                    id: resolvedOrderId,
-                    table_id: resolvedTableId,
-                    items: items.map((item) => ({
-                      menu_item_id: item.menuItemId,
-                      quantity: item.quantity,
-                      price: getItemPrice(item) / item.quantity,
-                      notes: formatModifiers(item).join(', '),
-                    })),
-                  };
-
-                  if (selectedPaymentMethod === PaymentMethod.MOMO) {
-                    try {
-                      console.log('Creating order (MOMO flow)...');
-                      const orderResponse = await orderApi.create(orderPayload);
-                      console.log('Order created:', orderResponse);
-
-                      payWithMomo(resolvedOrderId, grandTotal);
-                    } catch (err: any) {
-                      console.error('Order creation error:', err);
-                      alert(`Lỗi tạo đơn hàng: ${err.message || 'Unknown code'}`);
+                    const resolvedOrderId = orderIdRef.current;
+                    if (!resolvedOrderId) {
+                      alert('Không tìm thấy mã đơn hàng!');
+                      return;
                     }
-                  }
-                  else {
-                    // CASH
-                    try {
-                      console.log('Creating order (CASH flow)...');
-                      await orderApi.create(orderPayload);
 
-                      // Create Payment Record (Pending)
-                      await pay({
-                        orderId: resolvedOrderId,
-                        amount: grandTotal,
-                        method: selectedPaymentMethod
-                      });
-
-                      alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán tiền mặt tại quầy.`);
-                      setTab('status');
-
-                      // Optional: Clear cart here if needed
-                    } catch (err: any) {
-                      console.error('Order process error:', err);
-                      alert(`Lỗi xử lý: ${err.message}`);
+                    // Common Payload
+                    // Đảm bảo table_id là số nguyên hợp lệ
+                    let resolvedTableId = 1;
+                    if (typeof table_id === 'string') {
+                      const parsed = parseInt(table_id, 10);
+                      if (!isNaN(parsed) && parsed > 0) {
+                        resolvedTableId = parsed;
+                      }
+                    } else if (typeof table_id === 'number' && table_id > 0) {
+                      resolvedTableId = table_id;
                     }
-                  }
-                }}
-                disabled={loading || items.length === 0}
-                title="Thanh toán"
-              >
-                {`Thanh toán ${formatCurrency(grandTotal)}`}
-              </button>
+
+                    const orderPayload = {
+                      id: resolvedOrderId,
+                      table_id: resolvedTableId,
+                      items: items.map((item) => ({
+                        menu_item_id: item.menuItemId,
+                        quantity: item.quantity,
+                        price: getItemPrice(item) / item.quantity,
+                        notes: formatModifiers(item).join(', '),
+                      })),
+                    };
+
+                    if (selectedPaymentMethod === PaymentMethod.MOMO) {
+                      try {
+                        console.log('Creating order (MOMO flow)...');
+                        const orderResponse = await orderApi.create(orderPayload);
+                        console.log('Order created:', orderResponse);
+
+                        payWithMomo(resolvedOrderId, grandTotal);
+                      } catch (err: any) {
+                        console.error('Order creation error:', err);
+                        alert(`Lỗi tạo đơn hàng: ${err.message || 'Unknown code'}`);
+                      }
+                    }
+                    else {
+                      // CASH
+                      try {
+                        console.log('Creating order (CASH flow)...');
+                        await orderApi.create(orderPayload);
+
+                        // Create Payment Record (Pending)
+                        await pay({
+                          orderId: resolvedOrderId,
+                          amount: grandTotal,
+                          method: selectedPaymentMethod
+                        });
+
+                        alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán tiền mặt tại quầy.`);
+                        setTab('status');
+
+                        // Optional: Clear cart here if needed
+                      } catch (err: any) {
+                        console.error('Order process error:', err);
+                        alert(`Lỗi xử lý: ${err.message}`);
+                      }
+                    }
+                  }}
+                  disabled={loading || items.length === 0}
+                  title="Thanh toán"
+                >
+                  {`Thanh toán ${formatCurrency(grandTotal)}`}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+          )
+        }
+      </div >
+    </div >
   );
 }
 

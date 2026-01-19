@@ -66,7 +66,7 @@ export class GuestMenuService {
     @InjectRepository(MenuItemEntity)
     private readonly menuItemRepo: Repository<MenuItemEntity>,
     private readonly fuzzySearchService: FuzzySearchService,
-  ) {}
+  ) { }
 
   /**
    * Lấy Guest Menu với filter, sort, pagination
@@ -95,15 +95,13 @@ export class GuestMenuService {
     const validPage = Math.max(page, 1);
     const offset = (validPage - 1) * validLimit;
 
-    // Query categories (chỉ lấy active)
+    // Query categories (filter active)
     const categoryQuery = this.categoryRepo
       .createQueryBuilder('category')
-      // .where('category.restaurant_id = :restaurantId', { restaurantId }) // Tạm thời bỏ qua filter restaurantId
       .where('category.status = :status', { status: 'active' })
       .andWhere('category.is_deleted = :isDeleted', { isDeleted: false })
-      .orderBy('category.display_order', 'ASC');
+      .orderBy('category.displayOrder', 'ASC');
 
-    // Nếu có filter categoryId, chỉ lấy category đó
     if (categoryId) {
       categoryQuery.andWhere('category.id = :categoryId', { categoryId });
     }
@@ -121,7 +119,7 @@ export class GuestMenuService {
 
     const categoryIds = categories.map(c => c.id);
 
-    // Query items với các relations (eager loading để tránh N+1)
+    // Query items using DB Pagination
     let itemQuery = this.menuItemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.photos', 'photo')
@@ -146,19 +144,31 @@ export class GuestMenuService {
       });
     }
 
-    // Count total trước khi pagination
-    const total = await itemQuery.getCount();
+    // Apply Sorting at Database Level
+    const sortDir = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    switch (sort) {
+      case 'price':
+        itemQuery.orderBy('item.price', sortDir);
+        break;
+      case 'popularity':
+        itemQuery.orderBy('item.popularity', sortDir);
+        break;
+      case 'createdAt':
+      default:
+        itemQuery.orderBy('item.createdAt', sortDir);
+        break;
+    }
 
-    // Lấy tất cả items trước, rồi sort + paginate ở memory để tránh lỗi driver sqlite
-    const allItems = await itemQuery.getMany();
+    // Explicit secondary sort to ensure stable pagination
+    itemQuery.addOrderBy('item.id', 'ASC');
 
-    // Sorting in memory
-    const sortedItems = this.sortItemsInMemory(allItems, sort, order);
+    // Apply Pagination
+    itemQuery.skip(offset).take(validLimit);
 
-    // Pagination slice
-    const items = sortedItems.slice(offset, offset + validLimit);
+    // Execute Query
+    const [items, total] = await itemQuery.getManyAndCount();
 
-    // Transform data thành response structure
+    // Transform data
     const responseCategories = categories.map(category => {
       const categoryItems = items
         .filter(item => item.categoryId === category.id)
@@ -171,7 +181,7 @@ export class GuestMenuService {
         displayOrder: category.displayOrder,
         items: categoryItems,
       };
-    }).filter(cat => cat.items.length > 0); // Chỉ trả về categories có items
+    }).filter(cat => cat.items.length > 0);
 
     return {
       data: {
@@ -183,29 +193,7 @@ export class GuestMenuService {
     };
   }
 
-  /**
-   * Apply sorting logic
-   */
-  private sortItemsInMemory(items: MenuItemEntity[], sort: string, order: string): MenuItemEntity[] {
-    const asc = order.toUpperCase() === 'ASC';
-    const compare = (a: number | Date | undefined, b: number | Date | undefined) => {
-      const av = a ?? 0;
-      const bv = b ?? 0;
-      if (av < bv) return asc ? -1 : 1;
-      if (av > bv) return asc ? 1 : -1;
-      return 0;
-    };
-
-    switch (sort) {
-      case 'price':
-        return items.sort((a, b) => compare(Number(a.price), Number(b.price)));
-      case 'popularity':
-        return items.sort((a, b) => compare(a.popularity, b.popularity));
-      case 'createdAt':
-      default:
-        return items.sort((a, b) => compare(a.createdAt, b.createdAt));
-    }
-  }
+  // sortItemsInMemory method removed as it is no longer needed
 
   /**
    * Transform MenuItem entity sang response format

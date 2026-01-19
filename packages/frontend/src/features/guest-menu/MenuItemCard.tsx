@@ -78,9 +78,16 @@ export default function MenuItemCard({ item, tableInfo }: MenuItemCardProps) {
   // Helper to resolve image URL (handles relative and absolute)
   const getImageUrl = (url?: string) => {
     if (!url) return undefined;
+
+    // Optimize Cloudinary URLs
+    if (url.includes('res.cloudinary.com')) {
+      // Insert transformations after /upload/
+      return url.replace('/upload/', '/upload/f_auto,q_auto,w_500/');
+    }
+
     if (/^https?:\/\//i.test(url)) return url;
-    // Use VITE_BACKEND_URL if set, fallback to production
-    const backend = import.meta.env.VITE_BACKEND_URL || 'https://restaurant-web-five-wine.vercel.app';
+    // Use VITE_API_URL if set, fallback to production
+    const backend = import.meta.env.VITE_API_URL || 'https://restaurant-backend-xgx8.onrender.com';
     return `${backend}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
@@ -92,6 +99,7 @@ export default function MenuItemCard({ item, tableInfo }: MenuItemCardProps) {
           <img
             src={getImageUrl(item.primaryPhotoUrl)}
             alt={item.name}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         ) : (
