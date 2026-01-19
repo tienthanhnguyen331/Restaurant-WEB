@@ -5,20 +5,22 @@ import * as path from 'path';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173, 
+    port: 5173,
     proxy: {
       // Chuyển hướng mọi request bắt đầu bằng /api/ đến NestJS (port 3000)
       '/api': {
-        target: 'http://localhost:3000', 
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false, 
+        secure: false,
       },
     },
+  },
+  build: {
   },
   resolve: {
     alias: {
       // Thiết lập @shared để trỏ ra thư mục shared/ ở cấp Monorepo
-      '@shared': path.resolve(__dirname, '../../shared'), 
+      '@shared': path.resolve(__dirname, '../../shared'),
     },
   },
 });

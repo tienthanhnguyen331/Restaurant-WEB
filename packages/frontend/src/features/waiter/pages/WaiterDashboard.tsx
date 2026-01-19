@@ -5,6 +5,7 @@ import { OrderCard } from '../components/OrderCard';
 import type { Order } from '../../order/types';
 import { orderApi } from '../../order/services/order-api';
 import { OrderDetailModal } from '../../order/components/OrderDetailModal';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 export const WaiterDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -216,7 +217,7 @@ export const WaiterDashboard = () => {
                     <span className="font-bold uppercase">{order.status}</span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Bàn: {order.table_id} | Tổng: {order.total_amount}
+                    Bàn: {order.table_id} | Tổng: {formatCurrency(order.total_amount)}
                   </div>
                 </div>
               ))}

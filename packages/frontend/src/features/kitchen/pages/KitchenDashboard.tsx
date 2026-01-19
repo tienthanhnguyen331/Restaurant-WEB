@@ -4,9 +4,12 @@ import { kitchenApi } from '../services/kitchenApi';
 import { KitchenOrderCard } from '../components/KitchenOrderCard';
 import type { Order } from '../types';
 
+import { KitchenOrderDetailModal } from '../components/KitchenOrderDetailModal';
+
 export const KitchenDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     loadOrders();
@@ -86,6 +89,7 @@ export const KitchenDashboard = () => {
             order={order}
             onSetPreparing={handleSetPreparing}
             onSetReady={handleSetReady}
+            onShowDetail={setSelectedOrder}
           />
         ))}
       </div>
@@ -93,6 +97,13 @@ export const KitchenDashboard = () => {
         <div className="text-center text-gray-500 mt-8">
           No orders in kitchen
         </div>
+      )}
+
+      {selectedOrder && (
+        <KitchenOrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
       )}
     </div>
   );

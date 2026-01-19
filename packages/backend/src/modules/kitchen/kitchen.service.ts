@@ -14,7 +14,7 @@ export class KitchenService {
     private waiterGateway: WaiterGateway,
     @Inject(forwardRef(() => OrderGateway))
     private orderGateway: OrderGateway,
-  ) {}
+  ) { }
 
   async getOrders() {
     // Get orders that are in PREPARING or READY status
@@ -23,7 +23,7 @@ export class KitchenService {
         { status: OrderStatus.PREPARING },
         { status: OrderStatus.READY },
       ],
-      relations: ['items'],
+      relations: ['items', 'items.menuItem'],
       order: { created_at: 'DESC' },
     });
   }

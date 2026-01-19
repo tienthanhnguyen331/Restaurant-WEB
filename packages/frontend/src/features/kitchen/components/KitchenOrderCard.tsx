@@ -1,12 +1,14 @@
 import type { Order } from "../types.ts";
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 interface KitchenOrderCardProps {
   order: Order;
   onSetPreparing: (orderId: string) => void;
   onSetReady: (orderId: string) => void;
+  onShowDetail: (order: Order) => void;
 }
 
-export const KitchenOrderCard = ({ order, onSetPreparing, onSetReady }: KitchenOrderCardProps) => {
+export const KitchenOrderCard = ({ order, onSetPreparing, onSetReady, onShowDetail }: KitchenOrderCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACCEPTED': return 'bg-yellow-100 text-yellow-800';
@@ -32,7 +34,13 @@ export const KitchenOrderCard = ({ order, onSetPreparing, onSetReady }: KitchenO
 
       <div className="mb-4">
         <p className="text-sm text-gray-600">Items: {order.items?.length || 0}</p>
-        <p className="text-lg font-bold">${order.total_amount}</p>
+        <p className="text-lg font-bold">{formatCurrency(order.total_amount)}</p>
+        <button
+          onClick={() => onShowDetail(order)}
+          className="text-blue-500 hover:text-blue-700 text-sm font-medium underline mt-1"
+        >
+          Xem chi tiết ({order.items?.length} món)
+        </button>
       </div>
 
       <div className="flex gap-2">

@@ -17,4 +17,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   notes?: string;
+  menuItem?: {
+    name: string;
+  };
 }

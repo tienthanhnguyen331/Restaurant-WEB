@@ -1,5 +1,6 @@
 import type { Order } from "../../order/types";
 import { saveAs } from 'file-saver';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 interface OrderCardProps {
   order: Order;
@@ -71,7 +72,7 @@ export const OrderCard = ({ order, onAccept, onReject, onSendToKitchen, onServe,
 
       <div className="mb-4">
         <p className="text-sm text-gray-600">Items: {order.items?.length || 0}</p>
-        <p className="text-lg font-bold">${order.total_amount}</p>
+        <p className="text-lg font-bold">{formatCurrency(order.total_amount)}</p>
       </div>
 
       <div className="flex gap-2">
