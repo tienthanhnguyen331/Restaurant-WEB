@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -17,6 +17,8 @@ const schema = z.object({
 
 export const RegisterScreen = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnToken = searchParams.get('returnToken');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,7 +33,7 @@ export const RegisterScreen = () => {
       const { confirmPassword, ...registerData } = data;
       await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, registerData);
       alert('Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản trước khi đăng nhập.');
-      navigate('/login');
+      navigate(`/login${returnToken ? `?returnToken=${returnToken}` : ''}`);
     } catch (err: any) {
       const status = err.response?.status;
       if (status === 409) {
@@ -107,7 +109,7 @@ export const RegisterScreen = () => {
         </button>
         <div className="mt-4 text-center">
           <span className="text-gray-600">Đã có tài khoản? </span>
-          <Link to="/login" className="text-blue-500 hover:text-blue-700">Đăng nhập</Link>
+          <Link to={`/login${returnToken ? `?returnToken=${returnToken}` : ''}`} className="text-blue-500 hover:text-blue-700">Đăng nhập</Link>
         </div>
       </form>
     </div>

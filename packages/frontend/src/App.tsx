@@ -44,7 +44,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!token) {
     // Xóa tất cả token các role khi không xác định được role hiện tại (bảo vệ route)
-    ['USER','ADMIN','KITCHEN','WAITER'].forEach(r => localStorage.removeItem(`access_token_${r}`));
+    ['USER', 'ADMIN', 'KITCHEN', 'WAITER'].forEach(r => localStorage.removeItem(`access_token_${r}`));
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -59,7 +59,7 @@ function App() {
     <Routes>
       {/* ===== PUBLIC ROUTES ===== */}
       <Route path="/reviews" element={<ReviewPage />} />
-      <Route path="/login" element={<LoginScreen onLoginSuccess={() => { /* handle login success, e.g. redirect or set state */ }} />} />
+      <Route path="/login" element={<LoginScreen />} />
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
       <Route path="/reset-password" element={<ResetPasswordScreen />} />

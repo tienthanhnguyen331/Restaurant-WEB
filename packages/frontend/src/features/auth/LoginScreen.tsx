@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { login } from './hooks/useAuth'
 import * as z from 'zod';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
 
 const schema = z.object({
@@ -11,12 +11,15 @@ const schema = z.object({
 });
 
 interface LoginScreenProps {
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess?: (user: any) => void;
+  redirectToken?: string | null;
 }
 
-export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
+export const LoginScreen = ({ onLoginSuccess, redirectToken }: LoginScreenProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const returnToken = redirectToken || searchParams.get('returnToken');
   const from = location.state?.from?.pathname || '/admin';
   const [loginError, setLoginError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +38,8 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
         alert(`Chào mừng ${user.name}! Bạn đã đăng nhập thành công với tài khoản khách hàng.`);
         if (onLoginSuccess) {
           onLoginSuccess(user);
+        } else if (returnToken) {
+          navigate(`/menu?token=${returnToken}`);
         } else {
           navigate('/guest-menu');
         }
@@ -92,8 +97,8 @@ export const LoginScreen = ({ onLoginSuccess }: LoginScreenProps) => {
           Đăng nhập
         </button>
         <div className="mt-4 text-center space-y-2">
-          <Link to="/register" className="block text-blue-500 hover:text-blue-700">Đăng ký</Link>
-          <Link to="/forgot-password" className="block text-blue-500 hover:text-blue-700">Quên mật khẩu?</Link>
+          <Link to={`/register${returnToken ? `?returnToken=${returnToken}` : ''}`} className="block text-blue-500 hover:text-blue-700">Đăng ký</Link>
+          <Link to={`/forgot-password${returnToken ? `?returnToken=${returnToken}` : ''}`} className="block text-blue-500 hover:text-blue-700">Quên mật khẩu?</Link>
         </div>
       </form>
     </div>

@@ -21,7 +21,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   /**
    * Generate a secure random token for email verification
@@ -90,10 +90,36 @@ export class AuthService {
         },
       };
     } catch (error) {
-      // If email sending fails, delete the user
-      await this.userService.delete(user.id);
+      // If email sending fails...
       this.logger.error(`Failed to send verification email for ${user.email}`, error);
-      throw new Error('Failed to send verification email. Please try again.');
+
+      // SAFETY CHECK: Only allow auto-verify in NON-PRODUCTION environments
+      const isDevelopment = this.configService.get('NODE_ENV') !== 'production';
+
+      if (isDevelopment) {
+        const verificationLink = this.generateVerificationLink(verificationToken);
+        this.logger.warn(`[LOCAL DEV] Verification Email Failed. Manually verify using this link:`);
+        this.logger.warn(verificationLink);
+
+        // AUTO-VERIFY for Local Dev Convenience
+        await this.userService.update(user.id, { isVerified: true });
+        this.logger.warn(`[LOCAL DEV] User ${user.email} has been AUTO-VERIFIED to bypass email requirement.`);
+
+        return {
+          message: 'Registration successful! (Local Dev: Account verified automatically)',
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            isVerified: true,
+          },
+        };
+      } else {
+        // IN PRODUCTION: Fail securely if email cannot be sent
+        // Delete user to prevent "zombie" accounts that can never be verified
+        await this.userService.delete(user.id);
+        throw new Error('Failed to send verification email. Please try again or contact support.');
+      }
     }
   }
 

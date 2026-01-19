@@ -3,9 +3,16 @@ import * as path from 'path';
 import { Client } from 'pg';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const envPath = path.resolve(__dirname, '../../.env');
+console.log('Loading .env from:', envPath);
+if (fs.existsSync(envPath)) {
+  console.log('.env file exists');
+} else {
+  console.log('.env file does NOT exist');
+}
+dotenv.config({ path: envPath });
 
-const SEED_DIR = path.resolve(__dirname, '../../../database/seeders');
+const SEED_DIR = path.resolve(__dirname, '../../../../database/seeders');
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {

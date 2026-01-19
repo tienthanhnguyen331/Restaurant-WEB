@@ -299,13 +299,16 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
               )}
             </div>
           ) : (
-            <LoginScreen onLoginSuccess={(user) => {
-              // Lưu thông tin guest vào 'guest_user' thay vì 'user'
-              if (user) {
-                localStorage.setItem('guest_user', JSON.stringify(user));
-              }
-              handleLoginSuccess();
-            }} />
+            <LoginScreen
+              onLoginSuccess={(user) => {
+                // Lưu thông tin guest vào 'guest_user' thay vì 'user'
+                if (user) {
+                  localStorage.setItem('guest_user', JSON.stringify(user));
+                }
+                handleLoginSuccess();
+              }}
+              redirectToken={authToken}
+            />
           )}
           {isLoggedIn && (
             <div className="flex justify-center">
