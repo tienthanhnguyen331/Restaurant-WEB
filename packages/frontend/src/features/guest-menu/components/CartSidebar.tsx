@@ -3,13 +3,14 @@ import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '../../../contexts/CartContext';
 import type { CartItem } from '../../../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 const createOrderId = () =>
-  (crypto.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  }));
+(crypto.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  const r = (Math.random() * 16) | 0;
+  const v = c === 'x' ? r : (r & 0x3) | 0x8;
+  return v.toString(16);
+}));
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -36,8 +37,8 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
         optionIds.forEach((optionId) => {
           const option = group.options.find((o) => o.id === optionId);
           if (option) {
-            const priceText = option.priceAdjustment > 0 
-              ? ` (+$${option.priceAdjustment.toFixed(2)})` 
+            const priceText = option.priceAdjustment > 0
+              ? ` (+${formatCurrency(option.priceAdjustment)})`
               : '';
             modifierTexts.push(`${option.name}${priceText}`);
           }
@@ -51,7 +52,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40 md:block hidden"
         onClick={onClose}
       />
@@ -92,7 +93,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
                           {item.menuItemName}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          ${item.basePrice.toFixed(2)} each
+                          {formatCurrency(item.basePrice)} each
                         </p>
                       </div>
                       <button
@@ -135,7 +136,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
                         </button>
                       </div>
                       <span className="font-bold text-blue-600">
-                        ${itemPrice.toFixed(2)}
+                        {formatCurrency(itemPrice)}
                       </span>
                     </div>
                   </div>
@@ -151,7 +152,7 @@ export default function CartSidebar({ isOpen, onClose, onCheckout }: CartSidebar
             {/* Total */}
             <div className="flex justify-between items-center text-lg font-bold">
               <span className="text-gray-900">Total</span>
-              <span className="text-blue-600">${totalPrice.toFixed(2)}</span>
+              <span className="text-blue-600">{formatCurrency(totalPrice)}</span>
             </div>
 
             {/* Actions */}
