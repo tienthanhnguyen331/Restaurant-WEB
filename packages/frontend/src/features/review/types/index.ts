@@ -11,6 +11,8 @@ export interface Review {
   user?: {
     id: string;
     name: string;
+    avatar?: string;
+    displayName?: string;
   };
 
   // Thông tin Món ăn (được join từ backend)

@@ -25,6 +25,7 @@ const getGuestToken = () => {
           if (isValid) {
             return token;
           } else {
+            console.warn('[getGuestToken] Token ownership verification failed! User ID mismatch.');
             localStorage.removeItem('access_token_USER');
             // STOP HERE: Do not fall back to GUEST token if we are supposed to be a legitimate USER.
             // If the USER token is bad, we are unauthenticated.
@@ -33,6 +34,7 @@ const getGuestToken = () => {
         } else {
           // If we are USER but have no token, do not try to use GUEST token.
           // It might be a leftover Admin token in the GUEST slot.
+          console.warn('[getGuestToken] Role is USER but access_token_USER is missing.');
           return null;
         }
       }

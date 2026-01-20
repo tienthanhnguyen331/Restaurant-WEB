@@ -113,6 +113,17 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Session Validation: Ensure token exists if we think we are logged in as USER
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'USER') {
+      const token = localStorage.getItem('access_token_USER');
+      if (!token) {
+        console.warn('[GuestMenuPage] User data found but no token. Auto-logging out to prevent API errors.');
+        handleLogout();
+      }
+    }
+  }, [currentUser]);
+
   // React Query fetch function
   const fetchMenu = async () => {
     const params = new URLSearchParams();
@@ -266,11 +277,17 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
             <div className="space-y-6">
               <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
-                    {currentUser?.name?.[0] ?? 'U'}
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl overflow-hidden">
+                    {currentUser?.avatar ? (
+                      <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      currentUser?.displayName?.[0] || currentUser?.name?.[0] || 'U'
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">{currentUser?.name || 'Khách hàng'}</h2>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      {currentUser?.displayName || currentUser?.name || 'Khách hàng'}
+                    </h2>
                     <p className="text-sm text-gray-500">{currentUser?.email || 'Chưa có email'}</p>
                   </div>
                 </div>
@@ -463,24 +480,6 @@ function GuestMenuContent({ tableInfo, authToken }: GuestMenuPageProps) {
           </button>
         </div>
       </nav>
-
-      {/* Logout Button - Hiển thị ở góc phải khi đang ở profile tab và đã đăng nhập */}
-      {isLoggedIn && activeTab === 'profile' && (
-        <button
-          onClick={handleLogout}
-          className="group fixed bottom-16 right-6 md:bottom-8 md:right-8 z-50 flex items-center gap-3 px-4 py-3 bg-white border border-red-200 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-lg"
-          title="Đăng xuất khỏi hệ thống"
-        >
-          <div className="p-1 bg-red-50 rounded-full group-hover:bg-red-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </div>
-          <span className="font-semibold pr-2">Đăng xuất</span>
-        </button>
-      )}
     </div>
   );
 }

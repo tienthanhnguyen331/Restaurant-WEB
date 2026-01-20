@@ -55,7 +55,11 @@ export const WaiterDashboard = () => {
     setHistoryLoading(true);
     try {
       const data = await orderApi.getAll();
-      setHistoryOrders(data);
+      // Filter only finished orders for history
+      const finishedOrders = data.filter((o: Order) =>
+        ['COMPLETED', 'REJECTED', 'CANCELLED'].includes(o.status)
+      );
+      setHistoryOrders(finishedOrders);
     } catch (error) {
       handleAuthError(error);
     } finally {

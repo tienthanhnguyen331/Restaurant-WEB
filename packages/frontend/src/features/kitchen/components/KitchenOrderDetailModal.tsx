@@ -7,6 +7,20 @@ interface KitchenOrderDetailModalProps {
 }
 
 export const KitchenOrderDetailModal = ({ order, onClose }: KitchenOrderDetailModalProps) => {
+    // Consolidate items
+    const consolidatedItems = order.items.reduce((acc: any[], item) => {
+        const existingItem = acc.find(
+            (i) => i.menu_item_id === item.menu_item_id && i.notes === item.notes
+        );
+        if (existingItem) {
+            existingItem.quantity += item.quantity;
+            // Merge price if needed, though for Kitchen quantity is key
+        } else {
+            acc.push({ ...item });
+        }
+        return acc;
+    }, []);
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -27,8 +41,8 @@ export const KitchenOrderDetailModal = ({ order, onClose }: KitchenOrderDetailMo
                     <div>
                         <h3 className="font-semibold mb-2">Danh sách món:</h3>
                         <div className="space-y-2">
-                            {order.items.map((item) => (
-                                <div key={item.id} className="flex justify-between border-b pb-2 mb-2">
+                            {consolidatedItems.map((item) => (
+                                <div key={item.id || `${item.menu_item_id}-${item.notes}`} className="flex justify-between border-b pb-2 mb-2">
                                     <div>
                                         <div className="font-medium text-lg">
                                             {item.menuItem?.name || `Món #${item.menu_item_id}`}

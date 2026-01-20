@@ -88,14 +88,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
   /**
    * Thêm item vào giỏ
    */
+  /**
+   * Thêm item vào giỏ (có gộp món trùng)
+   */
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
-    setItems(prev => [
-      ...prev,
-      {
-        ...newItem,
-        id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      },
-    ]);
+    setItems(prev => {
+      // Find exact match
+      const existingItemIndex = prev.findIndex(item => {
+        if (item.menuItemId !== newItem.menuItemId) return false;
+        // Check modifiers equality
+        const keys1 = Object.keys(item.selectedModifiers).sort();
+        const keys2 = Object.keys(newItem.selectedModifiers).sort();
+        if (keys1.length !== keys2.length) return false;
+
+        for (const key of keys1) {
+          const val1 = item.selectedModifiers[key].slice().sort();
+          const val2 = newItem.selectedModifiers[key].slice().sort();
+          if (val1.length !== val2.length) return false;
+          if (!val1.every((v, i) => v === val2[i])) return false;
+        }
+        return true;
+      });
+
+      if (existingItemIndex !== -1) {
+        // Clone and update quantity
+        const newItems = [...prev];
+        const existingItem = newItems[existingItemIndex];
+        newItems[existingItemIndex] = {
+          ...existingItem,
+          quantity: existingItem.quantity + newItem.quantity
+        };
+        return newItems;
+      }
+
+      // Add new
+      return [
+        ...prev,
+        {
+          ...newItem,
+          id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        },
+      ];
+    });
   }, []);
 
   /**

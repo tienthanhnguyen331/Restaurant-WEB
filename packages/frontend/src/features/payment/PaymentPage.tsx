@@ -27,7 +27,7 @@ export default function PaymentPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { items: cartItems, updateQuantity, removeItem, getItemPrice } = useCart();
+  const { items: cartItems, updateQuantity, removeItem, getItemPrice, clearCart } = useCart();
 
   const { pay, payWithMomo, loading, MENU_RETURN_KEY, setReturnUrl } = usePayment();
 
@@ -388,6 +388,7 @@ export default function PaymentPage() {
                         const orderResponse = await orderApi.create(orderPayload);
                         console.log('Order created:', orderResponse);
 
+                        clearCart(); // Reset cart before redirecting
                         payWithMomo(resolvedOrderId, grandTotal);
                       } catch (err: any) {
                         console.error('Order creation error:', err);
@@ -408,6 +409,7 @@ export default function PaymentPage() {
                         });
 
                         alert(`Đơn hàng đã gửi thành công! Vui lòng thanh toán tiền mặt tại quầy.`);
+                        clearCart(); // Reset cart after success
                         setTab('status');
 
                         // Optional: Clear cart here if needed

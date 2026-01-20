@@ -129,7 +129,9 @@ export const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ profileOverr
       }
     },
     onError: (error: any) => {
-      throw new Error(error.response?.data?.message || 'Lỗi tải lên avatar');
+      console.error('Avatar upload failed:', error);
+      const msg = error.response?.data?.message || error.message || 'Lỗi tải lên avatar (Chi tiết trong Console)';
+      throw new Error(msg);
     },
   });
 

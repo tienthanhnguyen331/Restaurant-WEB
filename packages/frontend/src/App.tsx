@@ -24,6 +24,7 @@ import { LoginScreen } from './features/auth/LoginScreen';
 import { RegisterScreen } from './features/auth/RegisterScreen';
 import { ForgotPasswordScreen } from './features/auth/ForgotPasswordScreen';
 import { ResetPasswordScreen } from './features/auth/ResetPasswordScreen';
+import { VerifyEmailPage } from './features/auth/VerifyEmailPage';
 
 // Customer / Guest
 import { ScanPage } from './features/customer-view/ScanPage';
@@ -63,6 +64,7 @@ function App() {
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
       <Route path="/reset-password" element={<ResetPasswordScreen />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/menu" element={<ScanPage />} />
       <Route path="/guest-menu" element={<GuestMenuPage />} />
       <Route path="/guest/order-status" element={<GuestOrderStatus />} /> {/* Route test mới */}

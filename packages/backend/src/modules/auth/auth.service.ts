@@ -80,6 +80,11 @@ export class AuthService {
         `Signup successful for ${user.email}. Verification email sent.`,
       );
 
+      // LOG LINK FOR DEV CONVENIENCE
+      if (this.configService.get('NODE_ENV') !== 'production') {
+        this.logger.log(`[LOCAL DEV] Verification Link: ${verificationLink}`);
+      }
+
       return {
         message: 'Registration successful. Please check your email to verify your account.',
         user: {
@@ -231,7 +236,8 @@ export class AuthService {
    */
   private generateVerificationLink(token: string): string {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
-    return `${frontendUrl}/api/auth/verify-email?token=${token}`;
+    // Point to the Frontend Route, not the Backend API
+    return `${frontendUrl}/verify-email?token=${token}`;
   }
 
   /**

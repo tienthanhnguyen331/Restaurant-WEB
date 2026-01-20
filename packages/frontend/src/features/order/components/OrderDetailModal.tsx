@@ -99,19 +99,39 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
 
           <div>
             <h3 className="font-semibold mb-2">Món đã đặt:</h3>
-            {currentOrder.items.map((item) => {
-              const info = getMenuInfo(item.menu_item_id);
-              return (
-                <div key={item.id} className="flex justify-between border-b pb-2 mb-2">
-                  <div>
-                    <div className="font-medium">{info.name}</div>
-                    <div className="text-sm text-gray-600">SL: {item.quantity}</div>
-                    <div className="text-xs text-gray-400">Category: {info.categoryName}</div>
+            <h3 className="font-semibold mb-2">Món đã đặt:</h3>
+            {(() => {
+              // Consolidate items logic inside render
+              const consolidatedItems = currentOrder.items.reduce((acc: any[], item) => {
+                const existingItem = acc.find(
+                  (i) => i.menu_item_id === item.menu_item_id && i.notes === item.notes
+                  // We assume 'notes' (or no notes) is enough to distinguish modifiers in this simplified view 
+                  // or if modifiers are stored in notes string by backend
+                );
+                if (existingItem) {
+                  existingItem.quantity += item.quantity;
+                } else {
+                  acc.push({ ...item });
+                }
+                return acc;
+              }, []);
+
+              return consolidatedItems.map((item) => {
+                const info = getMenuInfo(item.menu_item_id);
+                return (
+                  <div key={item.id || `${item.menu_item_id}-${item.notes}`} className="flex justify-between border-b pb-2 mb-2">
+                    <div>
+                      <div className="font-medium">{info.name}</div>
+                      <div className="text-sm text-gray-600">SL: {item.quantity}</div>
+                      <div className="text-xs text-gray-400">Category: {info.categoryName}</div>
+                      {/* Display notes if any, as it might contain modifiers */}
+                      {item.notes && <div className="text-xs text-amber-600 italic">Note: {item.notes}</div>}
+                    </div>
+                    <div className="font-semibold">{formatCurrency(Number(item.price) * item.quantity)}</div>
                   </div>
-                  <div className="font-semibold">{formatCurrency(Number(item.price) * item.quantity)}</div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
 
           <div className="border-t pt-4 flex justify-between text-lg font-bold">
