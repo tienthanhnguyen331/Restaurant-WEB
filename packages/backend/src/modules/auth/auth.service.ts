@@ -268,12 +268,10 @@ export class AuthService {
     // This is for security - don't reveal if email exists
     const user = await this.userService.findOneByEmail(email);
 
-    // Always return success message to prevent email enumeration attacks
+    // DEBUGGING MODE: Reveal if user is not found
     if (!user) {
       this.logger.warn(`Forgot password request for non-existent email: ${email}`);
-      return {
-        message: 'If an account exists with this email, a password reset link will be sent shortly.',
-      };
+      throw new BadRequestException('DEBUG: Email này chưa được đăng ký trong hệ thống!');
     }
 
     try {
@@ -300,7 +298,8 @@ export class AuthService {
       this.logger.log(`Password reset email sent to ${user.email}`);
     } catch (error) {
       this.logger.error(`Failed to send reset password email to ${email}:`, error);
-      // Don't throw error - maintain security by not revealing email existence
+      // DEBUGGING MODE: Rethrow error to see what happened
+      throw new BadRequestException(`DEBUG: Lỗi gửi mail - ${error.message}`);
     }
 
     // Return generic success message
